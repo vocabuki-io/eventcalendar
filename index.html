@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+  <title>ボカブキ イベントカレンダー</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Reggae+One&family=RocknRoll+One&family=DotGothic16&family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { margin:0; padding:0; background:#111; height:100%; }
+    body {
+      margin:0; padding:0; font-family:"M PLUS Rounded 1c",system-ui;
+      background:#111;
+      min-height:100%; min-height:100dvh;
+      display:flex; justify-content:center; align-items:flex-start;
+    }
+    #app-shell {
+      width:100%; max-width:480px;
+      min-height:100vh; min-height:100dvh;
+      position:relative; background:#FFFBEC;
+      overflow:hidden;
+    }
+    #app {
+      width:100%; height:100%;
+      position:absolute; inset:0;
+      overflow:hidden;
+    }
+    button { font-family:inherit; cursor:pointer; }
+    input, textarea, select { font-family:inherit; }
+    ::-webkit-scrollbar { width:0; }
+
+    /* PC（マウス環境）: ホイールスクロール有効化。スマホ挙動は変えない */
+    @media (hover: hover) and (pointer: fine) {
+      #app-shell {
+        overflow-y: auto;
+        height: 100vh;
+        height: 100dvh;
+        /* transform で fixed の基準を app-shell に閉じ込める */
+        transform: translateZ(0);
+      }
+      #app {
+        position: relative;
+        height: auto;
+        min-height: 100%;
+        overflow: visible;
+      }
+      #app-shell::-webkit-scrollbar { width: 4px; }
+      #app-shell::-webkit-scrollbar-track { background: transparent; }
+      #app-shell::-webkit-scrollbar-thumb { background: rgba(17,17,17,0.2); border-radius: 2px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app-shell">
+    <div id="app"></div>
+  </div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
+
+  <script type="text/babel">
+  // DESIGN TOKENS
+  const C={turquoise:'#2EC5CE',turquoiseDark:'#1EA3AC',yellow:'#FFD23F',red:'#E63946',orange:'#FF8A1E',paper:'#FFFBEC',ink:'#111111'};
+  const B='3px solid #111',BT='4px solid #111',S='4px 4px 0 #111',SB='6px 6px 0 #111',SS='2px 2px 0 #111';
+  const pat={
+    halftone:(c='#E63946')=>`radial-gradient(circle at 3px 3px,${c} 1.8px,transparent 2px)`,
+    stripes:(a,b)=>`repeating-linear-gradient(45deg,${a} 0 6px,${b} 6px 14px)`,
+    stripesB:(a,b)=>`repeating-linear-gradient(45deg,${a} 0 10px,${b} 10px 22px)`,
+  };
+
+  // STATIC DATA
+  const TODAY=new Date(2026,3,19);
+  const GENRES_DEFAULT=[
+    {id:'game',label:'ゲーム',color:'#E63946'},
+    {id:'anison',label:'アニソン',color:'#FF8A1E'},
+    {id:'classic',label:'クラシック',color:'#2EC5CE'},
+    {id:'remix',label:'リミックス',color:'#6A3FD9'},
+    {id:'allnight',label:'オールナイト',color:'#111'},
+  ];
+  const PEOPLE_DEFAULT={
+    dragon3:{name:'dragon3',x:'@drag_on_3'},inasu:{name:'иASU',x:'@inasu_vb'},
+    nonose:{name:'乃々瀬',x:'@nonose_vb'},ayumu:{name:'あゆむ',x:'@ayumu_vb'},
+    kaito:{name:'KAITO-P',x:'@kaito_p_dj'},mikumiku:{name:'みくみく',x:'@mikumiku_dj'},
+    rin_len:{name:'リンレン屋',x:'@rinlen_ya'},negiboshi:{name:'ネギ星',x:'@negiboshi_dj'},
+    sakura_b:{name:'さくらB',x:'@sakura_b_dj'},gumiota:{name:'グミヲタ',x:'@gumiota_dj'},
+    luka_luka:{name:'ルカルカ姉さん',x:'@lukaluka_n'},eight_en:{name:'エイト園',x:'@eighten_dj'},
+    futaba:{name:'ふたば',x:'@futaba_dj'},yomogi:{name:'よもぎ',x:'@yomogi_beats'},
+    beeeer:{name:'BEEEER',x:'@beeeer_dj'},kirin_kun:{name:'キリンくん',x:'@kirin_kun_dj'},
+    vj_noise:{name:'NOIZU',x:'@noizu_vj'},vj_pop:{name:'ポップくん',x:'@popkun_vj'},
+    vj_dot:{name:'DOT8',x:'@dot8_vj'},vj_kiri:{name:'きりり',x:'@kiriri_vj'},
+    vj_neko:{name:'ネコ目線',x:'@nekomesen_vj'},vj_onigiri:{name:'オニギリ',x:'@onigiri_vj'},
+  };
+  const STAFF=['dragon3','inasu','nonose','ayumu'];
+  const EVENTS_DEFAULT=[
+    {id:'e1',date:'2026-04-04',title:'ボカクラ Vol.23',genre:'classic',hashtags:['ボカブキイベント'],djs:['luka_luka','sakura_b','beeeer'],vjs:['vj_kiri','vj_pop'],flyer:null},
+    {id:'e2',date:'2026-04-11',title:'ネギマニア！',genre:'anison',hashtags:['ボカブキイベント'],djs:['negiboshi','mikumiku','futaba','yomogi'],vjs:['vj_noise','vj_dot'],flyer:null},
+    {id:'e3',date:'2026-04-18',title:'ボカゲーム',genre:'game',hashtags:['ボカブキイベント'],djs:['kaito','rin_len','gumiota','eight_en','kirin_kun'],vjs:['vj_dot','vj_neko','vj_onigiri'],flyer:null},
+    {id:'e4',date:'2026-04-19',title:'SPRING REMIX PARTY',genre:'remix',hashtags:['ボカブキイベント'],djs:['beeeer','sakura_b','futaba'],vjs:['vj_pop','vj_kiri'],flyer:null},
+    {id:'e5',date:'2026-04-25',title:'オールナイト花見',genre:'allnight',hashtags:['ボカブキイベント'],djs:['mikumiku','luka_luka','negiboshi','yomogi','kirin_kun','gumiota'],vjs:['vj_noise','vj_onigiri','vj_neko'],flyer:null},
+    {id:'e6',date:'2026-05-02',title:'ゴールデンボカクラ',genre:'classic',hashtags:['ボカブキイベント'],djs:['kaito','luka_luka','beeeer','eight_en'],vjs:['vj_kiri'],flyer:null},
+    {id:'e7',date:'2026-05-09',title:'ボカゲーム Vol.12',genre:'game',hashtags:['ボカブキイベント'],djs:['rin_len','negiboshi','gumiota','yomogi'],vjs:['vj_dot','vj_onigiri'],flyer:null},
+    {id:'e8',date:'2026-05-16',title:'REMIX NIGHT ふたば',genre:'remix',hashtags:['ボカブキイベント'],djs:['futaba','mikumiku','sakura_b'],vjs:['vj_pop'],flyer:null},
+    {id:'e9',date:'2026-05-23',title:'アニソン×ボカロ',genre:'anison',hashtags:['ボカブキイベント'],djs:['kirin_kun','negiboshi','beeeer','kaito'],vjs:['vj_neko','vj_noise'],flyer:null},
+    {id:'e10',date:'2026-05-30',title:'オールナイト初夏',genre:'allnight',hashtags:['ボカブキイベント'],djs:['luka_luka','yomogi','eight_en','futaba','gumiota','rin_len'],vjs:['vj_dot','vj_kiri','vj_pop'],flyer:null},
+    {id:'e11',date:'2026-06-06',title:'ボカクラ Vol.24',genre:'classic',hashtags:['ボカブキイベント'],djs:['mikumiku','sakura_b','kaito'],vjs:['vj_kiri','vj_onigiri'],flyer:null},
+    {id:'e12',date:'2026-06-13',title:'ネギネギFES',genre:'anison',hashtags:['ボカブキイベント'],djs:['negiboshi','rin_len','kirin_kun','futaba'],vjs:['vj_noise'],flyer:null},
+    {id:'e13',date:'2026-06-20',title:'ボカゲーム Vol.13',genre:'game',hashtags:['ボカブキイベント'],djs:['gumiota','eight_en','yomogi','beeeer'],vjs:['vj_dot','vj_neko'],flyer:null},
+    {id:'e14',date:'2026-06-27',title:'SUMMER REMIX',genre:'remix',hashtags:['ボカブキイベント'],djs:['luka_luka','futaba','mikumiku','sakura_b'],vjs:['vj_pop','vj_kiri'],flyer:null},
+  ];
+
+  // STORAGE
+  const ls={
+    get:(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;}},
+    set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}},
+  };
+
+  // UTILS
+  const WDAYS=['月','火','水','木','金','土','日'];
+  function fmtDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return`${y}-${m}-${day}`;}
+  function parseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+  function sameDay(a,b){return a.toDateString()===b.toDateString();}
+  function weekIdx(d){return(d.getDay()+6)%7;}
+  function uid(){return'e'+Date.now()+Math.random().toString(36).slice(2,6);}
+  function buildMonthCells(year,month){
+    const first=new Date(year,month,1),startPad=(first.getDay()+6)%7;
+    const daysInMonth=new Date(year,month+1,0).getDate(),cells=[];
+    const prevDays=new Date(year,month,0).getDate();
+    for(let i=startPad-1;i>=0;i--)cells.push({date:new Date(year,month-1,prevDays-i),outside:true});
+    for(let d=1;d<=daysInMonth;d++)cells.push({date:new Date(year,month,d),outside:false});
+    while(cells.length<42){const last=cells[cells.length-1].date;const nxt=new Date(last.getFullYear(),last.getMonth(),last.getDate()+1);cells.push({date:nxt,outside:nxt.getMonth()!==month});}
+    return cells;
+  }
+
+  // SHARED COMPONENTS
+  function StarBurst({size=80,color='#E63946',spikes=20,children,style={}}){
+    const pts=[];const cx=size/2,cy=size/2,outer=size/2,inner=size/2*0.86;
+    for(let i=0;i<spikes*2;i++){const r=i%2===0?outer:inner;const a=(Math.PI/spikes)*i-Math.PI/2;pts.push(`${cx+r*Math.cos(a)},${cy+r*Math.sin(a)}`);}
+    return(<div style={{position:'relative',width:size,height:size,...style}}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{position:'absolute',inset:0}}>
+        <polygon points={pts.join(' ')} fill={color} stroke="#111" strokeWidth="2.5" strokeLinejoin="round"/>
+      </svg>
+      <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'"Reggae One",system-ui',color:'#fff',textShadow:'2px 2px 0 #111',textAlign:'center',lineHeight:1}}>{children}</div>
+    </div>);
+  }
+  function XIcon({size=18}){return(<svg width={size} height={size} viewBox="0 0 24 24" style={{display:'block'}}><rect x="1.5" y="1.5" width="21" height="21" rx="4.5" fill="#111"/><path d="M7 7l10 10M17 7L7 17" stroke="#fff" strokeWidth="2.4" strokeLinecap="round"/></svg>);}
+  function VbLogo(){return(<div style={{display:'inline-flex',alignItems:'center',gap:10,fontFamily:'"Reggae One",system-ui',userSelect:'none'}}><div style={{fontSize:22,lineHeight:1,background:C.red,color:'#fff',border:B,borderRadius:10,padding:'6px 10px',boxShadow:SS,transform:'rotate(-3deg)',letterSpacing:1}}>VOCA</div><div style={{fontSize:22,lineHeight:1,background:C.turquoise,color:'#fff',border:B,borderRadius:10,padding:'6px 10px',boxShadow:SS,transform:'rotate(3deg)',letterSpacing:1}}>BUKI</div></div>);}
+  function PopBtn({children,onClick,bg=C.yellow,color='#111',size=40,style={}}){
+    const ref=React.useRef();
+    return(<button ref={ref} onClick={onClick} style={{width:size,height:size,background:bg,color,border:BT,borderRadius:'50%',boxShadow:S,display:'flex',alignItems:'center',justifyContent:'center',padding:0,fontFamily:'"Reggae One",system-ui',fontSize:18,...style}}
+      onPointerDown={()=>{if(ref.current){ref.current.style.transform='translate(3px,3px)';ref.current.style.boxShadow='1px 1px 0 #111';}}}
+      onPointerUp={()=>{if(ref.current){ref.current.style.transform='';ref.current.style.boxShadow=S;}}}
+      onPointerLeave={()=>{if(ref.current){ref.current.style.transform='';ref.current.style.boxShadow=S;}}}
+    >{children}</button>);
+  }
+  function Label({children}){return <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#555',marginBottom:3}}>{children}</div>;}
+  function SectionHead({children}){return(<div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,background:C.ink,color:'#fff',border:BT,borderRadius:8,padding:'4px 12px',transform:'rotate(-1deg)',boxShadow:SS,display:'inline-block',marginBottom:10}}>{children}</div>);}
+
+  // CALENDAR COMPONENTS
+  function ViewSwitcher({view,setView}){
+    return(<div style={{display:'inline-flex',border:BT,borderRadius:999,background:'#fff',boxShadow:SS,padding:3,gap:2}}>
+      {[{id:'month',label:'月'},{id:'week',label:'週'},{id:'list',label:'リスト'}].map(o=>(
+        <button key={o.id} onClick={()=>setView(o.id)} style={{border:'none',background:view===o.id?C.ink:'transparent',color:view===o.id?'#fff':'#111',fontFamily:'"RocknRoll One",system-ui',fontSize:13,padding:'6px 12px',borderRadius:999}}>{o.label}</button>
+      ))}
+    </div>);
+  }
+  function GenreFilter({active,setActive,genres}){
+    return(<div style={{display:'flex',gap:8,overflowX:'auto',padding:'0 16px 4px',marginLeft:-16,marginRight:-16}}>
+      {[{id:'all',label:'ALL',color:'#111'},...genres].map(g=>{const on=active===g.id;return(
+        <button key={g.id} onClick={()=>setActive(g.id)} style={{flexShrink:0,border:B,borderRadius:999,padding:'6px 14px',background:on?g.color:'#fff',color:on?'#fff':'#111',boxShadow:on?SS:'none',fontFamily:'"RocknRoll One",system-ui',fontSize:13,transform:on?'translate(-1px,-1px)':'none',whiteSpace:'nowrap'}}># {g.label}</button>
+      );})}
+    </div>);
+  }
+  function MonthHeader({year,month,onPrev,onNext,onToday}){
+    return(<div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 16px',gap:8}}>
+      <div style={{display:'flex',alignItems:'center',gap:8}}>
+        <PopBtn onClick={onPrev} bg={C.yellow} size={38}>‹</PopBtn>
+        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:28,lineHeight:1,display:'flex',alignItems:'baseline',gap:6}}>
+          <span style={{color:C.red}}>{year}</span><span style={{fontSize:16,color:'#111'}}>年</span>
+          <span style={{color:C.turquoiseDark,fontSize:38}}>{month+1}</span><span style={{fontSize:16,color:'#111'}}>月</span>
+        </div>
+      </div>
+      <div style={{display:'flex',gap:8}}>
+        <button onClick={onToday} style={{border:BT,background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:13,padding:'6px 12px',borderRadius:999,boxShadow:SS}}>今日</button>
+        <PopBtn onClick={onNext} bg={C.yellow} size={38}>›</PopBtn>
+      </div>
+    </div>);
+  }
+  function WeekdayRow(){
+    return(<div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,padding:'0 14px',marginTop:6}}>
+      {WDAYS.map((w,i)=>{const isSat=i===5,isSun=i===6;return(
+        <div key={w} style={{textAlign:'center',fontFamily:'"DotGothic16",monospace',fontSize:13,padding:'4px 0',color:isSun?C.red:isSat?C.turquoiseDark:'#111',background:isSun?'rgba(230,57,70,0.1)':isSat?'rgba(46,197,206,0.12)':'transparent',border:B,borderRadius:8,fontWeight:700}}>{w}</div>
+      );})}
+    </div>);
+  }
+  function DayCell({cell,event,isToday,isPast,isFavorite,onClick,dayBg,genres}){
+    const d=cell.date,wi=weekIdx(d),isSat=wi===5,isSun=wi===6;
+    const genre=event&&genres.find(g=>g.id===event.genre);
+    const defaultAccent=isSat?C.turquoise:wi===4?C.red:null;
+    const bg=event?(dayBg||(genre?genre.color:C.yellow)):(cell.outside?'rgba(255,255,255,0.4)':(defaultAccent||'#fff'));
+    const isBgColored=event||(!!defaultAccent&&!cell.outside);
+    return(<button onClick={onClick} disabled={!event}
+      style={{position:'relative',aspectRatio:'1/1.15',border:B,borderRadius:8,minWidth:0,background:bg,padding:4,cursor:event?'pointer':'default',opacity:(cell.outside||isPast)?0.55:1,filter:isPast?'saturate(0.4)':'none',boxShadow:event&&!isPast?SS:'none',display:'flex',flexDirection:'column',alignItems:'flex-start',overflow:'visible',textAlign:'left',transform:isToday?'scale(1.02)':'none',outline:isToday?`3px solid ${C.ink}`:'none',outlineOffset:isToday?'2px':0}}>
+      {isToday&&<div style={{position:'absolute',top:-10,right:-6,zIndex:10,pointerEvents:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,lineHeight:1,color:'#fff',WebkitTextStroke:'3px #FF3DA5',paintOrder:'stroke fill',transform:'rotate(-8deg)'}}>NOW</div>}
+      {isFavorite&&<div style={{position:'absolute',top:2,left:2,fontSize:10}}>⭐</div>}
+      <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16,lineHeight:1,color:isBgColored?'#fff':(isSun?C.red:isSat?C.turquoiseDark:'#111'),textShadow:isBgColored?'1.5px 1.5px 0 #111':'none',marginTop:1,marginLeft:2}}>{d.getDate()}</div>
+      {event&&(()=>{const full=event.title||'',head=Array.from(full).slice(0,4).join(''),label=Array.from(full).length>4?`${head}…`:head;return(<div style={{marginTop:'auto',width:'100%',fontFamily:'"Reggae One",system-ui',fontSize:10.5,lineHeight:1,color:'#fff',WebkitTextStroke:'2.5px #111',paintOrder:'stroke fill',textAlign:'center',overflow:'hidden',whiteSpace:'nowrap',padding:'2px 2px 3px'}}>{label}</div>);})()}
+    </button>);
+  }
+  function MonthGrid({cells,eventByDate,onPick,favorites,dayBgMap,genres}){
+    return(<div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,padding:'6px 14px'}}>
+      {cells.map((c,i)=>{
+        const key=fmtDate(c.date),ev=eventByDate[key],isToday=sameDay(c.date,TODAY);
+        const isPast=c.date<new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
+        return(<DayCell key={i} cell={c} event={ev} isToday={isToday} isPast={isPast} isFavorite={!!(ev&&favorites[key])} dayBg={ev&&dayBgMap?dayBgMap[key]:undefined} onClick={()=>ev&&onPick(ev)} genres={genres}/>);
+      })}
+    </div>);
+  }
+  function WeekView({start,eventByDate,onPick,favorites,genres}){
+    const days=Array.from({length:7},(_,i)=>new Date(start.getFullYear(),start.getMonth(),start.getDate()+i));
+    return(<div style={{display:'flex',flexDirection:'column',gap:10,padding:'0 16px'}}>
+      {days.map((d,i)=>{
+        const key=fmtDate(d),ev=eventByDate[key],isToday=sameDay(d,TODAY),wi=weekIdx(d),isSun=wi===6,isSat=wi===5;
+        const genre=ev&&genres.find(g=>g.id===ev.genre);
+        const isPast=d<new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
+        return(<div key={i} onClick={()=>ev&&onPick(ev)} style={{display:'flex',gap:12,alignItems:'stretch',border:BT,borderRadius:14,background:ev?'#fff':'#FFF6E0',boxShadow:ev?S:'none',overflow:'hidden',cursor:ev?'pointer':'default',opacity:isPast?0.55:1,filter:isPast?'saturate(0.4)':'none'}}>
+          <div style={{width:64,flexShrink:0,background:isSun?C.red:isSat?C.turquoise:C.yellow,borderRight:BT,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',color:(isSun||isSat)?'#fff':'#111',padding:'8px 4px'}}>
+            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,fontWeight:700}}>{WDAYS[wi]}</div>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:32,lineHeight:1,textShadow:(isSun||isSat)?'2px 2px 0 #111':'none'}}>{d.getDate()}</div>
+            {isToday&&<div style={{marginTop:4,fontSize:9,fontFamily:'"Reggae One",system-ui',background:C.ink,color:'#fff',padding:'1px 6px',borderRadius:4}}>NOW</div>}
+          </div>
+          <div style={{flex:1,padding:'10px 12px',display:'flex',flexDirection:'column',justifyContent:'center'}}>
+            {ev?(<>
+              <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',marginBottom:4}}>
+                <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:genre.color,color:'#fff',border:'2px solid #111',borderRadius:4,padding:'1px 6px',fontWeight:700}}># {genre.label}</span>
+                {favorites[key]&&<span style={{fontSize:12}}>⭐</span>}
+              </div>
+              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:16,lineHeight:1.2}}>{ev.title}</div>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',marginTop:4}}>DJ {ev.djs.length} / VJ {ev.vjs.length} ・ OPEN 23:00</div>
+            </>):(<div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#999'}}>お休み</div>)}
+          </div>
+        </div>);
+      })}
+    </div>);
+  }
+  function UpcomingList({events,onPick,favorites,genres}){
+    const today=new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
+    const upcoming=events.filter(e=>parseDate(e.date)>=today).slice(0,4);
+    return(<div style={{padding:'14px 16px 24px'}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,background:C.ink,color:'#fff',border:BT,borderRadius:8,padding:'3px 12px',transform:'rotate(-2deg)',boxShadow:SS}}>UP NEXT</div>
+        <div style={{flex:1,height:4,background:pat.stripesB('#111',C.yellow),border:B,borderRadius:4}}/>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        {upcoming.length===0&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',textAlign:'center',padding:20}}>今月はもうイベントがありません</div>}
+        {upcoming.map(e=>{
+          const d=parseDate(e.date),g=genres.find(x=>x.id===e.genre)||{color:'#666',label:'?'},isToday=sameDay(d,TODAY);
+          return(<div key={e.id||e.date} onClick={()=>onPick(e)} style={{display:'flex',gap:12,alignItems:'center',background:'#fff',border:BT,borderRadius:14,padding:'10px 12px',boxShadow:S,cursor:'pointer'}}>
+            <div style={{width:54,height:54,flexShrink:0,background:g.color,color:'#fff',border:B,borderRadius:10,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',boxShadow:SS}}>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,fontWeight:700}}>{d.getMonth()+1}/{WDAYS[d.getDay()]}</div>
+              <div style={{fontFamily:'"Reggae One",system-ui',fontSize:26,lineHeight:1,textShadow:'2px 2px 0 #111'}}>{d.getDate()}</div>
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:'flex',gap:6,alignItems:'center',marginBottom:2}}>
+                <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}># {g.label}</span>
+                {isToday&&<span style={{fontFamily:'"Reggae One",system-ui',fontSize:9,background:C.ink,color:'#fff',padding:'1px 6px',borderRadius:4}}>TODAY</span>}
+                {favorites[e.date]&&<span style={{fontSize:11}}>⭐</span>}
+              </div>
+              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{e.title}</div>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',marginTop:2}}>DJ {e.djs.length}組・VJ {e.vjs.length}組・23:00→5:00</div>
+            </div>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#111'}}>›</div>
+          </div>);
+        })}
+      </div>
+    </div>);
+  }
+  function ListView({events,onPick,favorites,genres}){
+    const today=new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
+    const byMonth={};
+    events.forEach(e=>{const d=parseDate(e.date);const k=`${d.getFullYear()}-${d.getMonth()+1}`;(byMonth[k]??=[]).push(e);});
+    return(<div style={{padding:'6px 16px 20px',display:'flex',flexDirection:'column',gap:14}}>
+      {Object.keys(byMonth).sort().map(mk=>{
+        const[y,m]=mk.split('-').map(Number);
+        return(<div key={mk}>
+          <div style={{display:'inline-flex',alignItems:'baseline',gap:4,fontFamily:'"Reggae One",system-ui',background:C.yellow,border:BT,borderRadius:8,padding:'4px 12px',boxShadow:SS,marginBottom:10,transform:'rotate(-1.5deg)'}}>
+            <span style={{fontSize:14}}>{y}</span><span style={{fontSize:24,color:C.red}}>{m}</span><span style={{fontSize:14}}>月</span>
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            {byMonth[mk].map(e=>{
+              const d=parseDate(e.date),g=genres.find(x=>x.id===e.genre)||{color:'#666',label:'?'},isPast=d<today,isToday=sameDay(d,TODAY);
+              return(<div key={e.id||e.date} onClick={()=>onPick(e)} style={{display:'flex',gap:12,alignItems:'center',background:'#fff',border:BT,borderRadius:12,padding:'10px 12px',boxShadow:isPast?'none':S,cursor:'pointer',opacity:isPast?0.55:1,filter:isPast?'saturate(0.4)':'none'}}>
+                <div style={{width:44,height:44,flexShrink:0,background:g.color,color:'#fff',border:B,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+                  <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9}}>{WDAYS[d.getDay()]}</div>
+                  <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,lineHeight:1,textShadow:'1.5px 1.5px 0 #111'}}>{d.getDate()}</div>
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:'flex',gap:6,alignItems:'center',marginBottom:2}}>
+                    <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}># {g.label}</span>
+                    {isPast&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:'#999',color:'#fff',borderRadius:4,padding:'0 5px'}}>終了</span>}
+                    {isToday&&<span style={{fontFamily:'"Reggae One",system-ui',fontSize:9,background:C.ink,color:'#fff',padding:'1px 6px',borderRadius:4}}>TODAY</span>}
+                    {favorites[e.date]&&<span style={{fontSize:11}}>⭐</span>}
+                  </div>
+                  <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2}}>{e.title}</div>
+                </div>
+                <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>›</div>
+              </div>);
+            })}
+          </div>
+        </div>);
+      })}
+    </div>);
+  }
+
+  // DETAIL SCREEN
+  function PersonRow({id,people}){
+    const p=people[id]||{name:id,x:'@unknown'},handle=p.x.replace('@','');
+    const[imgOk,setImgOk]=React.useState(true);
+    return(<a href={`https://x.com/${handle}`} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:10,background:'#fff',border:B,borderRadius:10,padding:'8px 10px',textDecoration:'none',color:'#111',boxShadow:SS}}>
+      <div style={{position:'relative',width:36,height:36,flexShrink:0,border:'2.5px solid #111',borderRadius:'50%',background:C.yellow,overflow:'hidden',boxShadow:SS}}>
+        {imgOk?(<img src={`https://unavatar.io/x/${handle}`} alt={p.name} onError={()=>setImgOk(false)} style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/>):(<div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',background:'#fff'}}><svg width="20" height="20" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#111" strokeWidth="3.2" strokeLinecap="round"/></svg></div>)}
+      </div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:14,lineHeight:1.1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{p.name}</div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{p.x}</div>
+      </div>
+      <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16}}>↗</div>
+    </a>);
+  }
+  function SecTitle({children,color=C.red}){return(<div style={{display:'inline-flex',alignItems:'center',gap:8,marginBottom:10}}><div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,background:color,color:'#fff',border:BT,borderRadius:8,padding:'3px 12px',boxShadow:SS,transform:'rotate(-2deg)'}}>{children}</div></div>);}
+  function FlyerArea({event,genres}){
+    const g=genres.find(x=>x.id===event.genre)||{color:'#666',label:'?'};
+    if(event.flyer)return(<div style={{aspectRatio:'3/4',border:BT,borderRadius:14,overflow:'hidden',boxShadow:SB}}><img src={event.flyer} alt="flyer" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/></div>);
+    return(<div style={{position:'relative',aspectRatio:'3/4',border:BT,borderRadius:14,overflow:'hidden',boxShadow:SB,background:`${pat.halftone('rgba(17,17,17,0.3)')},${pat.stripes(g.color,C.yellow)}`,backgroundSize:'6px 6px,auto'}}>
+      <div style={{position:'absolute',inset:0,background:'rgba(255,251,236,0.35)'}}/>
+      <div style={{position:'absolute',top:16,left:16,right:16,display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:13,background:C.ink,color:'#fff',border:B,borderRadius:6,padding:'2px 8px',transform:'rotate(-3deg)'}}># {g.label}</div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#fff',border:B,borderRadius:4,padding:'2px 6px'}}>FLYER</div>
+      </div>
+      <div style={{position:'absolute',left:0,right:0,bottom:16,padding:'0 16px',display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
+        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:28,lineHeight:1,color:'#fff',textShadow:'3px 3px 0 #111',textAlign:'center',transform:'rotate(-2deg)',maxWidth:'100%'}}>{event.title}</div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#fff',border:B,borderRadius:4,padding:'2px 10px',color:'#555'}}>[flyer image here]</div>
+      </div>
+      <div style={{position:'absolute',top:'45%',left:-20,width:60,height:60,borderRadius:'50%',background:C.yellow,border:B}}/>
+      <div style={{position:'absolute',top:'30%',right:-24,width:80,height:80,borderRadius:'50%',background:C.turquoise,border:B,opacity:0.9}}/>
+    </div>);
+  }
+  function DetailScreen({event,onBack,favorites,toggleFav,people,genres}){
+    if(!event)return null;
+    const d=parseDate(event.date),g=genres.find(x=>x.id===event.genre)||{color:'#666',label:'?'};
+    const isFav=!!favorites[event.date],isPast=d<new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
+    const shareText=encodeURIComponent(`${event.title} / ${event.date} @ボカブキ #ボカブキイベント`);
+    return(<div style={{position:'fixed',inset:0,zIndex:30,background:C.paper,overflow:'auto',maxWidth:480,margin:'0 auto'}}>
+      <div style={{position:'absolute',inset:0,pointerEvents:'none',opacity:0.5,backgroundImage:pat.halftone('rgba(230,57,70,0.18)'),backgroundSize:'6px 6px'}}/>
+      <div style={{position:'sticky',top:0,zIndex:5,padding:'14px 16px 10px',background:`linear-gradient(to bottom,${C.paper} 75%,transparent)`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <button onClick={onBack} style={{display:'flex',alignItems:'center',gap:6,background:'#fff',border:BT,borderRadius:999,padding:'8px 14px 8px 12px',boxShadow:S,fontFamily:'"Reggae One",system-ui',fontSize:14}}><span style={{fontSize:18}}>←</span>戻る</button>
+        <button onClick={()=>toggleFav(event.date)} style={{width:44,height:44,background:isFav?C.yellow:'#fff',border:BT,borderRadius:'50%',boxShadow:S,padding:0,fontSize:20}}>{isFav?'⭐':'☆'}</button>
+      </div>
+      <div style={{position:'relative',padding:'4px 16px 32px'}}>
+        <div style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:14}}>
+          <div style={{background:C.red,color:'#fff',border:BT,borderRadius:14,padding:'10px 14px',boxShadow:SB,transform:'rotate(-3deg)',flexShrink:0}}>
+            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,opacity:0.95}}>{d.getFullYear()}年{d.getMonth()+1}月</div>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:56,lineHeight:0.95,textShadow:'3px 3px 0 #111'}}>{d.getDate()}</div>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:14,textAlign:'right'}}>({WDAYS[d.getDay()]})</div>
+          </div>
+          <div style={{flex:1,paddingTop:6}}>
+            <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:6}}>
+              <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:g.color,color:'#fff',border:'2px solid #111',borderRadius:4,padding:'1px 8px',fontWeight:700}}># {g.label}</span>
+              {isPast&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#666',color:'#fff',border:'2px solid #111',borderRadius:4,padding:'1px 8px'}}>終了</span>}
+            </div>
+            <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
+              {(event.hashtags||[]).map(h=>(<div key={h} style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#fff',border:'2px solid #111',borderRadius:4,padding:'2px 6px',color:C.turquoiseDark,fontWeight:700}}>🔗 #{h}</div>))}
+            </div>
+          </div>
+        </div>
+        <div style={{background:'#fff',border:BT,borderRadius:14,padding:'14px 16px',boxShadow:SB,marginBottom:16,position:'relative',overflow:'hidden'}}>
+          <div style={{position:'absolute',top:-6,right:-6,transform:'rotate(12deg)'}}><StarBurst size={52} color={C.yellow} spikes={14}><div style={{fontSize:10,color:'#111',textShadow:'none'}}>LIVE</div></StarBurst></div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',marginBottom:4}}>EVENT TITLE</div>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:28,lineHeight:1.1,color:C.ink,paddingRight:50}}>{event.title}</div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,marginTop:8,color:'#333'}}>OPEN 23:00 / CLOSE 5:00 ／ 歌舞伎町 Gest32ビル 5F</div>
+        </div>
+        <div style={{marginBottom:18}}><FlyerArea event={event} genres={genres}/></div>
+        <div style={{marginBottom:18}}><SecTitle color={C.red}>出演DJ</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{event.djs.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>
+        <div style={{marginBottom:18}}><SecTitle color={C.turquoiseDark}>出演VJ</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{event.vjs.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>
+        <div style={{marginBottom:22}}><SecTitle color={C.ink}>ボカブキスタッフ</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{STAFF.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>
+        <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:8}}>
+          <a href={`https://x.com/intent/post?text=${shareText}`} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,background:C.ink,color:'#fff',border:BT,borderRadius:12,padding:'14px 16px',textDecoration:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}><XIcon size={22}/>Xでリポスト／告知する</a>
+          <button onClick={()=>toggleFav(event.date)} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:isFav?C.yellow:'#fff',color:'#111',border:BT,borderRadius:12,padding:'12px 16px',fontFamily:'"RocknRoll One",system-ui',fontSize:14,boxShadow:SS}}>{isFav?'⭐ お気に入りから外す':'☆ お気に入りに追加'}</button>
+        </div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,textAlign:'center',color:'#666',marginTop:20,lineHeight:1.5}}>情報はXの #ボカブキイベント より自動取得しています。<br/>最新情報は各DJ・VJ・ボカブキ公式Xをご確認ください。</div>
+      </div>
+    </div>);
+  }
+
+  // ADMIN
+  const ADMIN_PASS='shinjuku@2452';
+  const DAY_COLOR_PRESETS=[
+    {id:'auto',label:'自動(ジャンル色)',value:null},
+    {id:'red',label:'赤',value:C.red},{id:'teal',label:'ターコイズ',value:C.turquoise},
+    {id:'yel',label:'黄',value:C.yellow},{id:'org',label:'オレンジ',value:C.orange},
+    {id:'pur',label:'紫',value:'#6A3FD9'},{id:'pnk',label:'ピンク',value:'#FF3DA5'},
+    {id:'nvy',label:'ネイビー',value:'#223B8F'},{id:'grn',label:'緑',value:'#3FB55E'},
+  ];
+
+  function AdminLogin({onSuccess,onCancel}){
+    const[pw,setPw]=React.useState(''),[ err,setErr]=React.useState(false);
+    const submit=()=>{if(pw===ADMIN_PASS)onSuccess();else{setErr(true);setTimeout(()=>setErr(false),1500);}};
+    return(<div style={{position:'fixed',inset:0,zIndex:100,background:'rgba(17,17,17,0.75)',backdropFilter:'blur(4px)',display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
+      <div style={{width:'100%',maxWidth:320,background:C.paper,border:BT,borderRadius:16,boxShadow:SB,padding:20}}>
+        <div style={{display:'inline-flex',background:C.ink,color:'#fff',border:BT,borderRadius:8,padding:'4px 12px',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:SS,transform:'rotate(-2deg)',marginBottom:12}}>管理画面ログイン</div>
+        <input type="password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()} style={{width:'100%',border:BT,borderRadius:8,padding:'10px 12px',fontFamily:'"DotGothic16",monospace',fontSize:14,background:'#fff',outline:'none',boxShadow:err?'4px 4px 0 '+C.red:SS}}/>
+        {err&&<div style={{color:C.red,fontFamily:'"DotGothic16",monospace',fontSize:11,marginTop:6}}>× パスワードが違います</div>}
+        <div style={{display:'flex',gap:8,marginTop:16}}>
+          <button onClick={onCancel} style={{flex:1,border:BT,background:'#fff',borderRadius:10,padding:'10px 0',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS}}>キャンセル</button>
+          <button onClick={submit} style={{flex:1,border:BT,background:C.red,color:'#fff',borderRadius:10,padding:'10px 0',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:S}}>ログイン</button>
+        </div>
+      </div>
+    </div>);
+  }
+
+  // イベント編集カード（アコーディオン）
+  function EventEditCard({ev,genres,people,dayBgMap,onSave,onDelete}){
+    const[open,setOpen]=React.useState(false);
+    const[draft,setDraft]=React.useState(null);
+    const[saved,setSaved]=React.useState(false);
+
+    const startEdit=()=>{
+      setDraft({date:ev.date,title:ev.title,genre:ev.genre,hashtags:[...(ev.hashtags||[])],djs:[...ev.djs],vjs:[...ev.vjs],flyer:ev.flyer||null,dayBg:dayBgMap[ev.date]??null});
+      setOpen(true);
+    };
+    const cancel=()=>{setOpen(false);setDraft(null);};
+    const save=()=>{onSave(ev.id||ev.date,draft);setSaved(true);setTimeout(()=>setSaved(false),1500);setOpen(false);setDraft(null);};
+
+    const d=parseDate(ev.date),g=genres.find(x=>x.id===ev.genre)||{color:'#666',label:'?'},curBg=dayBgMap[ev.date]??null;
+
+    const addTag=()=>{const t=prompt('ハッシュタグを入力（# 不要）');if(t&&t.trim())setDraft(d=>({...d,hashtags:[...d.hashtags,t.trim()]}));};
+    const rmTag=i=>setDraft(d=>({...d,hashtags:d.hashtags.filter((_,j)=>j!==i)}));
+
+    // DJ/VJ追加UI state — name + xId それぞれ
+    const[djName,setDjName]=React.useState('');
+    const[djXid, setDjXid] =React.useState('');
+    const[vjName,setVjName]=React.useState('');
+    const[vjXid, setVjXid] =React.useState('');
+
+    // サジェスト: xIdまたはname入力中に既存peopleを絞り込む
+    const getSugg=(role,nameQ,xidQ,currentList)=>{
+      const q=(nameQ+xidQ).toLowerCase().trim();
+      if(!q)return[];
+      return Object.keys(people).filter(k=>
+        !currentList.includes(k)&&
+        (k.includes(q)||people[k].name.toLowerCase().includes(q)||people[k].x.toLowerCase().includes(q))
+      ).slice(0,4);
+    };
+
+    const addPerformer=(role)=>{
+      const name=(role==='djs'?djName:vjName).trim();
+      const xidRaw=(role==='djs'?djXid:vjXid).trim();
+      const xid=xidRaw.replace(/^@/,''); // @ 除去
+      if(!xid&&!name)return;
+
+      // キー: xidがあればそれ、なければnameをスラッグ化
+      const key=xid||(name.toLowerCase().replace(/[\s\u3000]+/g,'_'));
+      if(!key)return;
+
+      // peopleに未登録なら追加（setDraftの外でpeopleを更新）
+      if(!people[key]){
+        people[key]={name:name||key, x:xid?('@'+xid):''};
+      }
+      setDraft(d=>({...d,[role]:d[role].includes(key)?d[role]:[...d[role],key]}));
+      if(role==='djs'){setDjName('');setDjXid('');}
+      else{setVjName('');setVjXid('');}
+    };
+
+    const pickSugg=(role,k)=>{
+      setDraft(d=>({...d,[role]:d[role].includes(k)?d[role]:[...d[role],k]}));
+      if(role==='djs'){setDjName('');setDjXid('');}
+      else{setVjName('');setVjXid('');}
+    };
+
+    const rmPerformer=(role,i)=>setDraft(d=>({...d,[role]:d[role].filter((_,j)=>j!==i)}));
+
+    const handleFlyer=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev2=>setDraft(d=>({...d,flyer:ev2.target.result}));reader.readAsDataURL(file);};
+
+    const inputSt={width:'100%',border:BT,borderRadius:8,padding:'8px 10px',fontSize:14,background:'#fff',outline:'none'};
+    const chipSt=(on,color)=>({display:'inline-flex',alignItems:'center',gap:4,border:on?'3px solid #111':'2px solid #111',borderRadius:8,padding:'4px 10px',background:on?color:'#fff',color:on?'#fff':'#111',fontFamily:'"DotGothic16",monospace',fontSize:12,cursor:'pointer',boxShadow:on?SS:'none',transform:on?'translate(-1px,-1px)':'none',whiteSpace:'nowrap'});
+
+    return(<div style={{background:'#fff',border:BT,borderRadius:14,overflow:'hidden',boxShadow:S}}>
+      {/* ヘッダー */}
+      <div onClick={open?undefined:startEdit} style={{display:'flex',gap:10,alignItems:'center',padding:12,cursor:open?'default':'pointer',userSelect:'none'}}>
+        <div style={{width:48,height:48,flexShrink:0,background:curBg||g.color,color:'#fff',border:B,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9}}>{WDAYS[weekIdx(d)]}</div>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,lineHeight:1,textShadow:'1.5px 1.5px 0 #111'}}>{d.getDate()}</div>
+        </div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{display:'flex',gap:5,marginBottom:2,flexWrap:'wrap'}}>
+            <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}># {g.label}</span>
+            <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,color:'#666'}}>{ev.date}</span>
+          </div>
+          <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:14,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{ev.title}</div>
+        </div>
+        {saved?<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'green',flexShrink:0}}>✓ 保存済</div>:<div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,color:'#111',flexShrink:0,transform:open?'rotate(90deg)':'none',transition:'transform .2s'}}>›</div>}
+      </div>
+
+      {/* 編集フォーム */}
+      {open&&draft&&(<div style={{borderTop:BT,padding:14,display:'flex',flexDirection:'column',gap:14}}>
+
+        {/* 日付 */}
+        <div><Label>日付</Label><input type="date" value={draft.date} onChange={e=>setDraft(d=>({...d,date:e.target.value}))} style={inputSt}/></div>
+
+        {/* イベント名 */}
+        <div><Label>イベント名</Label><input type="text" value={draft.title} onChange={e=>setDraft(d=>({...d,title:e.target.value}))} style={inputSt} placeholder="イベント名"/></div>
+
+        {/* ジャンル */}
+        <div>
+          <Label>ジャンル</Label>
+          <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>
+            {genres.map(g2=>(<button key={g2.id} onClick={()=>setDraft(d=>({...d,genre:g2.id}))} style={chipSt(draft.genre===g2.id,g2.color)}># {g2.label}</button>))}
+          </div>
+        </div>
+
+        {/* カレンダー日色 */}
+        <div>
+          <Label>カレンダー日色</Label>
+          <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>
+            {DAY_COLOR_PRESETS.map(p=>{
+              const isAct=(draft.dayBg===p.value)||(p.value===null&&draft.dayBg===null);
+              return(<button key={p.id} title={p.label} onClick={()=>setDraft(d=>({...d,dayBg:p.value}))} style={{width:34,height:34,border:isAct?'3px solid #111':'2px solid #111',borderRadius:8,padding:0,background:p.value||'repeating-linear-gradient(45deg,#eee 0 4px,#fff 4px 8px)',boxShadow:isAct?`0 0 0 2px ${C.yellow},2px 2px 0 #111`:SS,position:'relative',transform:isAct?'translate(-1px,-1px)':'none'}}>
+                {p.value===null&&<span style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontFamily:'"DotGothic16",monospace',color:'#111'}}>A</span>}
+              </button>);
+            })}
+          </div>
+        </div>
+
+        {/* ハッシュタグ */}
+        <div>
+          <Label>ハッシュタグ（月表示ソート用）</Label>
+          <div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:4}}>
+            {draft.hashtags.map((h,i)=>(<div key={i} style={{display:'inline-flex',alignItems:'center',gap:4,background:C.turquoise,color:'#fff',border:B,borderRadius:20,padding:'4px 8px 4px 10px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>#{h}<button onClick={()=>rmTag(i)} style={{background:'none',border:'none',color:'#fff',fontSize:14,padding:0,lineHeight:1,cursor:'pointer'}}>×</button></div>))}
+            <button onClick={addTag} style={{border:BT,borderRadius:20,padding:'4px 10px',background:'#fff',fontFamily:'"DotGothic16",monospace',fontSize:11,boxShadow:SS}}>＋ 追加</button>
+          </div>
+        </div>
+
+        {/* DJ */}
+        <div>
+          <Label>出演DJ</Label>
+          <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:4}}>
+            {draft.djs.map((id,i)=>{const p=people[id]||{name:id,x:'@'+id};return(<div key={i} style={{display:'flex',alignItems:'center',gap:8,background:'#f8f8f8',border:B,borderRadius:8,padding:'6px 10px'}}>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{p.name}</div>
+                <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{p.x||('@'+id)}</div>
+              </div>
+              <button onClick={()=>rmPerformer('djs',i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'2px 8px',boxShadow:SS}}>削除</button>
+            </div>);})}
+            {/* 新規追加フォーム */}
+            <div style={{background:'#f0f0f0',border:BT,borderRadius:10,padding:10,display:'flex',flexDirection:'column',gap:6}}>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555'}}>新規追加 / 検索して追加</div>
+              <div style={{display:'flex',gap:6}}>
+                <input value={djName} onChange={e=>setDjName(e.target.value)}
+                  placeholder="名前" style={{flex:1,border:BT,borderRadius:8,padding:'8px 10px',fontSize:13,outline:'none',minWidth:0}}/>
+                <div style={{flex:1,display:'flex',alignItems:'center',border:BT,borderRadius:8,background:'#fff',overflow:'hidden',minWidth:0}}>
+                  <span style={{padding:'0 4px 0 8px',fontFamily:'"DotGothic16",monospace',fontSize:13,color:'#888',flexShrink:0}}>@</span>
+                  <input value={djXid} onChange={e=>setDjXid(e.target.value.replace(/^@/,''))}
+                    onKeyDown={e=>e.key==='Enter'&&addPerformer('djs')}
+                    placeholder="X の ID" style={{flex:1,border:'none',padding:'8px 6px 8px 0',fontSize:13,outline:'none',background:'transparent',minWidth:0}}/>
+                </div>
+              </div>
+              <button onClick={()=>addPerformer('djs')} style={{border:BT,borderRadius:8,padding:'9px',background:C.yellow,fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>＋ DJ を追加</button>
+            </div>
+            {/* サジェスト */}
+            {(djName.length>0||djXid.length>0)&&(()=>{const sugg=getSugg('djs',djName,djXid,draft.djs);return sugg.length>0?(<div style={{background:'#fff',border:B,borderRadius:8,overflow:'hidden'}}>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',padding:'4px 10px',borderBottom:'1px solid #eee'}}>登録済みから選択</div>
+              {sugg.map(k=>(<button key={k} onClick={()=>pickSugg('djs',k)} style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'7px 10px',border:'none',borderBottom:'1px solid #eee',background:'transparent',textAlign:'left',cursor:'pointer'}}>
+                <span style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{people[k].name}</span>
+                <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{people[k].x}</span>
+              </button>))}
+            </div>):null;})()}
+          </div>
+        </div>
+
+        {/* VJ */}
+        <div>
+          <Label>出演VJ</Label>
+          <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:4}}>
+            {draft.vjs.map((id,i)=>{const p=people[id]||{name:id,x:'@'+id};return(<div key={i} style={{display:'flex',alignItems:'center',gap:8,background:'#f8f8f8',border:B,borderRadius:8,padding:'6px 10px'}}>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{p.name}</div>
+                <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{p.x||('@'+id)}</div>
+              </div>
+              <button onClick={()=>rmPerformer('vjs',i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'2px 8px',boxShadow:SS}}>削除</button>
+            </div>);})}
+            {/* 新規追加フォーム */}
+            <div style={{background:'#f0f0f0',border:BT,borderRadius:10,padding:10,display:'flex',flexDirection:'column',gap:6}}>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555'}}>新規追加 / 検索して追加</div>
+              <div style={{display:'flex',gap:6}}>
+                <input value={vjName} onChange={e=>setVjName(e.target.value)}
+                  placeholder="名前" style={{flex:1,border:BT,borderRadius:8,padding:'8px 10px',fontSize:13,outline:'none',minWidth:0}}/>
+                <div style={{flex:1,display:'flex',alignItems:'center',border:BT,borderRadius:8,background:'#fff',overflow:'hidden',minWidth:0}}>
+                  <span style={{padding:'0 4px 0 8px',fontFamily:'"DotGothic16",monospace',fontSize:13,color:'#888',flexShrink:0}}>@</span>
+                  <input value={vjXid} onChange={e=>setVjXid(e.target.value.replace(/^@/,''))}
+                    onKeyDown={e=>e.key==='Enter'&&addPerformer('vjs')}
+                    placeholder="X の ID" style={{flex:1,border:'none',padding:'8px 6px 8px 0',fontSize:13,outline:'none',background:'transparent',minWidth:0}}/>
+                </div>
+              </div>
+              <button onClick={()=>addPerformer('vjs')} style={{border:BT,borderRadius:8,padding:'9px',background:C.turquoise,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>＋ VJ を追加</button>
+            </div>
+            {/* サジェスト */}
+            {(vjName.length>0||vjXid.length>0)&&(()=>{const sugg=getSugg('vjs',vjName,vjXid,draft.vjs);return sugg.length>0?(<div style={{background:'#fff',border:B,borderRadius:8,overflow:'hidden'}}>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',padding:'4px 10px',borderBottom:'1px solid #eee'}}>登録済みから選択</div>
+              {sugg.map(k=>(<button key={k} onClick={()=>pickSugg('vjs',k)} style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'7px 10px',border:'none',borderBottom:'1px solid #eee',background:'transparent',textAlign:'left',cursor:'pointer'}}>
+                <span style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{people[k].name}</span>
+                <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{people[k].x}</span>
+              </button>))}
+            </div>):null;})()}
+          </div>
+        </div>
+
+        {/* フライヤー */}
+        <div>
+          <Label>フライヤー画像</Label>
+          <div style={{marginTop:6,display:'flex',flexDirection:'column',gap:8}}>
+            {draft.flyer&&(<div style={{position:'relative',border:BT,borderRadius:10,overflow:'hidden',maxWidth:160}}>
+              <img src={draft.flyer} alt="flyer" style={{width:'100%',display:'block'}}/>
+              <button onClick={()=>setDraft(d=>({...d,flyer:null}))} style={{position:'absolute',top:4,right:4,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:11,padding:'2px 6px',boxShadow:SS}}>削除</button>
+            </div>)}
+            <label style={{display:'inline-flex',alignItems:'center',gap:8,border:BT,borderRadius:10,padding:'10px 14px',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS,cursor:'pointer'}}>
+              📎 画像を{draft.flyer?'変更':'追加'}
+              <input type="file" accept="image/*" onChange={handleFlyer} style={{display:'none'}}/>
+            </label>
+          </div>
+        </div>
+
+        {/* 保存/キャンセル/削除 */}
+        <div style={{display:'flex',gap:8,flexWrap:'wrap',paddingTop:4}}>
+          <button onClick={save} style={{flex:2,border:BT,borderRadius:10,padding:'13px 0',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:15,boxShadow:S}}>💾 保存</button>
+          <button onClick={cancel} style={{flex:1,border:BT,borderRadius:10,padding:'13px 0',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS}}>キャンセル</button>
+        </div>
+        <button onClick={()=>{if(confirm(`「${ev.title}」を削除しますか？`))onDelete(ev.id||ev.date);}} style={{width:'100%',border:BT,borderRadius:10,padding:'10px 0',background:'#fff',color:'#888',fontFamily:'"DotGothic16",monospace',fontSize:12,boxShadow:SS}}>🗑️ このイベントを削除</button>
+      </div>)}
+    </div>);
+  }
+
+  function AdminPanel({onClose,events,setEvents,dayBgMap,setDayBgMap,genres,setGenres,people}){
+    const sorted=React.useMemo(()=>[...events].sort((a,b)=>a.date.localeCompare(b.date)),[events]);
+
+    const handleSave=(evId,draft)=>{
+      setEvents(prev=>prev.map(e=>{
+        if((e.id||e.date)!==evId)return e;
+        return{...e,date:draft.date,title:draft.title,genre:draft.genre,hashtags:draft.hashtags,djs:draft.djs,vjs:draft.vjs,flyer:draft.flyer};
+      }));
+      setDayBgMap(m=>{const n={...m};if(draft.dayBg===null)delete n[draft.date];else n[draft.date]=draft.dayBg;return n;});
+    };
+    const handleDelete=evId=>setEvents(prev=>prev.filter(e=>(e.id||e.date)!==evId));
+    const addEvent=()=>{
+      const d=fmtDate(TODAY);
+      setEvents(prev=>[...prev,{id:uid(),date:d,title:'新規イベント',genre:genres[0]?.id||'game',hashtags:['ボカブキイベント'],djs:[],vjs:[],flyer:null}]);
+    };
+
+    // ジャンル管理
+    const[newLabel,setNewLabel]=React.useState(''),[ newColor,setNewColor]=React.useState('#E63946');
+    const addGenre=()=>{const label=newLabel.trim();if(!label)return;const id=label.replace(/[\s\u3000]+/g,'').toLowerCase();setGenres(prev=>[...prev,{id,label,color:newColor}]);setNewLabel('');};
+    const rmGenre=id=>{if(events.some(e=>e.genre===id)){alert('このジャンルを使っているイベントがあります。');return;}setGenres(prev=>prev.filter(g=>g.id!==id));};
+
+    return(<div style={{position:'fixed',inset:0,zIndex:90,background:C.paper,overflow:'auto',maxWidth:480,margin:'0 auto',fontFamily:'"M PLUS Rounded 1c",system-ui'}}>
+      <div style={{position:'absolute',inset:0,pointerEvents:'none',opacity:0.3,backgroundImage:pat.halftone('rgba(17,17,17,0.15)'),backgroundSize:'8px 8px'}}/>
+      <div style={{position:'sticky',top:0,zIndex:5,padding:'14px 16px 10px',background:`linear-gradient(to bottom,${C.paper} 75%,transparent)`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <button onClick={onClose} style={{display:'flex',alignItems:'center',gap:6,background:'#fff',border:BT,borderRadius:999,padding:'8px 14px 8px 12px',boxShadow:S,fontFamily:'"Reggae One",system-ui',fontSize:14}}><span style={{fontSize:18}}>←</span>戻る</button>
+        <div style={{background:C.ink,color:'#fff',border:BT,borderRadius:8,padding:'4px 12px',boxShadow:SS,fontFamily:'"Reggae One",system-ui',fontSize:14,transform:'rotate(-1deg)'}}>ADMIN</div>
+      </div>
+
+      <div style={{position:'relative',padding:'4px 16px 60px',display:'flex',flexDirection:'column',gap:24}}>
+
+        {/* ジャンル管理 */}
+        <section>
+          <SectionHead>ジャンル管理</SectionHead>
+          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            {genres.map(g=>(<div key={g.id} style={{display:'flex',alignItems:'center',gap:10,background:'#fff',border:BT,borderRadius:10,padding:'10px 12px',boxShadow:SS}}>
+              <div style={{width:28,height:28,borderRadius:6,background:g.color,border:B,flexShrink:0}}/>
+              <div style={{flex:1,fontFamily:'"RocknRoll One",system-ui',fontSize:14}}># {g.label}<span style={{color:'#888',fontFamily:'"DotGothic16",monospace',fontSize:10,marginLeft:6}}>{g.id}</span></div>
+              <button onClick={()=>rmGenre(g.id)} style={{background:'#fff',border:B,borderRadius:6,fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#666',padding:'3px 8px',boxShadow:SS}}>削除</button>
+            </div>))}
+            <div style={{background:'#fff',border:BT,borderRadius:10,padding:12,boxShadow:SS,display:'flex',flexDirection:'column',gap:8}}>
+              <Label>新規ジャンル追加</Label>
+              <div style={{display:'flex',gap:8}}>
+                <input value={newLabel} onChange={e=>setNewLabel(e.target.value)} placeholder="ジャンル名" style={{flex:1,border:BT,borderRadius:8,padding:'8px 10px',fontSize:13,outline:'none'}}/>
+                <input type="color" value={newColor} onChange={e=>setNewColor(e.target.value)} style={{width:44,height:44,border:BT,borderRadius:8,padding:2,cursor:'pointer'}}/>
+                <button onClick={addGenre} style={{border:BT,borderRadius:8,padding:'8px 14px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>追加</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* イベント管理 */}
+        <section>
+          <SectionHead>イベント管理</SectionHead>
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            {sorted.map(e=>(<EventEditCard key={e.id||e.date} ev={e} genres={genres} people={people} dayBgMap={dayBgMap} onSave={handleSave} onDelete={handleDelete}/>))}
+            <button onClick={addEvent} style={{border:BT,borderRadius:14,padding:'16px',background:C.yellow,fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>＋ イベントを追加</button>
+          </div>
+        </section>
+
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,textAlign:'center',color:'#666',lineHeight:1.5}}>※ 設定はこの端末のブラウザ内に保存されます</div>
+      </div>
+    </div>);
+  }
+
+  // MAIN APP
+  function App(){
+    const[events,setEv_]=React.useState(()=>ls.get('vb_events',EVENTS_DEFAULT));
+    const[genres,setGn_]=React.useState(()=>ls.get('vb_genres',GENRES_DEFAULT));
+    const people=PEOPLE_DEFAULT;
+    const[dayBgMap,setDB_]=React.useState(()=>ls.get('vb_dayBg',{}));
+    const[favorites,setFv_]=React.useState(()=>ls.get('vb_favs',{}));
+    const[view,setVw_]=React.useState(()=>ls.get('vb_view','month'));
+    const[cursor,setCu_]=React.useState(()=>{const s=ls.get('vb_cursor',null);return s?new Date(s[0],s[1],1):new Date(TODAY.getFullYear(),TODAY.getMonth(),1);});
+    const[selected,setSelected]=React.useState(null);
+    const[genre,setGenre]=React.useState('all');
+    const[showLogin,setShowLogin]=React.useState(false);
+    const[showAdmin,setShowAdmin]=React.useState(false);
+    const[tapCnt,setTapCnt]=React.useState(0);
+    const lastTap=React.useRef(0);
+
+    const setEvents=v=>{const n=typeof v==='function'?v(events):v;setEv_(n);ls.set('vb_events',n);};
+    const setGenres=v=>{const n=typeof v==='function'?v(genres):v;setGn_(n);ls.set('vb_genres',n);};
+    const setDB=v=>{const n=typeof v==='function'?v(dayBgMap):v;setDB_(n);ls.set('vb_dayBg',n);};
+    const setFv=v=>{const n=typeof v==='function'?v(favorites):v;setFv_(n);ls.set('vb_favs',n);};
+    const setView=v=>{setVw_(v);ls.set('vb_view',v);};
+    const setCursor=v=>{const n=typeof v==='function'?v(cursor):v;setCu_(n);ls.set('vb_cursor',[n.getFullYear(),n.getMonth()]);};
+    const toggleFav=k=>setFv(f=>{const n={...f};n[k]?delete n[k]:(n[k]=true);return n;});
+
+    const filteredEvents=React.useMemo(()=>genre==='all'?events:events.filter(e=>e.genre===genre),[events,genre]);
+    const eventByDate=React.useMemo(()=>{const m={};filteredEvents.forEach(e=>{m[e.date]=e;});return m;},[filteredEvents]);
+    const cells=React.useMemo(()=>buildMonthCells(cursor.getFullYear(),cursor.getMonth()),[cursor]);
+    const weekStart=React.useMemo(()=>{const base=sameDay(cursor,new Date(TODAY.getFullYear(),TODAY.getMonth(),1))?TODAY:new Date(cursor.getFullYear(),cursor.getMonth(),1);const wi=weekIdx(base);return new Date(base.getFullYear(),base.getMonth(),base.getDate()-wi);},[cursor]);
+
+    const onTodayTap=()=>{
+      setCursor(new Date(TODAY.getFullYear(),TODAY.getMonth(),1));
+      const now=Date.now(),prev=lastTap.current;lastTap.current=now;
+      const next=(now-prev>2000)?1:tapCnt+1;setTapCnt(next);
+      if(next>=10){setTapCnt(0);setShowLogin(true);}
+    };
+
+    return(<div style={{position:'relative',width:'100%',minHeight:'100vh',minHeight:'100dvh',background:C.paper,fontFamily:'"M PLUS Rounded 1c",system-ui'}}>
+      <div style={{position:'fixed',inset:0,pointerEvents:'none',backgroundImage:pat.halftone('rgba(46,197,206,0.14)'),backgroundSize:'8px 8px',zIndex:0}}/>
+      <div style={{position:'fixed',top:-20,left:-20,width:110,height:110,borderRadius:'50%',background:C.yellow,border:B,opacity:0.85,pointerEvents:'none',zIndex:0}}/>
+      <div style={{position:'fixed',top:80,right:-30,width:80,height:80,borderRadius:'50%',background:C.turquoise,border:B,opacity:0.75,pointerEvents:'none',zIndex:0}}/>
+
+      <div style={{position:'relative',zIndex:1,width:'100%',overflowX:'hidden',paddingBottom:80}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 16px 8px'}}>
+          <VbLogo/>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:C.ink,color:'#fff',border:BT,borderRadius:6,padding:'3px 8px',lineHeight:1.2,textAlign:'center'}}>EVENT<br/>CALENDAR</div>
+        </div>
+        <div style={{margin:'0 16px 14px',position:'relative',background:C.red,color:'#fff',border:BT,borderRadius:10,padding:'8px 14px',boxShadow:S,display:'flex',alignItems:'center',justifyContent:'space-between',overflow:'hidden'}}>
+          <div style={{position:'absolute',inset:0,opacity:0.25,backgroundImage:pat.stripes('rgba(255,255,255,0.5)','transparent')}}/>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16,position:'relative',letterSpacing:1}}>公開イベントカレンダー</div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:'#fff',color:C.red,border:'2px solid #111',borderRadius:4,padding:'2px 6px',position:'relative',fontWeight:700,whiteSpace:'nowrap'}}># ボカブキイベント 自動連携</div>
+        </div>
+
+        {view==='month'&&<MonthHeader year={cursor.getFullYear()} month={cursor.getMonth()} onPrev={()=>setCursor(c=>new Date(c.getFullYear(),c.getMonth()-1,1))} onNext={()=>setCursor(c=>new Date(c.getFullYear(),c.getMonth()+1,1))} onToday={onTodayTap}/>}
+        {view==='week'&&(<div style={{padding:'0 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>{weekStart.getMonth()+1}月 <span style={{fontSize:12,color:'#555'}}>{weekStart.getDate()}日〜</span></div>
+          <button onClick={onTodayTap} style={{border:BT,background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:13,padding:'6px 12px',borderRadius:999,boxShadow:SS}}>今日</button>
+        </div>)}
+        {view==='list'&&<div style={{padding:'0 16px 8px'}}><div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>イベント一覧</div></div>}
+
+        <div style={{padding:'10px 16px 10px',display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
+          <ViewSwitcher view={view} setView={setView}/>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666'}}>{filteredEvents.length} events</div>
+        </div>
+        <div style={{padding:'0 16px 10px'}}><GenreFilter active={genre} setActive={setGenre} genres={genres}/></div>
+        {view==='month'&&<WeekdayRow/>}
+
+        {view==='month'&&(<><MonthGrid cells={cells} eventByDate={eventByDate} onPick={setSelected} favorites={favorites} dayBgMap={dayBgMap} genres={genres}/><UpcomingList events={filteredEvents} onPick={setSelected} favorites={favorites} genres={genres}/></>)}
+        {view==='week'&&<div style={{paddingTop:10}}><WeekView start={weekStart} eventByDate={eventByDate} onPick={setSelected} favorites={favorites} genres={genres}/></div>}
+        {view==='list'&&<ListView events={filteredEvents} onPick={setSelected} favorites={favorites} genres={genres}/>}
+
+        <div style={{textAlign:'center',padding:'14px 16px 30px',fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666'}}>ボカロ専門ナイトクラブ ボカブキ<br/>歌舞伎町 2-45-2 Gest32ビル 5F / 毎日営業 23:00-5:00</div>
+      </div>
+
+      {!selected&&<button onClick={onTodayTap} style={{position:'fixed',right:'max(16px, calc(50vw - 240px + 16px))',bottom:18,zIndex:20,background:C.yellow,color:'#111',border:BT,borderRadius:999,padding:'10px 16px',boxShadow:SB,fontFamily:'"Reggae One",system-ui',fontSize:14,display:'flex',alignItems:'center',gap:6}}><span style={{fontSize:16}}>⚡</span>今日</button>}
+      {selected&&<DetailScreen event={selected} onBack={()=>setSelected(null)} favorites={favorites} toggleFav={toggleFav} people={people} genres={genres}/>}
+      {showLogin&&<AdminLogin onSuccess={()=>{setShowLogin(false);setShowAdmin(true);}} onCancel={()=>setShowLogin(false)}/>}
+      {showAdmin&&<AdminPanel onClose={()=>setShowAdmin(false)} events={events} setEvents={setEvents} dayBgMap={dayBgMap} setDayBgMap={setDB} genres={genres} setGenres={setGenres} people={people}/>}
+    </div>);
+  }
+
+  ReactDOM.createRoot(document.getElementById('app')).render(<App/>);
+  </script>
+</body>
+</html>
