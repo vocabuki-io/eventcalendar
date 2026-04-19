@@ -1,36 +1,54 @@
 import json, asyncio, os
 from playwright.async_api import async_playwright
 
-TARGET_USER = "vocabuki"   # 対象アカウントのXのID
+TARGET_USER = "vocabuki"
 TARGET_TAG  = "ボカブキイベント"
 
 async def scrape():
     async with async_playwright() as p:
         browser = await p.chromium.launch()
         ctx = await browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            viewport={"width": 1280, "height": 800},
         )
         page = await ctx.new_page()
+        page.set_default_timeout(60000)  # 60秒に延長
 
-        # ログイン（レート制限回避のため）
+        # ログイン
         username = os.environ.get("X_USERNAME")
         password = os.environ.get("X_PASSWORD")
         if username and password:
-            await page.goto("https://x.com/i/flow/login", wait_until="networkidle")
-            await page.wait_for_timeout(2000)
-            await page.fill('input[autocomplete="username"]', username)
-            await page.keyboard.press("Enter")
-            await page.wait_for_timeout(1500)
-            await page.fill('input[type="password"]', password)
-            await page.keyboard.press("Enter")
+            # networkidle ではなく domcontentloaded で待つ
+            await page.goto("https://x.com/i/flow/login", wait_until="domcontentloaded")
             await page.wait_for_timeout(3000)
 
-        # 対象ユーザーのページを開く
-        await page.goto(f"https://x.com/{TARGET_USER}", wait_until="networkidle")
-        await page.wait_for_timeout(4000)
+            # ユーザー名入力
+            await page.wait_for_selector('input[autocomplete="username"]', timeout=15000)
+            await page.fill('input[autocomplete="username"]', username)
+            await page.keyboard.press("Enter")
+            await page.wait_for_timeout(2000)
+
+            # パスワード入力（電話番号確認が挟まる場合も考慮）
+            try:
+                await page.wait_for_selector('input[type="password"]', timeout=8000)
+            except:
+                # 「電話番号またはユーザー名を入力」が出た場合
+                await page.fill('input[data-testid="ocfEnterTextTextInput"]', username)
+                await page.keyboard.press("Enter")
+                await page.wait_for_timeout(1500)
+                await page.wait_for_selector('input[type="password"]', timeout=8000)
+
+            await page.fill('input[type="password"]', password)
+            await page.keyboard.press("Enter")
+            await page.wait_for_timeout(4000)
+
+        # 対象ユーザーページ
+        await page.goto(f"https://x.com/{TARGET_USER}", wait_until="domcontentloaded")
+        await page.wait_for_timeout(5000)
 
         posts = []
         articles = await page.query_selector_all("article")
+        print(f"取得した article 数: {len(articles)}")
 
         for article in articles:
             text_el = await article.query_selector("[data-testid='tweetText']")
@@ -53,7 +71,7 @@ async def scrape():
 
         await browser.close()
 
-        # 既存データとマージ（重複排除）
+        # 既存データとマージ
         try:
             with open("posts.json") as f:
                 existing = json.load(f)
@@ -67,6 +85,6 @@ async def scrape():
         with open("posts.json", "w") as f:
             json.dump(merged, f, ensure_ascii=False, indent=2)
 
-        print(f"追加: {len(posts)}件 / 合計: {len(merged)}件")
+        print(f"今回マッチ: {len(posts)}件 / 合計: {len(merged)}件")
 
 asyncio.run(scrape())
