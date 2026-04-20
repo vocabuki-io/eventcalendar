@@ -5,6 +5,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
   <title>ボカブキ イベントカレンダー</title>
+  <link rel="icon" href="fabicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Reggae+One&family=RocknRoll+One&family=DotGothic16&family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
@@ -44,6 +45,19 @@
     .vb-loading-dot:nth-child(2) { animation-delay: 0.12s; }
     .vb-loading-dot:nth-child(3) { animation-delay: 0.24s; }
     .vb-detail-enter { animation: vbFadeIn 0.22s ease-out both; }
+    /* カードプレス状態 */
+    .vb-card { transition: transform 0.08s, box-shadow 0.08s; }
+    .vb-card.pressed { transform: translate(3px,3px) !important; box-shadow: 1px 1px 0 #111 !important; }
+    /* ↑ FABをbodyに対してstickyで固定 */
+    .vb-fab {
+      position: sticky;
+      bottom: 18px;
+      float: right;
+      right: 16px;
+      margin-right: 16px;
+      z-index: 20;
+      pointer-events: auto;
+    }
     @media (hover: hover) and (pointer: fine) {
       #app-shell::-webkit-scrollbar { width: 4px; }
       #app-shell::-webkit-scrollbar-track { background: transparent; }
@@ -136,6 +150,28 @@
   }
 
   // SHARED COMPONENTS
+  // タップでプレス状態になるカード（遷移後にリセット）
+  function PressCard({children, onTap, style={}, className=''}){
+    const ref=React.useRef();
+    const reset=()=>{if(ref.current)ref.current.classList.remove('pressed');};
+    const press=()=>{if(ref.current)ref.current.classList.add('pressed');};
+    const handleClick=()=>{
+      press();
+      // 遷移後にリセット（DetailScreenが表示されたあと）
+      setTimeout(()=>{ reset(); onTap(); },120);
+    };
+    return(
+      <div ref={ref} className={`vb-card ${className}`}
+        style={style}
+        onPointerDown={press}
+        onPointerUp={reset}
+        onPointerLeave={reset}
+        onClick={handleClick}>
+        {children}
+      </div>
+    );
+  }
+
   function StarBurst({size=80,color='#E63946',spikes=20,children,style={}}){
     const pts=[];const cx=size/2,cy=size/2,outer=size/2,inner=size/2*0.86;
     for(let i=0;i<spikes*2;i++){const r=i%2===0?outer:inner;const a=(Math.PI/spikes)*i-Math.PI/2;pts.push(`${cx+r*Math.cos(a)},${cy+r*Math.sin(a)}`);}
@@ -258,7 +294,7 @@
         {upcoming.length===0&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',textAlign:'center',padding:20}}>今月はもうイベントがありません</div>}
         {upcoming.map(e=>{
           const d=parseDate(e.date),g=genres.find(x=>x.id===e.genre)||{color:'#666',label:'?'},isToday=sameDay(d,TODAY);
-          return(<div key={e.id||e.date} onClick={()=>onPick(e)} style={{display:'flex',gap:12,alignItems:'center',background:'#fff',border:BT,borderRadius:14,padding:'10px 12px',boxShadow:S,cursor:'pointer'}}>
+          return(<PressCard key={e.id||e.date} onTap={()=>onPick(e)} style={{display:'flex',gap:12,alignItems:'center',background:'#fff',border:BT,borderRadius:14,padding:'10px 12px',boxShadow:S,cursor:'pointer'}}>
             <div style={{width:54,height:54,flexShrink:0,background:g.color,color:'#fff',border:B,borderRadius:10,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',boxShadow:SS}}>
               <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,fontWeight:700}}>{d.getMonth()+1}/{WDAYS[d.getDay()]}</div>
               <div style={{fontFamily:'"Reggae One",system-ui',fontSize:26,lineHeight:1,textShadow:'2px 2px 0 #111'}}>{d.getDate()}</div>
@@ -273,7 +309,7 @@
               <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',marginTop:2}}>DJ {e.djs.length}組・VJ {e.vjs.length}組・23:00→5:00</div>
             </div>
             <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#111'}}>›</div>
-          </div>);
+          </PressCard>);
         })}
       </div>
     </div>);
@@ -292,7 +328,7 @@
           <div style={{display:'flex',flexDirection:'column',gap:10}}>
             {byMonth[mk].map(e=>{
               const d=parseDate(e.date),g=genres.find(x=>x.id===e.genre)||{color:'#666',label:'?'},isPast=d<today,isToday=sameDay(d,TODAY);
-              return(<div key={e.id||e.date} onClick={()=>onPick(e)} style={{display:'flex',gap:12,alignItems:'center',background:'#fff',border:BT,borderRadius:12,padding:'10px 12px',boxShadow:isPast?'none':S,cursor:'pointer',opacity:isPast?0.55:1,filter:isPast?'saturate(0.4)':'none'}}>
+              return(<PressCard key={e.id||e.date} onTap={()=>onPick(e)} style={{display:'flex',gap:12,alignItems:'center',background:'#fff',border:BT,borderRadius:12,padding:'10px 12px',boxShadow:isPast?'none':S,cursor:'pointer',opacity:isPast?0.55:1,filter:isPast?'saturate(0.4)':'none'}}>
                 <div style={{width:44,height:44,flexShrink:0,background:g.color,color:'#fff',border:B,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
                   <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9}}>{WDAYS[d.getDay()]}</div>
                   <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,lineHeight:1,textShadow:'1.5px 1.5px 0 #111'}}>{d.getDate()}</div>
@@ -307,7 +343,7 @@
                   <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2}}>{e.title}</div>
                 </div>
                 <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>›</div>
-              </div>);
+              </PressCard>);
             })}
           </div>
         </div>);
@@ -371,7 +407,7 @@
     React.useEffect(()=>{
       setReady(false);
       // 次のフレームで描画開始 → その間ローディング画面を見せる
-      const id=requestAnimationFrame(()=>{ setTimeout(()=>setReady(true), 80); });
+      const id=requestAnimationFrame(()=>{ setTimeout(()=>setReady(true), 400); });
       return()=>cancelAnimationFrame(id);
     },[event]);
 
@@ -808,7 +844,7 @@
         <div style={{textAlign:'center',padding:'14px 16px 30px',fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666'}}>ボカロ専門ナイトクラブ ボカブキ<br/>歌舞伎町 2-45-2 Gest32ビル 5F / 毎日営業 23:00-5:00</div>
       </div>
 
-      {!selected&&<button onClick={scrollToTop} style={{position:'fixed',right:16,bottom:18,zIndex:20,background:C.yellow,color:'#111',border:BT,borderRadius:'50%',width:52,height:52,boxShadow:SB,fontFamily:'"Reggae One",system-ui',fontSize:24,display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>↑</button>}
+      {!selected&&<div className="vb-fab"><button onClick={scrollToTop} style={{background:C.yellow,color:'#111',border:BT,borderRadius:'50%',width:52,height:52,boxShadow:SB,fontFamily:'"Reggae One",system-ui',fontSize:24,display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>↑</button></div>}
       {selected&&<DetailScreen event={selected} onBack={()=>setSelected(null)} favorites={favorites} toggleFav={toggleFav} people={people} genres={genres}/>}
       {showLogin&&<AdminLogin onSuccess={()=>{setShowLogin(false);setShowAdmin(true);}} onCancel={()=>setShowLogin(false)}/>}
       {showAdmin&&<AdminPanel onClose={()=>setShowAdmin(false)} events={events} setEvents={setEvents} dayBgMap={dayBgMap} setDayBgMap={setDB} genres={genres} setGenres={setGenres} people={people}/>}
