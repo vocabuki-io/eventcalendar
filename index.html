@@ -37,6 +37,13 @@
     input, textarea, select { font-family:inherit; }
     /* スクロールバー: PCのみ細く表示、スマホは非表示 */
     #app-shell::-webkit-scrollbar { width:0; }
+    @keyframes vbSpin { to { transform: rotate(360deg); } }
+    @keyframes vbBounce { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-14px) scale(1.15)} }
+    @keyframes vbFadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .vb-loading-dot { animation: vbBounce 0.7s ease-in-out infinite; }
+    .vb-loading-dot:nth-child(2) { animation-delay: 0.12s; }
+    .vb-loading-dot:nth-child(3) { animation-delay: 0.24s; }
+    .vb-detail-enter { animation: vbFadeIn 0.22s ease-out both; }
     @media (hover: hover) and (pointer: fine) {
       #app-shell::-webkit-scrollbar { width: 4px; }
       #app-shell::-webkit-scrollbar-track { background: transparent; }
@@ -341,12 +348,39 @@
       <div style={{position:'absolute',top:'30%',right:-24,width:80,height:80,borderRadius:'50%',background:C.turquoise,border:B,opacity:0.9}}/>
     </div>);
   }
+  function LoadingScreen({event,genres}){
+    const g=genres.find(x=>x.id===event.genre)||{color:C.red,label:'?'};
+    const dots=['🎵','🎧','🎤'];
+    return(<div style={{position:'fixed',inset:0,zIndex:30,maxWidth:480,margin:'0 auto',background:C.paper,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:24}}>
+      <div style={{position:'absolute',inset:0,pointerEvents:'none',backgroundImage:pat.halftone('rgba(46,197,206,0.18)'),backgroundSize:'8px 8px'}}/>
+      <div style={{position:'absolute',top:-20,left:-20,width:130,height:130,borderRadius:'50%',background:C.yellow,border:BT,opacity:0.7}}/>
+      <div style={{position:'absolute',bottom:-30,right:-20,width:100,height:100,borderRadius:'50%',background:C.turquoise,border:BT,opacity:0.6}}/>
+      <div style={{position:'relative',zIndex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:20}}>
+        <div style={{background:g.color,border:BT,borderRadius:16,padding:'10px 20px',boxShadow:SB,transform:'rotate(-2deg)',fontFamily:'"Reggae One",system-ui',fontSize:13,color:'#fff',maxWidth:260,textAlign:'center'}}>{event.title}</div>
+        <div style={{display:'flex',gap:14,alignItems:'center'}}>
+          {dots.map((d,i)=>(<div key={i} className="vb-loading-dot" style={{fontSize:32,lineHeight:1,animationDelay:`${i*0.12}s`}}>{d}</div>))}
+        </div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',letterSpacing:2}}>LOADING...</div>
+      </div>
+    </div>);
+  }
+
   function DetailScreen({event,onBack,favorites,toggleFav,people,genres}){
     if(!event)return null;
+    const[ready,setReady]=React.useState(false);
+    React.useEffect(()=>{
+      setReady(false);
+      // 次のフレームで描画開始 → その間ローディング画面を見せる
+      const id=requestAnimationFrame(()=>{ setTimeout(()=>setReady(true), 80); });
+      return()=>cancelAnimationFrame(id);
+    },[event]);
+
+    if(!ready)return <LoadingScreen event={event} genres={genres}/>;
+
     const d=parseDate(event.date),g=genres.find(x=>x.id===event.genre)||{color:'#666',label:'?'};
     const isFav=!!favorites[event.date],isPast=d<new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
     const shareText=encodeURIComponent(`${event.title} / ${event.date} @ボカブキ #ボカブキイベント`);
-    return(<div style={{position:'fixed',inset:0,zIndex:30,background:C.paper,overflow:'auto',maxWidth:480,margin:'0 auto'}}>
+    return(<div className="vb-detail-enter" style={{position:'fixed',inset:0,zIndex:30,background:C.paper,overflow:'auto',maxWidth:480,margin:'0 auto'}}>
       <div style={{position:'absolute',inset:0,pointerEvents:'none',opacity:0.5,backgroundImage:pat.halftone('rgba(230,57,70,0.18)'),backgroundSize:'6px 6px'}}/>
       <div style={{position:'sticky',top:0,zIndex:5,padding:'14px 16px 10px',background:`linear-gradient(to bottom,${C.paper} 75%,transparent)`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
         <button onClick={onBack} style={{display:'flex',alignItems:'center',gap:6,background:'#fff',border:BT,borderRadius:999,padding:'8px 14px 8px 12px',boxShadow:S,fontFamily:'"Reggae One",system-ui',fontSize:14}}><span style={{fontSize:18}}>←</span>戻る</button>
@@ -714,6 +748,8 @@
     const[showAdmin,setShowAdmin]=React.useState(false);
     const[tapCnt,setTapCnt]=React.useState(0);
     const lastTap=React.useRef(0);
+    const scrollRef=React.useRef(null);
+    const scrollToTop=()=>{const el=document.getElementById('app-shell');if(el)el.scrollTo({top:0,behavior:'smooth'});};
 
     const setEvents=v=>{const n=typeof v==='function'?v(events):v;setEv_(n);ls.set('vb_events',n);};
     const setGenres=v=>{const n=typeof v==='function'?v(genres):v;setGn_(n);ls.set('vb_genres',n);};
@@ -772,7 +808,7 @@
         <div style={{textAlign:'center',padding:'14px 16px 30px',fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666'}}>ボカロ専門ナイトクラブ ボカブキ<br/>歌舞伎町 2-45-2 Gest32ビル 5F / 毎日営業 23:00-5:00</div>
       </div>
 
-      {!selected&&<button onClick={onTodayTap} style={{position:'fixed',right:16,bottom:18,zIndex:20,background:C.yellow,color:'#111',border:BT,borderRadius:999,padding:'10px 16px',boxShadow:SB,fontFamily:'"Reggae One",system-ui',fontSize:14,display:'flex',alignItems:'center',gap:6}}><span style={{fontSize:16}}>⚡</span>今日</button>}
+      {!selected&&<button onClick={scrollToTop} style={{position:'fixed',right:16,bottom:18,zIndex:20,background:C.yellow,color:'#111',border:BT,borderRadius:'50%',width:52,height:52,boxShadow:SB,fontFamily:'"Reggae One",system-ui',fontSize:24,display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>↑</button>}
       {selected&&<DetailScreen event={selected} onBack={()=>setSelected(null)} favorites={favorites} toggleFav={toggleFav} people={people} genres={genres}/>}
       {showLogin&&<AdminLogin onSuccess={()=>{setShowLogin(false);setShowAdmin(true);}} onCancel={()=>setShowLogin(false)}/>}
       {showAdmin&&<AdminPanel onClose={()=>setShowAdmin(false)} events={events} setEvents={setEvents} dayBgMap={dayBgMap} setDayBgMap={setDB} genres={genres} setGenres={setGenres} people={people}/>}
