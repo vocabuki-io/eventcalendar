@@ -773,7 +773,10 @@
     const timerRef=React.useRef(null);
 
     const openEvent=(ev)=>{
-      // 即座にローディング画面を全画面表示
+      // まず一番上にスクロール（即座・アニメーションなし）
+      const shell=document.getElementById('app-shell');
+      if(shell)shell.scrollTop=0;
+      // ローディング表示 → 400ms後に詳細へ
       setPendingEvent(ev);
       setReadyEvent(null);
       if(timerRef.current)clearTimeout(timerRef.current);
