@@ -403,16 +403,6 @@
 
   function DetailScreen({event,onBack,favorites,toggleFav,people,genres}){
     if(!event)return null;
-    const[ready,setReady]=React.useState(false);
-    React.useEffect(()=>{
-      setReady(false);
-      // 次のフレームで描画開始 → その間ローディング画面を見せる
-      const id=requestAnimationFrame(()=>{ setTimeout(()=>setReady(true), 400); });
-      return()=>cancelAnimationFrame(id);
-    },[event]);
-
-    if(!ready)return <LoadingScreen event={event} genres={genres}/>;
-
     const d=parseDate(event.date),g=genres.find(x=>x.id===event.genre)||{color:'#666',label:'?'};
     const isFav=!!favorites[event.date],isPast=d<new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
     const shareText=encodeURIComponent(`${event.title} / ${event.date} @ボカブキ #ボカブキイベント`);
@@ -778,7 +768,22 @@
     const[favorites,setFv_]=React.useState(()=>ls.get('vb_favs',{}));
     const[view,setVw_]=React.useState(()=>ls.get('vb_view','month'));
     const[cursor,setCu_]=React.useState(()=>{const s=ls.get('vb_cursor',null);return s?new Date(s[0],s[1],1):new Date(TODAY.getFullYear(),TODAY.getMonth(),1);});
-    const[selected,setSelected]=React.useState(null);
+    const[pendingEvent,setPendingEvent]=React.useState(null); // タップ瞬間にセット→即LoadingScreen
+    const[readyEvent,setReadyEvent]=React.useState(null);   // 400ms後にセット→DetailScreen
+    const timerRef=React.useRef(null);
+
+    const openEvent=(ev)=>{
+      // 即座にローディング画面を全画面表示
+      setPendingEvent(ev);
+      setReadyEvent(null);
+      if(timerRef.current)clearTimeout(timerRef.current);
+      timerRef.current=setTimeout(()=>{ setReadyEvent(ev); },400);
+    };
+    const closeEvent=()=>{
+      setReadyEvent(null);
+      setPendingEvent(null);
+      if(timerRef.current)clearTimeout(timerRef.current);
+    };
     const[genre,setGenre]=React.useState('all');
     const[showLogin,setShowLogin]=React.useState(false);
     const[showAdmin,setShowAdmin]=React.useState(false);
@@ -837,15 +842,18 @@
         <div style={{padding:'0 16px 10px'}}><GenreFilter active={genre} setActive={setGenre} genres={genres}/></div>
         {view==='month'&&<WeekdayRow/>}
 
-        {view==='month'&&(<><MonthGrid cells={cells} eventByDate={eventByDate} onPick={setSelected} favorites={favorites} dayBgMap={dayBgMap} genres={genres}/><UpcomingList events={filteredEvents} onPick={setSelected} favorites={favorites} genres={genres}/></>)}
-        {view==='week'&&<div style={{paddingTop:10}}><WeekView start={weekStart} eventByDate={eventByDate} onPick={setSelected} favorites={favorites} genres={genres}/></div>}
-        {view==='list'&&<ListView events={filteredEvents} onPick={setSelected} favorites={favorites} genres={genres}/>}
+        {view==='month'&&(<><MonthGrid cells={cells} eventByDate={eventByDate} onPick={openEvent} favorites={favorites} dayBgMap={dayBgMap} genres={genres}/><UpcomingList events={filteredEvents} onPick={openEvent} favorites={favorites} genres={genres}/></>)}
+        {view==='week'&&<div style={{paddingTop:10}}><WeekView start={weekStart} eventByDate={eventByDate} onPick={openEvent} favorites={favorites} genres={genres}/></div>}
+        {view==='list'&&<ListView events={filteredEvents} onPick={openEvent} favorites={favorites} genres={genres}/>}
 
         <div style={{textAlign:'center',padding:'14px 16px 30px',fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666'}}>ボカロ専門ナイトクラブ ボカブキ<br/>歌舞伎町 2-45-2 Gest32ビル 5F / 毎日営業 23:00-5:00</div>
       </div>
 
-      {!selected&&<div className="vb-fab"><button onClick={scrollToTop} style={{background:C.yellow,color:'#111',border:BT,borderRadius:'50%',width:52,height:52,boxShadow:SB,fontFamily:'"Reggae One",system-ui',fontSize:24,display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>↑</button></div>}
-      {selected&&<DetailScreen event={selected} onBack={()=>setSelected(null)} favorites={favorites} toggleFav={toggleFav} people={people} genres={genres}/>}
+      {!pendingEvent&&<div className="vb-fab"><button onClick={scrollToTop} style={{background:C.yellow,color:'#111',border:BT,borderRadius:'50%',width:52,height:52,boxShadow:SB,fontFamily:'"Reggae One",system-ui',fontSize:24,display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>↑</button></div>}
+      {/* タップ瞬間〜400ms: ローディング全画面 */}
+      {pendingEvent&&!readyEvent&&<LoadingScreen event={pendingEvent} genres={genres}/>}
+      {/* 400ms後: DetailScreen表示 */}
+      {readyEvent&&<DetailScreen event={readyEvent} onBack={closeEvent} favorites={favorites} toggleFav={toggleFav} people={people} genres={genres}/>}
       {showLogin&&<AdminLogin onSuccess={()=>{setShowLogin(false);setShowAdmin(true);}} onCancel={()=>setShowLogin(false)}/>}
       {showAdmin&&<AdminPanel onClose={()=>setShowAdmin(false)} events={events} setEvents={setEvents} dayBgMap={dayBgMap} setDayBgMap={setDB} genres={genres} setGenres={setGenres} people={people}/>}
     </div>);
