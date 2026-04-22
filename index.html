@@ -353,7 +353,7 @@
 
   // DETAIL SCREEN
   function PersonRow({id,people}){
-    const p=people[id]||{name:id,x:'@unknown'},handle=p.x.replace('@','');
+    const p=people[id]||{name:id,x:'@'+id},handle=(p.x||'@'+id).replace('@','');
     const[imgOk,setImgOk]=React.useState(true);
     return(<a href={`https://x.com/${handle}`} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:10,background:'#fff',border:B,borderRadius:10,padding:'8px 10px',textDecoration:'none',color:'#111',boxShadow:SS}}>
       <div style={{position:'relative',width:36,height:36,flexShrink:0,border:'2.5px solid #111',borderRadius:'50%',background:C.yellow,overflow:'hidden',boxShadow:SS}}>
@@ -461,7 +461,7 @@
     const[dayBgMap,setDayBgMap]=React.useState({});
     const[loading,setLoading]=React.useState(true);
     const[fetchErr,setFetchErr]=React.useState(false);
-    const people=PEOPLE_DEFAULT;
+    const[people,setPeople]=React.useState(PEOPLE_DEFAULT);
 
     // events.json を取得（キャッシュ回避付き）
     React.useEffect(()=>{
@@ -471,6 +471,7 @@
           setEvents(data.events||[]);
           setGenres(data.genres||GENRES_DEFAULT);
           setDayBgMap(data.dayBgMap||{});
+          setPeople({...PEOPLE_DEFAULT,...(data.people||{})});
           setLoading(false);
         })
         .catch(()=>{
