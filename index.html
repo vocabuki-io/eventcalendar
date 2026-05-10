@@ -150,14 +150,14 @@
   }
 
   // SHARED COMPONENTS
-  // \u30bf\u30c3\u30d7\u3067\u30d7\u30ec\u30b9\u72b6\u614b\u306b\u306a\u308b\u30ab\u30fc\u30c9\uff08\u9077\u79fb\u5f8c\u306b\u30ea\u30bb\u30c3\u30c8\uff09
+  // &#12479;&#12483;&#12503;&#12391;&#12503;&#12524;&#12473;&#29366;&#24907;&#12395;&#12394;&#12427;&#12459;&#12540;&#12489;&#65288;&#36983;&#31227;&#24460;&#12395;&#12522;&#12475;&#12483;&#12488;&#65289;
   function PressCard({children, onTap, style={}, className=''}){
     const ref=React.useRef();
     const reset=()=>{if(ref.current)ref.current.classList.remove('pressed');};
     const press=()=>{if(ref.current)ref.current.classList.add('pressed');};
     const handleClick=()=>{
       press();
-      // \u9077\u79fb\u5f8c\u306b\u30ea\u30bb\u30c3\u30c8\uff08DetailScreen\u304c\u8868\u793a\u3055\u308c\u305f\u3042\u3068\uff09
+      // &#36983;&#31227;&#24460;&#12395;&#12522;&#12475;&#12483;&#12488;&#65288;DetailScreen&#12364;&#34920;&#31034;&#12373;&#12428;&#12383;&#12354;&#12392;&#65289;
       setTimeout(()=>{ reset(); onTap(); },120);
     };
     return(
@@ -213,15 +213,15 @@
   function MonthHeader({year,month,onPrev,onNext,onToday}){
     return(<div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 16px',gap:8}}>
       <div style={{display:'flex',alignItems:'center',gap:8}}>
-        <PopBtn onClick={onPrev} bg={C.yellow} size={38}>\u2039</PopBtn>
+        <PopBtn onClick={onPrev} bg={C.yellow} size={38}>&#8249;</PopBtn>
         <div style={{fontFamily:'"Reggae One",system-ui',fontSize:28,lineHeight:1,display:'flex',alignItems:'baseline',gap:6}}>
-          <span style={{color:C.red}}>{year}</span><span style={{fontSize:16,color:'#111'}}>\u5e74</span>
-          <span style={{color:C.turquoiseDark,fontSize:38}}>{month+1}</span><span style={{fontSize:16,color:'#111'}}>\u6708</span>
+          <span style={{color:C.red}}>{year}</span><span style={{fontSize:16,color:'#111'}}>&#24180;</span>
+          <span style={{color:C.turquoiseDark,fontSize:38}}>{month+1}</span><span style={{fontSize:16,color:'#111'}}>&#26376;</span>
         </div>
       </div>
       <div style={{display:'flex',gap:8}}>
-        <button onClick={onToday} style={{border:BT,background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:13,padding:'6px 12px',borderRadius:999,boxShadow:SS}}>\u4eca\u65e5</button>
-        <PopBtn onClick={onNext} bg={C.yellow} size={38}>\u203a</PopBtn>
+        <button onClick={onToday} style={{border:BT,background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:13,padding:'6px 12px',borderRadius:999,boxShadow:SS}}>&#20170;&#26085;</button>
+        <PopBtn onClick={onNext} bg={C.yellow} size={38}>&#8250;</PopBtn>
       </div>
     </div>);
   }
@@ -241,7 +241,7 @@
     return(<button onClick={onClick} disabled={!event}
       style={{position:'relative',aspectRatio:'1/1.15',border:B,borderRadius:8,minWidth:0,background:bg,padding:4,cursor:event?'pointer':'default',opacity:(cell.outside||isPast)?0.55:1,filter:isPast?'saturate(0.4)':'none',boxShadow:event&&!isPast?SS:'none',display:'flex',flexDirection:'column',alignItems:'flex-start',overflow:'visible',textAlign:'left',transform:isToday?'scale(1.02)':'none',outline:isToday?`3px solid ${C.ink}`:'none',outlineOffset:isToday?'2px':0}}>
       {isToday&&<div style={{position:'absolute',top:-10,right:-6,zIndex:10,pointerEvents:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,lineHeight:1,color:'#fff',WebkitTextStroke:'3px #FF3DA5',paintOrder:'stroke fill',transform:'rotate(-8deg)'}}>NOW</div>}
-      {isFavorite&&<div style={{position:'absolute',top:2,left:2,fontSize:10}}>\u2b50</div>}
+      {isFavorite&&<div style={{position:'absolute',top:2,left:2,fontSize:10}}>&#11088;</div>}
       <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16,lineHeight:1,color:isBgColored?'#fff':(isSun?C.red:isSat?C.turquoiseDark:'#111'),textShadow:isBgColored?'1.5px 1.5px 0 #111':'none',marginTop:1,marginLeft:2}}>{d.getDate()}</div>
       {event&&(()=>{const full=event.title||'',head=Array.from(full).slice(0,4).join(''),label=Array.from(full).length>4?`${head}\u2026`:head;return(<div style={{marginTop:'auto',width:'100%',fontFamily:'"Reggae One",system-ui',fontSize:10.5,lineHeight:1,color:'#fff',WebkitTextStroke:'2.5px #111',paintOrder:'stroke fill',textAlign:'center',overflow:'hidden',whiteSpace:'nowrap',padding:'2px 2px 3px'}}>{label}</div>);})()}
     </button>);
@@ -272,11 +272,11 @@
             {ev?(<>
               <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',marginBottom:4}}>
                 <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:genre.color,color:'#fff',border:'2px solid #111',borderRadius:4,padding:'1px 6px',fontWeight:700}}># {genre.label}</span>
-                {favorites[key]&&<span style={{fontSize:12}}>\u2b50</span>}
+                {favorites[key]&&<span style={{fontSize:12}}>&#11088;</span>}
               </div>
               <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:16,lineHeight:1.2}}>{ev.title}</div>
-              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',marginTop:4}}>DJ {ev.djs.length} / VJ {ev.vjs.length} \u30fb OPEN 24:00</div>
-            </>):(<div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#999'}}>\u304a\u4f11\u307f</div>)}
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',marginTop:4}}>DJ {ev.djs.length} / VJ {ev.vjs.length} &#12539; OPEN 24:00</div>
+            </>):(<div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#999'}}>&#12362;&#20241;&#12415;</div>)}
           </div>
         </div>);
       })}
@@ -291,7 +291,7 @@
         <div style={{flex:1,height:4,background:pat.stripesB('#111',C.yellow),border:B,borderRadius:4}}/>
       </div>
       <div style={{display:'flex',flexDirection:'column',gap:10}}>
-        {upcoming.length===0&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',textAlign:'center',padding:20}}>\u4eca\u6708\u306f\u3082\u3046\u30a4\u30d9\u30f3\u30c8\u304c\u3042\u308a\u307e\u305b\u3093</div>}
+        {upcoming.length===0&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',textAlign:'center',padding:20}}>&#20170;&#26376;&#12399;&#12418;&#12358;&#12452;&#12505;&#12531;&#12488;&#12364;&#12354;&#12426;&#12414;&#12379;&#12435;</div>}
         {upcoming.map(e=>{
           const d=parseDate(e.date),g=genres.find(x=>x.id===e.genre)||{color:'#666',label:'?'},isToday=sameDay(d,TODAY);
           return(<PressCard key={e.id||e.date} onTap={()=>onPick(e)} style={{display:'flex',gap:12,alignItems:'center',background:'#fff',border:BT,borderRadius:14,padding:'10px 12px',boxShadow:S,cursor:'pointer'}}>
@@ -303,12 +303,12 @@
               <div style={{display:'flex',gap:6,alignItems:'center',marginBottom:2}}>
                 <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}># {g.label}</span>
                 {isToday&&<span style={{fontFamily:'"Reggae One",system-ui',fontSize:9,background:C.ink,color:'#fff',padding:'1px 6px',borderRadius:4}}>TODAY</span>}
-                {favorites[e.date]&&<span style={{fontSize:11}}>\u2b50</span>}
+                {favorites[e.date]&&<span style={{fontSize:11}}>&#11088;</span>}
               </div>
               <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{e.title}</div>
-              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',marginTop:2}}>DJ {e.djs.length}\u7d44\u30fbVJ {e.vjs.length}\u7d44\u30fb24:00\u21925:00</div>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',marginTop:2}}>DJ {e.djs.length}&#32068;&#12539;VJ {e.vjs.length}&#32068;&#12539;24:00&#8594;5:00</div>
             </div>
-            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#111'}}>\u203a</div>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#111'}}>&#8250;</div>
           </PressCard>);
         })}
       </div>
@@ -323,7 +323,7 @@
         const[y,m]=mk.split('-').map(Number);
         return(<div key={mk}>
           <div style={{display:'inline-flex',alignItems:'baseline',gap:4,fontFamily:'"Reggae One",system-ui',background:C.yellow,border:BT,borderRadius:8,padding:'4px 12px',boxShadow:SS,marginBottom:10,transform:'rotate(-1.5deg)'}}>
-            <span style={{fontSize:14}}>{y}</span><span style={{fontSize:24,color:C.red}}>{m}</span><span style={{fontSize:14}}>\u6708</span>
+            <span style={{fontSize:14}}>{y}</span><span style={{fontSize:24,color:C.red}}>{m}</span><span style={{fontSize:14}}>&#26376;</span>
           </div>
           <div style={{display:'flex',flexDirection:'column',gap:10}}>
             {byMonth[mk].map(e=>{
@@ -336,13 +336,13 @@
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{display:'flex',gap:6,alignItems:'center',marginBottom:2}}>
                     <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}># {g.label}</span>
-                    {isPast&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:'#999',color:'#fff',borderRadius:4,padding:'0 5px'}}>\u7d42\u4e86</span>}
+                    {isPast&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:'#999',color:'#fff',borderRadius:4,padding:'0 5px'}}>&#32066;&#20102;</span>}
                     {isToday&&<span style={{fontFamily:'"Reggae One",system-ui',fontSize:9,background:C.ink,color:'#fff',padding:'1px 6px',borderRadius:4}}>TODAY</span>}
-                    {favorites[e.date]&&<span style={{fontSize:11}}>\u2b50</span>}
+                    {favorites[e.date]&&<span style={{fontSize:11}}>&#11088;</span>}
                   </div>
                   <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2}}>{e.title}</div>
                 </div>
-                <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>\u203a</div>
+                <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>&#8250;</div>
               </PressCard>);
             })}
           </div>
@@ -363,7 +363,7 @@
         <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:14,lineHeight:1.1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{p.name}</div>
         <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{p.x}</div>
       </div>
-      <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16}}>\u2197</div>
+      <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16}}>&#8599;</div>
     </a>);
   }
   function SecTitle({children,color=C.red}){return(<div style={{display:'inline-flex',alignItems:'center',gap:8,marginBottom:10}}><div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,background:color,color:'#fff',border:BT,borderRadius:8,padding:'3px 12px',boxShadow:SS,transform:'rotate(-2deg)'}}>{children}</div></div>);}
@@ -409,23 +409,23 @@
     return(<div className="vb-detail-enter" style={{position:'fixed',inset:0,zIndex:30,background:C.paper,overflow:'auto',maxWidth:480,margin:'0 auto'}}>
       <div style={{position:'absolute',inset:0,pointerEvents:'none',opacity:0.5,backgroundImage:pat.halftone('rgba(230,57,70,0.18)'),backgroundSize:'6px 6px'}}/>
       <div style={{position:'sticky',top:0,zIndex:5,padding:'14px 16px 10px',background:`linear-gradient(to bottom,${C.paper} 75%,transparent)`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-        <button onClick={onBack} style={{display:'flex',alignItems:'center',gap:6,background:'#fff',border:BT,borderRadius:999,padding:'8px 14px 8px 12px',boxShadow:S,fontFamily:'"Reggae One",system-ui',fontSize:14}}><span style={{fontSize:18}}>\u2190</span>\u623b\u308b</button>
+        <button onClick={onBack} style={{display:'flex',alignItems:'center',gap:6,background:'#fff',border:BT,borderRadius:999,padding:'8px 14px 8px 12px',boxShadow:S,fontFamily:'"Reggae One",system-ui',fontSize:14}}><span style={{fontSize:18}}>&#8592;</span>&#25147;&#12427;</button>
         <button onClick={()=>toggleFav(event.date)} style={{width:44,height:44,background:isFav?C.yellow:'#fff',border:BT,borderRadius:'50%',boxShadow:S,padding:0,fontSize:20}}>{isFav?'\u2b50':'\u2606'}</button>
       </div>
       <div style={{position:'relative',padding:'4px 16px 32px'}}>
         <div style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:14}}>
           <div style={{background:C.red,color:'#fff',border:BT,borderRadius:14,padding:'10px 14px',boxShadow:SB,transform:'rotate(-3deg)',flexShrink:0}}>
-            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,opacity:0.95}}>{d.getFullYear()}\u5e74{d.getMonth()+1}\u6708</div>
+            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,opacity:0.95}}>{d.getFullYear()}&#24180;{d.getMonth()+1}&#26376;</div>
             <div style={{fontFamily:'"Reggae One",system-ui',fontSize:56,lineHeight:0.95,textShadow:'3px 3px 0 #111'}}>{d.getDate()}</div>
             <div style={{fontFamily:'"Reggae One",system-ui',fontSize:14,textAlign:'right'}}>({WDAYS[d.getDay()]})</div>
           </div>
           <div style={{flex:1,paddingTop:6}}>
             <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:6}}>
               <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:g.color,color:'#fff',border:'2px solid #111',borderRadius:4,padding:'1px 8px',fontWeight:700}}># {g.label}</span>
-              {isPast&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#666',color:'#fff',border:'2px solid #111',borderRadius:4,padding:'1px 8px'}}>\u7d42\u4e86</span>}
+              {isPast&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#666',color:'#fff',border:'2px solid #111',borderRadius:4,padding:'1px 8px'}}>&#32066;&#20102;</span>}
             </div>
             <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
-              {(event.hashtags||[]).map(h=>(<div key={h} style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#fff',border:'2px solid #111',borderRadius:4,padding:'2px 6px',color:C.turquoiseDark,fontWeight:700}}>\u1f517 #{h}</div>))}
+              {(event.hashtags||[]).map(h=>(<div key={h} style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#fff',border:'2px solid #111',borderRadius:4,padding:'2px 6px',color:C.turquoiseDark,fontWeight:700}}>&#8017;7 #{h}</div>))}
             </div>
           </div>
         </div>
@@ -433,17 +433,17 @@
           <div style={{position:'absolute',top:-6,right:-6,transform:'rotate(12deg)'}}><StarBurst size={52} color={C.yellow} spikes={14}><div style={{fontSize:10,color:'#111',textShadow:'none'}}>LIVE</div></StarBurst></div>
           <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',marginBottom:4}}>EVENT TITLE</div>
           <div style={{fontFamily:'"Reggae One",system-ui',fontSize:28,lineHeight:1.1,color:C.ink,paddingRight:50}}>{event.title}</div>
-          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,marginTop:8,color:'#333'}}>OPEN 24:00 / CLOSE 5:00 \uff0f \u6b4c\u821e\u4f0e\u753a Gest32\u30d3\u30eb 5F</div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,marginTop:8,color:'#333'}}>OPEN 24:00 / CLOSE 5:00 &#65295; &#27468;&#33310;&#20238;&#30010; Gest32&#12499;&#12523; 5F</div>
         </div>
         <div style={{marginBottom:18}}><FlyerArea event={event} genres={genres}/></div>
-        <div style={{marginBottom:18}}><SecTitle color={C.red}>\u51fa\u6f14DJ</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{event.djs.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>
-        <div style={{marginBottom:18}}><SecTitle color={C.turquoiseDark}>\u51fa\u6f14VJ</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{event.vjs.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>
-        <div style={{marginBottom:22}}><SecTitle color={C.ink}>\u30dc\u30ab\u30d6\u30ad\u30b9\u30bf\u30c3\u30d5</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{STAFF.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>
+        <div style={{marginBottom:18}}><SecTitle color={C.red}>&#20986;&#28436;DJ</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{event.djs.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>
+        <div style={{marginBottom:18}}><SecTitle color={C.turquoiseDark}>&#20986;&#28436;VJ</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{event.vjs.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>
+        <div style={{marginBottom:22}}><SecTitle color={C.ink}>&#12508;&#12459;&#12502;&#12461;&#12473;&#12479;&#12483;&#12501;</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{STAFF.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>
         <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:8}}>
-          <a href={`https://x.com/intent/post?text=${shareText}`} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,background:C.ink,color:'#fff',border:BT,borderRadius:12,padding:'14px 16px',textDecoration:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}><XIcon size={22}/>X\u3067\u30ea\u30dd\u30b9\u30c8\uff0f\u544a\u77e5\u3059\u308b</a>
+          <a href={`https://x.com/intent/post?text=${shareText}`} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,background:C.ink,color:'#fff',border:BT,borderRadius:12,padding:'14px 16px',textDecoration:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}><XIcon size={22}/>X&#12391;&#12522;&#12509;&#12473;&#12488;&#65295;&#21578;&#30693;&#12377;&#12427;</a>
           <button onClick={()=>toggleFav(event.date)} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:isFav?C.yellow:'#fff',color:'#111',border:BT,borderRadius:12,padding:'12px 16px',fontFamily:'"RocknRoll One",system-ui',fontSize:14,boxShadow:SS}}>{isFav?'\u2b50 \u304a\u6c17\u306b\u5165\u308a\u304b\u3089\u5916\u3059':'\u2606 \u304a\u6c17\u306b\u5165\u308a\u306b\u8ffd\u52a0'}</button>
         </div>
-        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,textAlign:'center',color:'#666',marginTop:20,lineHeight:1.5}}>\u60c5\u5831\u306fX\u306e #\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8 \u3088\u308a\u81ea\u52d5\u53d6\u5f97\u3057\u3066\u3044\u307e\u3059\u3002<br/>\u6700\u65b0\u60c5\u5831\u306f\u5404DJ\u30fbVJ\u30fb\u30dc\u30ab\u30d6\u30ad\u516c\u5f0fX\u3092\u3054\u78ba\u8a8d\u304f\u3060\u3055\u3044\u3002</div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,textAlign:'center',color:'#666',marginTop:20,lineHeight:1.5}}>&#24773;&#22577;&#12399;X&#12398; #&#12508;&#12459;&#12502;&#12461;&#12452;&#12505;&#12531;&#12488; &#12424;&#12426;&#33258;&#21205;&#21462;&#24471;&#12375;&#12390;&#12356;&#12414;&#12377;&#12290;<br/>&#26368;&#26032;&#24773;&#22577;&#12399;&#21508;DJ&#12539;VJ&#12539;&#12508;&#12459;&#12502;&#12461;&#20844;&#24335;X&#12434;&#12372;&#30906;&#35469;&#12367;&#12384;&#12373;&#12356;&#12290;</div>
       </div>
     </div>);
   }
@@ -451,10 +451,10 @@
   // ADMIN
 
 
-  // \u30a4\u30d9\u30f3\u30c8\u7de8\u96c6\u30ab\u30fc\u30c9\uff08\u30a2\u30b3\u30fc\u30c7\u30a3\u30aa\u30f3\uff09
+  // &#12452;&#12505;&#12531;&#12488;&#32232;&#38598;&#12459;&#12540;&#12489;&#65288;&#12450;&#12467;&#12540;&#12487;&#12451;&#12458;&#12531;&#65289;
 
 
-  // MAIN APP\uff08\u95b2\u89a7\u5c02\u7528\u30fbevents.json\u3092fetch\u3057\u3066\u8868\u793a\uff09
+  // MAIN APP&#65288;&#38322;&#35239;&#23554;&#29992;&#12539;events.json&#12434;fetch&#12375;&#12390;&#34920;&#31034;&#65289;
   function App(){
     const[events,setEvents]=React.useState([]);
     const[genres,setGenres]=React.useState(GENRES_DEFAULT);
@@ -463,7 +463,7 @@
     const[fetchErr,setFetchErr]=React.useState(false);
     const[people,setPeople]=React.useState(PEOPLE_DEFAULT);
 
-    // events.json \u3092\u53d6\u5f97\uff08\u30ad\u30e3\u30c3\u30b7\u30e5\u56de\u907f\u4ed8\u304d\uff09
+    // events.json &#12434;&#21462;&#24471;&#65288;&#12461;&#12515;&#12483;&#12471;&#12517;&#22238;&#36991;&#20184;&#12365;&#65289;
     React.useEffect(()=>{
       fetch('./events.json?t='+Date.now())
         .then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
@@ -475,7 +475,7 @@
           setLoading(false);
         })
         .catch(()=>{
-          // fallback: \u30c7\u30d5\u30a9\u30eb\u30c8\u30c7\u30fc\u30bf\u3067\u8868\u793a
+          // fallback: &#12487;&#12501;&#12457;&#12523;&#12488;&#12487;&#12540;&#12479;&#12391;&#34920;&#31034;
           setEvents(EVENTS_DEFAULT);
           setFetchErr(true);
           setLoading(false);
@@ -532,19 +532,19 @@
           <VbLogo/>
           <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:C.ink,color:'#fff',border:BT,borderRadius:6,padding:'3px 8px',lineHeight:1.2,textAlign:'center'}}>EVENT<br/>CALENDAR</div>
         </div>
-        {fetchErr&&<div style={{margin:'0 16px 8px',fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',textAlign:'center'}}>\u203b \u30aa\u30d5\u30e9\u30a4\u30f3\u306e\u305f\u3081\u4eee\u30c7\u30fc\u30bf\u3092\u8868\u793a\u3057\u3066\u3044\u307e\u3059</div>}
+        {fetchErr&&<div style={{margin:'0 16px 8px',fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',textAlign:'center'}}>&#8251; &#12458;&#12501;&#12521;&#12452;&#12531;&#12398;&#12383;&#12417;&#20206;&#12487;&#12540;&#12479;&#12434;&#34920;&#31034;&#12375;&#12390;&#12356;&#12414;&#12377;</div>}
         <div style={{margin:'0 16px 14px',position:'relative',background:C.red,color:'#fff',border:BT,borderRadius:10,padding:'8px 14px',boxShadow:S,display:'flex',alignItems:'center',justifyContent:'space-between',overflow:'hidden'}}>
           <div style={{position:'absolute',inset:0,opacity:0.25,backgroundImage:pat.stripes('rgba(255,255,255,0.5)','transparent')}}/>
-          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16,position:'relative',letterSpacing:1}}>\u516c\u958b\u30a4\u30d9\u30f3\u30c8\u30ab\u30ec\u30f3\u30c0\u30fc</div>
-          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:'#fff',color:C.red,border:'2px solid #111',borderRadius:4,padding:'2px 6px',position:'relative',fontWeight:700,whiteSpace:'nowrap'}}># \u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8 \u81ea\u52d5\u9023\u643a</div>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16,position:'relative',letterSpacing:1}}>&#20844;&#38283;&#12452;&#12505;&#12531;&#12488;&#12459;&#12524;&#12531;&#12480;&#12540;</div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:'#fff',color:C.red,border:'2px solid #111',borderRadius:4,padding:'2px 6px',position:'relative',fontWeight:700,whiteSpace:'nowrap'}}># &#12508;&#12459;&#12502;&#12461;&#12452;&#12505;&#12531;&#12488; &#33258;&#21205;&#36899;&#25658;</div>
         </div>
 
         {view==='month'&&<MonthHeader year={cursor.getFullYear()} month={cursor.getMonth()} onPrev={()=>setCursor(c=>new Date(c.getFullYear(),c.getMonth()-1,1))} onNext={()=>setCursor(c=>new Date(c.getFullYear(),c.getMonth()+1,1))} onToday={onTodayTap}/>}
         {view==='week'&&(<div style={{padding:'0 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>{weekStart.getMonth()+1}\u6708 <span style={{fontSize:12,color:'#555'}}>{weekStart.getDate()}\u65e5\u301c</span></div>
-          <button onClick={onTodayTap} style={{border:BT,background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:13,padding:'6px 12px',borderRadius:999,boxShadow:SS}}>\u4eca\u65e5</button>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>{weekStart.getMonth()+1}&#26376; <span style={{fontSize:12,color:'#555'}}>{weekStart.getDate()}&#26085;&#12316;</span></div>
+          <button onClick={onTodayTap} style={{border:BT,background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:13,padding:'6px 12px',borderRadius:999,boxShadow:SS}}>&#20170;&#26085;</button>
         </div>)}
-        {view==='list'&&<div style={{padding:'0 16px 8px'}}><div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>\u30a4\u30d9\u30f3\u30c8\u4e00\u89a7</div></div>}
+        {view==='list'&&<div style={{padding:'0 16px 8px'}}><div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>&#12452;&#12505;&#12531;&#12488;&#19968;&#35239;</div></div>}
 
         <div style={{padding:'10px 16px 10px',display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
           <ViewSwitcher view={view} setView={setView}/>
@@ -555,10 +555,10 @@
         {view==='month'&&(<><MonthGrid cells={cells} eventByDate={eventByDate} onPick={openEvent} favorites={favorites} dayBgMap={dayBgMap} genres={genres}/><UpcomingList events={filteredEvents} onPick={openEvent} favorites={favorites} genres={genres}/></>)}
         {view==='week'&&<div style={{paddingTop:10}}><WeekView start={weekStart} eventByDate={eventByDate} onPick={openEvent} favorites={favorites} genres={genres}/></div>}
         {view==='list'&&<ListView events={filteredEvents} onPick={openEvent} favorites={favorites} genres={genres}/>}
-        <div style={{textAlign:'center',padding:'14px 16px 30px',fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666'}}>\u30dc\u30ab\u30ed\u5c02\u9580\u30ca\u30a4\u30c8\u30af\u30e9\u30d6 \u30dc\u30ab\u30d6\u30ad<br/>\u6b4c\u821e\u4f0e\u753a 2-45-2 Gest32\u30d3\u30eb 5F / \u6bce\u65e5\u55b6\u696d 24:00-5:00</div>
+        <div style={{textAlign:'center',padding:'14px 16px 30px',fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666'}}>&#12508;&#12459;&#12525;&#23554;&#38272;&#12490;&#12452;&#12488;&#12463;&#12521;&#12502; &#12508;&#12459;&#12502;&#12461;<br/>&#27468;&#33310;&#20238;&#30010; 2-45-2 Gest32&#12499;&#12523; 5F / &#27598;&#26085;&#21942;&#26989; 24:00-5:00</div>
       </div>
 
-      {!pendingEvent&&<div className="vb-fab"><button onClick={scrollToTop} style={{background:C.yellow,color:'#111',border:BT,borderRadius:'50%',width:52,height:52,boxShadow:SB,fontFamily:'"Reggae One",system-ui',fontSize:24,display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>\u2191</button></div>}
+      {!pendingEvent&&<div className="vb-fab"><button onClick={scrollToTop} style={{background:C.yellow,color:'#111',border:BT,borderRadius:'50%',width:52,height:52,boxShadow:SB,fontFamily:'"Reggae One",system-ui',fontSize:24,display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>&#8593;</button></div>}
       {pendingEvent&&!readyEvent&&<LoadingScreen event={pendingEvent} genres={genres}/>}
       {readyEvent&&<DetailScreen event={readyEvent} onBack={closeEvent} favorites={favorites} toggleFav={toggleFav} people={people} genres={genres}/>}
     </div>);
