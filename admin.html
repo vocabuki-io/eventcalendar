@@ -30,32 +30,32 @@
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
 
   <script type="text/babel" charset="utf-8">
-  // ─── リポジトリ設定（トークンはここに書かない） ──────────────
+  // \u2500\u2500\u2500 \u30ea\u30dd\u30b8\u30c8\u30ea\u8a2d\u5b9a\uff08\u30c8\u30fc\u30af\u30f3\u306f\u3053\u3053\u306b\u66f8\u304b\u306a\u3044\uff09 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   const GH_OWNER = 'vocabuki-io';
   const GH_REPO  = 'eventcalendar';
   const GH_PATH  = 'events.json';
-  const ADMIN_PASSWORD = 'shinjuku@2452'; // ← 管理画面パスワード
-  // ────────────────────────────────────────────────────────────
+  const ADMIN_PASSWORD = 'shinjuku@2452'; // \u2190 \u7ba1\u7406\u753b\u9762\u30d1\u30b9\u30ef\u30fc\u30c9
+  // \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
   const C={turquoise:'#2EC5CE',turquoiseDark:'#1EA3AC',yellow:'#FFD23F',red:'#E63946',orange:'#FF8A1E',paper:'#FFFBEC',ink:'#111111'};
   const B='3px solid #111',BT='4px solid #111',S='4px 4px 0 #111',SB='6px 6px 0 #111',SS='2px 2px 0 #111';
   const pat={halftone:(c)=>`radial-gradient(circle at 3px 3px,${c} 1.8px,transparent 2px)`};
 
   const GENRES_DEFAULT=[
-    {id:'vocabuki',label:'ボカブキ',color:'#F5E642'},
-    {id:'anime',label:'アニメ',color:'#E63946'},
-    {id:'vocaloid',label:'ボカロ',color:'#39C5BB'},
-    {id:'external',label:'外部主催',color:'#B8F0B0'},
+    {id:'vocabuki',label:'\u30dc\u30ab\u30d6\u30ad',color:'#F5E642'},
+    {id:'anime',label:'\u30a2\u30cb\u30e1',color:'#E63946'},
+    {id:'vocaloid',label:'\u30dc\u30ab\u30ed',color:'#39C5BB'},
+    {id:'external',label:'\u5916\u90e8\u4e3b\u50ac',color:'#B8F0B0'},
     {id:'vtuber',label:'Vtuber',color:'#D4B0F0'},
   ];
   const PEOPLE_DEFAULT={
     drag_on_3:       {name:'dragon3', x:'@drag_on_3'},
-    rockstar_saihan: {name:'иASU',   x:'@rockstar_saihan'},
-    nono4e:          {name:'乃々瀬', x:'@nono4e'},
-    aym_pngn:        {name:'あゆむ', x:'@aym_pngn'},
+    rockstar_saihan: {name:'\u0438ASU',   x:'@rockstar_saihan'},
+    nono4e:          {name:'\u4e43\u3005\u702c', x:'@nono4e'},
+    aym_pngn:        {name:'\u3042\u3086\u3080', x:'@aym_pngn'},
   };
 
-  const WDAYS=['月','火','水','木','金','土','日'];
+  const WDAYS=['\u6708','\u706b','\u6c34','\u6728','\u91d1','\u571f','\u65e5'];
   function fmtDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return`${y}-${m}-${day}`;}
   function parseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
   function weekIdx(d){return(d.getDay()+6)%7;}
@@ -66,14 +66,14 @@
   function SectionHead({children}){return(<div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,background:C.ink,color:'#fff',border:BT,borderRadius:8,padding:'4px 12px',transform:'rotate(-1deg)',boxShadow:SS,display:'inline-block',marginBottom:12}}>{children}</div>);}
 
   const DAY_COLOR_PRESETS=[
-    {id:'auto',label:'自動',value:null},
-    {id:'red',label:'赤',value:C.red},{id:'teal',label:'ターコイズ',value:C.turquoise},
-    {id:'yel',label:'黄',value:C.yellow},{id:'org',label:'オレンジ',value:C.orange},
-    {id:'pur',label:'紫',value:'#6A3FD9'},{id:'pnk',label:'ピンク',value:'#FF3DA5'},
-    {id:'nvy',label:'ネイビー',value:'#223B8F'},{id:'grn',label:'緑',value:'#3FB55E'},
+    {id:'auto',label:'\u81ea\u52d5',value:null},
+    {id:'red',label:'\u8d64',value:C.red},{id:'teal',label:'\u30bf\u30fc\u30b3\u30a4\u30ba',value:C.turquoise},
+    {id:'yel',label:'\u9ec4',value:C.yellow},{id:'org',label:'\u30aa\u30ec\u30f3\u30b8',value:C.orange},
+    {id:'pur',label:'\u7d2b',value:'#6A3FD9'},{id:'pnk',label:'\u30d4\u30f3\u30af',value:'#FF3DA5'},
+    {id:'nvy',label:'\u30cd\u30a4\u30d3\u30fc',value:'#223B8F'},{id:'grn',label:'\u7dd1',value:'#3FB55E'},
   ];
 
-  // ─── GitHub API（tokenは引数で受け取る） ────────────────────
+  // \u2500\u2500\u2500 GitHub API\uff08token\u306f\u5f15\u6570\u3067\u53d7\u3051\u53d6\u308b\uff09 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   async function ghFetch(token, path, method='GET', body=null){
     const opts={
       method,
@@ -97,7 +97,7 @@
     });
   }
 
-  // ─── ログイン画面 ────────────────────────────────────────────
+  // \u2500\u2500\u2500 \u30ed\u30b0\u30a4\u30f3\u753b\u9762 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   function LoginScreen({onLogin}){
     const[pw,setPw]=React.useState('');
     const[token,setToken]=React.useState(()=>sessionStorage.getItem('vb_token')||'');
@@ -107,18 +107,18 @@
 
     const checkPw=()=>{
       if(pw===ADMIN_PASSWORD){setStep('token');setErr('');}
-      else{setErr('パスワードが違います');setTimeout(()=>setErr(''),1500);}
+      else{setErr('\u30d1\u30b9\u30ef\u30fc\u30c9\u304c\u9055\u3044\u307e\u3059');setTimeout(()=>setErr(''),1500);}
     };
 
     const checkToken=async()=>{
-      if(!token.trim()){setErr('トークンを入力してください');return;}
+      if(!token.trim()){setErr('\u30c8\u30fc\u30af\u30f3\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044');return;}
       setLoading(true);setErr('');
       try{
         await ghFetch(token.trim(),GH_PATH);
         sessionStorage.setItem('vb_token',token.trim());
         onLogin(token.trim());
       }catch(e){
-        setErr(`トークンエラー: ${e.message}`);
+        setErr(`\u30c8\u30fc\u30af\u30f3\u30a8\u30e9\u30fc: ${e.message}`);
         setLoading(false);
       }
     };
@@ -134,19 +134,19 @@
               <div style={{fontFamily:'"Reggae One",system-ui',fontSize:24,background:C.red,color:'#fff',border:B,borderRadius:10,padding:'6px 12px',boxShadow:SS,transform:'rotate(-3deg)'}}>VOCA</div>
               <div style={{fontFamily:'"Reggae One",system-ui',fontSize:24,background:C.turquoise,color:'#fff',border:B,borderRadius:10,padding:'6px 12px',boxShadow:SS,transform:'rotate(3deg)'}}>BUKI</div>
             </div>
-            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',marginTop:8}}>管理画面</div>
+            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',marginTop:8}}>\u7ba1\u7406\u753b\u9762</div>
           </div>
 
           {step==='pw'&&(
             <div>
-              <Label>パスワード</Label>
+              <Label>\u30d1\u30b9\u30ef\u30fc\u30c9</Label>
               <input type="password" value={pw} onChange={e=>setPw(e.target.value)}
                 onKeyDown={e=>e.key==='Enter'&&checkPw()}
-                placeholder="パスワードを入力" style={inputSt}
+                placeholder="\u30d1\u30b9\u30ef\u30fc\u30c9\u3092\u5165\u529b" style={inputSt}
                 autoComplete="current-password"/>
               {err&&<div style={{color:C.red,fontFamily:'"DotGothic16",monospace',fontSize:11,marginBottom:8}}>{err}</div>}
               <button onClick={checkPw} style={{width:'100%',border:BT,borderRadius:10,padding:'13px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}>
-                次へ →
+                \u6b21\u3078 \u2192
               </button>
             </div>
           )}
@@ -159,17 +159,17 @@
                 placeholder="ghp_xxxxxxxxxxxx" style={inputSt}
                 autoComplete="off"/>
               <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',marginBottom:12,lineHeight:1.6}}>
-                ※ タブを閉じるまで保持されます<br/>
-                ※ GitHub Settings → Developer settings → Fine-grained tokens
+                \u203b \u30bf\u30d6\u3092\u9589\u3058\u308b\u307e\u3067\u4fdd\u6301\u3055\u308c\u307e\u3059<br/>
+                \u203b GitHub Settings \u2192 Developer settings \u2192 Fine-grained tokens
               </div>
               {err&&<div style={{color:C.red,fontFamily:'"DotGothic16",monospace',fontSize:11,marginBottom:8}}>{err}</div>}
               <button onClick={checkToken} disabled={loading}
                 style={{width:'100%',border:BT,borderRadius:10,padding:'13px',background:loading?'#999':C.turquoise,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}>
-                {loading?'確認中...':'ログイン'}
+                {loading?'\u78ba\u8a8d\u4e2d...':'\u30ed\u30b0\u30a4\u30f3'}
               </button>
               <button onClick={()=>{setStep('pw');setPw('');sessionStorage.removeItem('vb_token');}}
                 style={{width:'100%',border:BT,borderRadius:10,padding:'10px',background:'#fff',fontFamily:'"DotGothic16",monospace',fontSize:12,boxShadow:SS,marginTop:8}}>
-                ← パスワード入力に戻る
+                \u2190 \u30d1\u30b9\u30ef\u30fc\u30c9\u5165\u529b\u306b\u623b\u308b
               </button>
             </div>
           )}
@@ -178,7 +178,7 @@
     );
   }
 
-  // ─── イベント編集カード ────────────────────────────────────
+  // \u2500\u2500\u2500 \u30a4\u30d9\u30f3\u30c8\u7de8\u96c6\u30ab\u30fc\u30c9 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   function EventEditCard({ev,genres,people,dayBgMap,onSave,onDelete}){
     const[open,setOpen]=React.useState(false);
     const[draft,setDraft]=React.useState(null);
@@ -195,7 +195,7 @@
     const g=genres.find(x=>x.id===ev.genre)||{color:'#666',label:'?'};
     const curBg=dayBgMap[ev.date]??null;
 
-    const addTag=()=>{const t=prompt('ハッシュタグを入力（# 不要）');if(t&&t.trim())setDraft(d=>({...d,hashtags:[...d.hashtags,t.trim()]}));};
+    const addTag=()=>{const t=prompt('\u30cf\u30c3\u30b7\u30e5\u30bf\u30b0\u3092\u5165\u529b\uff08# \u4e0d\u8981\uff09');if(t&&t.trim())setDraft(d=>({...d,hashtags:[...d.hashtags,t.trim()]}));};
     const rmTag=i=>setDraft(d=>({...d,hashtags:d.hashtags.filter((_,j)=>j!==i)}));
 
     const[djName,setDjName]=React.useState('');
@@ -233,23 +233,23 @@
                 <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{p.name}</div>
                 <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{p.x||('@'+id)}</div>
               </div>
-              <button onClick={()=>rmPerformer(role,i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'4px 10px',boxShadow:SS}}>削除</button>
+              <button onClick={()=>rmPerformer(role,i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'4px 10px',boxShadow:SS}}>\u524a\u9664</button>
             </div>
           );})}
           <div style={{background:'#f0f0f0',border:BT,borderRadius:10,padding:10,display:'flex',flexDirection:'column',gap:8}}>
-            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555'}}>新規追加 / 検索して追加</div>
+            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555'}}>\u65b0\u898f\u8ffd\u52a0 / \u691c\u7d22\u3057\u3066\u8ffd\u52a0</div>
             <div style={{display:'flex',gap:6}}>
-              <input value={nameV} onChange={e=>setNameV(e.target.value)} placeholder="名前" style={{flex:1,border:BT,borderRadius:8,padding:'10px 10px',fontSize:13,outline:'none',minWidth:0}}/>
+              <input value={nameV} onChange={e=>setNameV(e.target.value)} placeholder="\u540d\u524d" style={{flex:1,border:BT,borderRadius:8,padding:'10px 10px',fontSize:13,outline:'none',minWidth:0}}/>
               <div style={{flex:1,display:'flex',alignItems:'center',border:BT,borderRadius:8,background:'#fff',overflow:'hidden',minWidth:0}}>
                 <span style={{padding:'0 4px 0 8px',fontFamily:'"DotGothic16",monospace',fontSize:13,color:'#888',flexShrink:0}}>@</span>
-                <input value={xidV} onChange={e=>setXidV(e.target.value.replace(/^@/,''))} onKeyDown={e=>e.key==='Enter'&&addPerformer(role)} placeholder="X の ID" style={{flex:1,border:'none',padding:'10px 6px 10px 0',fontSize:13,outline:'none',background:'transparent',minWidth:0}}/>
+                <input value={xidV} onChange={e=>setXidV(e.target.value.replace(/^@/,''))} onKeyDown={e=>e.key==='Enter'&&addPerformer(role)} placeholder="X \u306e ID" style={{flex:1,border:'none',padding:'10px 6px 10px 0',fontSize:13,outline:'none',background:'transparent',minWidth:0}}/>
               </div>
             </div>
-            <button onClick={()=>addPerformer(role)} style={{border:BT,borderRadius:8,padding:'11px',background:bg,color:role==='vjs'?'#fff':'#111',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>＋ {name_ja}を追加</button>
+            <button onClick={()=>addPerformer(role)} style={{border:BT,borderRadius:8,padding:'11px',background:bg,color:role==='vjs'?'#fff':'#111',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>\uff0b {name_ja}\u3092\u8ffd\u52a0</button>
           </div>
           {(nameV.length>0||xidV.length>0)&&(()=>{const sugg=getSugg(role,nameV,xidV,draft[role]);return sugg.length>0?(
             <div style={{background:'#fff',border:B,borderRadius:8,overflow:'hidden'}}>
-              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',padding:'6px 10px',borderBottom:'1px solid #eee'}}>登録済みから選択</div>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',padding:'6px 10px',borderBottom:'1px solid #eee'}}>\u767b\u9332\u6e08\u307f\u304b\u3089\u9078\u629e</div>
               {sugg.map(k=>(<button key={k} onClick={()=>pickSugg(role,k)} style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'9px 10px',border:'none',borderBottom:'1px solid #eee',background:'transparent',textAlign:'left',cursor:'pointer'}}>
                 <span style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{people[k].name}</span>
                 <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{people[k].x}</span>
@@ -274,24 +274,24 @@
           <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{ev.title}</div>
         </div>
         {saved
-          ? <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'green',flexShrink:0}}>✓ 保存済</div>
-          : <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#111',flexShrink:0,transform:open?'rotate(90deg)':'none',transition:'transform .2s'}}>›</div>
+          ? <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'green',flexShrink:0}}>\u2713 \u4fdd\u5b58\u6e08</div>
+          : <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#111',flexShrink:0,transform:open?'rotate(90deg)':'none',transition:'transform .2s'}}>\u203a</div>
         }
       </div>
 
       {open&&draft&&(<div style={{borderTop:BT,padding:16,display:'flex',flexDirection:'column',gap:16}}>
-        <div><Label>日付</Label><input type="date" value={draft.date} onChange={e=>setDraft(d=>({...d,date:e.target.value}))} style={inputSt}/></div>
-        <div><Label>イベント名</Label><input type="text" value={draft.title} onChange={e=>setDraft(d=>({...d,title:e.target.value}))} style={inputSt} placeholder="イベント名"/></div>
+        <div><Label>\u65e5\u4ed8</Label><input type="date" value={draft.date} onChange={e=>setDraft(d=>({...d,date:e.target.value}))} style={inputSt}/></div>
+        <div><Label>\u30a4\u30d9\u30f3\u30c8\u540d</Label><input type="text" value={draft.title} onChange={e=>setDraft(d=>({...d,title:e.target.value}))} style={inputSt} placeholder="\u30a4\u30d9\u30f3\u30c8\u540d"/></div>
 
         <div>
-          <Label>ジャンル</Label>
+          <Label>\u30b8\u30e3\u30f3\u30eb</Label>
           <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>
             {genres.map(g2=>(<button key={g2.id} onClick={()=>setDraft(d=>({...d,genre:g2.id}))} style={chipSt(draft.genre===g2.id,g2.color)}># {g2.label}</button>))}
           </div>
         </div>
 
         <div>
-          <Label>カレンダー日色</Label>
+          <Label>\u30ab\u30ec\u30f3\u30c0\u30fc\u65e5\u8272</Label>
           <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>
             {DAY_COLOR_PRESETS.map(p=>{const isAct=(draft.dayBg===p.value)||(p.value===null&&draft.dayBg===null);return(
               <button key={p.id} title={p.label} onClick={()=>setDraft(d=>({...d,dayBg:p.value}))}
@@ -303,45 +303,45 @@
         </div>
 
         <div>
-          <Label>ハッシュタグ</Label>
+          <Label>\u30cf\u30c3\u30b7\u30e5\u30bf\u30b0</Label>
           <div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:4}}>
             {draft.hashtags.map((h,i)=>(<div key={i} style={{display:'inline-flex',alignItems:'center',gap:4,background:C.turquoise,color:'#fff',border:B,borderRadius:20,padding:'5px 10px 5px 12px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>
-              #{h}<button onClick={()=>rmTag(i)} style={{background:'none',border:'none',color:'#fff',fontSize:16,padding:'0 0 0 4px',lineHeight:1,cursor:'pointer'}}>×</button>
+              #{h}<button onClick={()=>rmTag(i)} style={{background:'none',border:'none',color:'#fff',fontSize:16,padding:'0 0 0 4px',lineHeight:1,cursor:'pointer'}}>\u00d7</button>
             </div>))}
-            <button onClick={addTag} style={{border:BT,borderRadius:20,padding:'5px 12px',background:'#fff',fontFamily:'"DotGothic16",monospace',fontSize:11,boxShadow:SS}}>＋ 追加</button>
+            <button onClick={addTag} style={{border:BT,borderRadius:20,padding:'5px 12px',background:'#fff',fontFamily:'"DotGothic16",monospace',fontSize:11,boxShadow:SS}}>\uff0b \u8ffd\u52a0</button>
           </div>
         </div>
 
-        <PerformerBlock role="djs" name_ja="出演DJ" bg={C.yellow} nameV={djName} setNameV={setDjName} xidV={djXid} setXidV={setDjXid}/>
-        <PerformerBlock role="vjs" name_ja="出演VJ" bg={C.turquoise} nameV={vjName} setNameV={setVjName} xidV={vjXid} setXidV={setVjXid}/>
+        <PerformerBlock role="djs" name_ja="\u51fa\u6f14DJ" bg={C.yellow} nameV={djName} setNameV={setDjName} xidV={djXid} setXidV={setDjXid}/>
+        <PerformerBlock role="vjs" name_ja="\u51fa\u6f14VJ" bg={C.turquoise} nameV={vjName} setNameV={setVjName} xidV={vjXid} setXidV={setVjXid}/>
 
         <div>
-          <Label>フライヤー画像</Label>
+          <Label>\u30d5\u30e9\u30a4\u30e4\u30fc\u753b\u50cf</Label>
           <div style={{marginTop:6,display:'flex',flexDirection:'column',gap:8}}>
             {draft.flyer&&(<div style={{position:'relative',border:BT,borderRadius:10,overflow:'hidden',maxWidth:180}}>
               <img src={draft.flyer} alt="flyer" style={{width:'100%',display:'block'}}/>
-              <button onClick={()=>setDraft(d=>({...d,flyer:null}))} style={{position:'absolute',top:6,right:6,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'3px 8px',boxShadow:SS}}>削除</button>
+              <button onClick={()=>setDraft(d=>({...d,flyer:null}))} style={{position:'absolute',top:6,right:6,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'3px 8px',boxShadow:SS}}>\u524a\u9664</button>
             </div>)}
             <label style={{display:'inline-flex',alignItems:'center',gap:8,border:BT,borderRadius:10,padding:'12px 16px',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS,cursor:'pointer'}}>
-              📎 画像を{draft.flyer?'変更':'追加'}
+              \u1f4ce \u753b\u50cf\u3092{draft.flyer?'\u5909\u66f4':'\u8ffd\u52a0'}
               <input type="file" accept="image/*" onChange={handleFlyer} style={{display:'none'}}/>
             </label>
           </div>
         </div>
 
         <div style={{display:'flex',gap:8,paddingTop:4}}>
-          <button onClick={save} style={{flex:2,border:BT,borderRadius:10,padding:'14px 0',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}>💾 保存</button>
-          <button onClick={cancel} style={{flex:1,border:BT,borderRadius:10,padding:'14px 0',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS}}>キャンセル</button>
+          <button onClick={save} style={{flex:2,border:BT,borderRadius:10,padding:'14px 0',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}>\u1f4be \u4fdd\u5b58</button>
+          <button onClick={cancel} style={{flex:1,border:BT,borderRadius:10,padding:'14px 0',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS}}>\u30ad\u30e3\u30f3\u30bb\u30eb</button>
         </div>
-        <button onClick={()=>{if(confirm(`「${ev.title}」を削除しますか？`))onDelete(ev.id||ev.date);}}
+        <button onClick={()=>{if(confirm(`\u300c${ev.title}\u300d\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f`))onDelete(ev.id||ev.date);}}
           style={{width:'100%',border:BT,borderRadius:10,padding:'11px 0',background:'#fff',color:'#999',fontFamily:'"DotGothic16",monospace',fontSize:12,boxShadow:SS}}>
-          🗑️ このイベントを削除
+          \u1f5d1\ufe0f \u3053\u306e\u30a4\u30d9\u30f3\u30c8\u3092\u524a\u9664
         </button>
       </div>)}
     </div>);
   }
 
-  // ─── メイン管理画面 ─────────────────────────────────────────
+  // \u2500\u2500\u2500 \u30e1\u30a4\u30f3\u7ba1\u7406\u753b\u9762 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   function AdminApp(){
     const[token,setToken]=React.useState(()=>sessionStorage.getItem('vb_token')||'');
     const[loggedIn,setLoggedIn]=React.useState(()=>!!sessionStorage.getItem('vb_token'));
@@ -358,7 +358,7 @@
 
     const handleLogin=(tk)=>{setToken(tk);setLoggedIn(true);};
 
-    // ログイン後にGitHubからロード
+    // \u30ed\u30b0\u30a4\u30f3\u5f8c\u306bGitHub\u304b\u3089\u30ed\u30fc\u30c9
     React.useEffect(()=>{
       if(!loggedIn||!token)return;
       setStatus('loading');
@@ -397,17 +397,17 @@
       setDayBgMap(m=>{const n={...m};if(draft.dayBg===null)delete n[draft.date];else n[draft.date]=draft.dayBg;return n;});
     };
     const handleDelete=evId=>setEvents(prev=>prev.filter(e=>(e.id||e.date)!==evId));
-    const addEvent=()=>setEvents(prev=>[...prev,{id:uid(),date:fmtDate(TODAY),title:'新規イベント',genre:genres[0]?.id||'vocabuki',hashtags:['ボカブキイベント'],djs:[],vjs:[],flyer:null}]);
+    const addEvent=()=>setEvents(prev=>[...prev,{id:uid(),date:fmtDate(TODAY),title:'\u65b0\u898f\u30a4\u30d9\u30f3\u30c8',genre:genres[0]?.id||'vocabuki',hashtags:['\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8'],djs:[],vjs:[],flyer:null}]);
     const addGenre=()=>{const label=newLabel.trim();if(!label)return;const id=label.replace(/[\s\u3000]+/g,'').toLowerCase();setGenres(prev=>[...prev,{id,label,color:newColor}]);setNewLabel('');};
-    const rmGenre=id=>{if(events.some(e=>e.genre===id)){alert('このジャンルを使っているイベントがあります。');return;}setGenres(prev=>prev.filter(g=>g.id!==id));};
+    const rmGenre=id=>{if(events.some(e=>e.genre===id)){alert('\u3053\u306e\u30b8\u30e3\u30f3\u30eb\u3092\u4f7f\u3063\u3066\u3044\u308b\u30a4\u30d9\u30f3\u30c8\u304c\u3042\u308a\u307e\u3059\u3002');return;}setGenres(prev=>prev.filter(g=>g.id!==id));};
     const sorted=React.useMemo(()=>[...events].sort((a,b)=>a.date.localeCompare(b.date)),[events]);
     const logout=()=>{sessionStorage.removeItem('vb_token');setToken('');setLoggedIn(false);};
 
     const barInfo=()=>{
-      if(status==='loading')return{bg:'#555',text:'⏳ GitHubからロード中...'};
-      if(status==='saving')return{bg:'#555',text:'⏳ GitHubに保存中...'};
-      if(status==='saved')return{bg:'#3FB55E',text:'✅ 保存完了！GitHub Pagesに反映されます'};
-      if(status==='error')return{bg:C.red,text:`❌ ${errMsg}`};
+      if(status==='loading')return{bg:'#555',text:'\u23f3 GitHub\u304b\u3089\u30ed\u30fc\u30c9\u4e2d...'};
+      if(status==='saving')return{bg:'#555',text:'\u23f3 GitHub\u306b\u4fdd\u5b58\u4e2d...'};
+      if(status==='saved')return{bg:'#3FB55E',text:'\u2705 \u4fdd\u5b58\u5b8c\u4e86\uff01GitHub Pages\u306b\u53cd\u6620\u3055\u308c\u307e\u3059'};
+      if(status==='error')return{bg:C.red,text:`\u274c ${errMsg}`};
       return null;
     };
     const bar=barInfo();
@@ -421,15 +421,15 @@
             <div style={{display:'flex',alignItems:'center',gap:8}}>
               <span style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#fff'}}>VOCA</span>
               <span style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:C.turquoise}}>BUKI</span>
-              <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#aaa'}}>管理</span>
+              <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#aaa'}}>\u7ba1\u7406</span>
             </div>
             <div style={{display:'flex',gap:8,alignItems:'center'}}>
               <button onClick={doSave} disabled={status==='loading'||status==='saving'}
                 style={{background:status==='saved'?'#3FB55E':C.red,color:'#fff',border:BT,borderRadius:10,padding:'9px 16px',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS,opacity:status==='loading'||status==='saving'?0.6:1}}>
-                {status==='saving'?'保存中':status==='saved'?'✅':'💾 保存'}
+                {status==='saving'?'\u4fdd\u5b58\u4e2d':status==='saved'?'\u2705':'\u1f4be \u4fdd\u5b58'}
               </button>
               <button onClick={logout} style={{background:'#333',color:'#aaa',border:'2px solid #555',borderRadius:8,padding:'9px 12px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>
-                ログアウト
+                \u30ed\u30b0\u30a2\u30a6\u30c8
               </button>
             </div>
           </div>
@@ -439,51 +439,51 @@
         <div style={{paddingTop: bar ? 88 : 64, paddingBottom:100, padding:'0 16px 100px', marginTop: bar ? 88 : 64}}>
           <div style={{height: bar ? 88 : 64}}/>
 
-          {/* ジャンル管理 */}
+          {/* \u30b8\u30e3\u30f3\u30eb\u7ba1\u7406 */}
           <div style={{marginBottom:24}}>
-            <SectionHead>ジャンル管理</SectionHead>
+            <SectionHead>\u30b8\u30e3\u30f3\u30eb\u7ba1\u7406</SectionHead>
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
               {genres.map(g=>(<div key={g.id} style={{display:'flex',alignItems:'center',gap:10,background:'#fff',border:BT,borderRadius:10,padding:'12px 14px',boxShadow:SS}}>
                 <div style={{width:30,height:30,borderRadius:6,background:g.color,border:B,flexShrink:0}}/>
                 <div style={{flex:1,fontFamily:'"RocknRoll One",system-ui',fontSize:14}}># {g.label}<span style={{color:'#888',fontFamily:'"DotGothic16",monospace',fontSize:10,marginLeft:6}}>{g.id}</span></div>
-                <button onClick={()=>rmGenre(g.id)} style={{background:'#fff',border:B,borderRadius:6,fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#666',padding:'4px 10px',boxShadow:SS}}>削除</button>
+                <button onClick={()=>rmGenre(g.id)} style={{background:'#fff',border:B,borderRadius:6,fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#666',padding:'4px 10px',boxShadow:SS}}>\u524a\u9664</button>
               </div>))}
               <div style={{background:'#fff',border:BT,borderRadius:10,padding:12,boxShadow:SS}}>
-                <Label>新規ジャンル追加</Label>
+                <Label>\u65b0\u898f\u30b8\u30e3\u30f3\u30eb\u8ffd\u52a0</Label>
                 <div style={{display:'flex',gap:8,marginTop:4}}>
-                  <input value={newLabel} onChange={e=>setNewLabel(e.target.value)} placeholder="ジャンル名" style={{flex:1,border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none'}}/>
+                  <input value={newLabel} onChange={e=>setNewLabel(e.target.value)} placeholder="\u30b8\u30e3\u30f3\u30eb\u540d" style={{flex:1,border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none'}}/>
                   <input type="color" value={newColor} onChange={e=>setNewColor(e.target.value)} style={{width:48,height:48,border:BT,borderRadius:8,padding:2,cursor:'pointer'}}/>
-                  <button onClick={addGenre} style={{border:BT,borderRadius:8,padding:'8px 14px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>追加</button>
+                  <button onClick={addGenre} style={{border:BT,borderRadius:8,padding:'8px 14px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>\u8ffd\u52a0</button>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* イベント管理 */}
+          {/* \u30a4\u30d9\u30f3\u30c8\u7ba1\u7406 */}
           <div>
-            <SectionHead>イベント管理</SectionHead>
+            <SectionHead>\u30a4\u30d9\u30f3\u30c8\u7ba1\u7406</SectionHead>
             <div style={{display:'flex',flexDirection:'column',gap:10}}>
               {status==='loading'
-                ? <div style={{textAlign:'center',padding:40,fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#888'}}>ロード中...</div>
+                ? <div style={{textAlign:'center',padding:40,fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#888'}}>\u30ed\u30fc\u30c9\u4e2d...</div>
                 : sorted.map(e=>(<EventEditCard key={e.id||e.date} ev={e} genres={genres} people={people} dayBgMap={dayBgMap} onSave={handleSave} onDelete={handleDelete}/>))
               }
               <button onClick={addEvent} style={{border:BT,borderRadius:14,padding:'16px',background:C.yellow,fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginTop:4}}>
-                ＋ イベントを追加
+                \uff0b \u30a4\u30d9\u30f3\u30c8\u3092\u8ffd\u52a0
               </button>
             </div>
           </div>
 
           <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,textAlign:'center',color:'#888',lineHeight:1.8,marginTop:24}}>
-            編集後は必ず上の「保存」ボタンを押してください。<br/>
-            保存後 1〜2分で GitHub Pages に反映されます。
+            \u7de8\u96c6\u5f8c\u306f\u5fc5\u305a\u4e0a\u306e\u300c\u4fdd\u5b58\u300d\u30dc\u30bf\u30f3\u3092\u62bc\u3057\u3066\u304f\u3060\u3055\u3044\u3002<br/>
+            \u4fdd\u5b58\u5f8c 1\u301c2\u5206\u3067 GitHub Pages \u306b\u53cd\u6620\u3055\u308c\u307e\u3059\u3002
           </div>
         </div>
 
-        {/* 下部固定保存ボタン */}
+        {/* \u4e0b\u90e8\u56fa\u5b9a\u4fdd\u5b58\u30dc\u30bf\u30f3 */}
         <div style={{position:'fixed',bottom:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:520,padding:'12px 16px',background:`linear-gradient(to top,${C.paper} 70%,transparent)`,zIndex:40}}>
           <button onClick={doSave} disabled={status==='loading'||status==='saving'}
             style={{width:'100%',border:BT,borderRadius:12,padding:'15px',background:status==='saved'?'#3FB55E':C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:SB,opacity:status==='loading'||status==='saving'?0.6:1}}>
-            {status==='saving'?'⏳ 保存中...':status==='saved'?'✅ 保存完了':'💾 GitHubに保存'}
+            {status==='saving'?'\u23f3 \u4fdd\u5b58\u4e2d...':status==='saved'?'\u2705 \u4fdd\u5b58\u5b8c\u4e86':'\u1f4be GitHub\u306b\u4fdd\u5b58'}
           </button>
         </div>
       </div>
