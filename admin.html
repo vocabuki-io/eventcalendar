@@ -22,8 +22,6 @@
 <body>
 <div id="root"></div>
 
-<!-- 日本語テキスト定義（Babel外・文字化けしない） -->
-
 <script>
 window.T = {
   mgmt:       "\u7ba1\u7406",
@@ -123,32 +121,31 @@ const B='3px solid #111', BT='4px solid #111', S='4px 4px 0 #111', SB='6px 6px 0
 const pat = { halftone: c => `radial-gradient(circle at 3px 3px,${c} 1.8px,transparent 2px)` };
 
 const GENRES_DEFAULT = [
-  {id:'vocabuki', label:T.gVocabuki,  color:'#F5E642'},
-  {id:'anime',    label:T.gAnime,     color:'#E63946'},
-  {id:'vocaloid', label:T.gVocaloid,  color:'#39C5BB'},
-  {id:'external', label:T.gExternal,  color:'#B8F0B0'},
-  {id:'vtuber',   label:T.gVtuber,    color:'#D4B0F0'},
+  {id:'vocabuki', label:T.gVocabuki, color:'#F5E642'},
+  {id:'anime',    label:T.gAnime,    color:'#E63946'},
+  {id:'vocaloid', label:T.gVocaloid, color:'#39C5BB'},
+  {id:'external', label:T.gExternal, color:'#B8F0B0'},
+  {id:'vtuber',   label:T.gVtuber,   color:'#D4B0F0'},
 ];
 const PEOPLE_DEFAULT = {
-  drag_on_3:       {name:'dragon3',   x:'@drag_on_3'},
-  rockstar_saihan: {name:T.pIASU,     x:'@rockstar_saihan'},
-  nono4e:          {name:T.pNonose,   x:'@nono4e'},
-  aym_pngn:        {name:T.pAyumu,    x:'@aym_pngn'},
+  drag_on_3:       {name:'dragon3', x:'@drag_on_3'},
+  rockstar_saihan: {name:T.pIASU,   x:'@rockstar_saihan'},
+  nono4e:          {name:T.pNonose, x:'@nono4e'},
+  aym_pngn:        {name:T.pAyumu,  x:'@aym_pngn'},
 };
-
 const DAY_COLORS = [
-  {id:'auto',label:T.colorAuto, value:null},
-  {id:'red', label:T.colorRed,  value:C.red},
-  {id:'teal',label:T.colorTeal, value:C.turquoise},
-  {id:'yel', label:T.colorYel,  value:C.yellow},
-  {id:'org', label:T.colorOrg,  value:C.orange},
-  {id:'pur', label:T.colorPur,  value:'#6A3FD9'},
-  {id:'pnk', label:T.colorPnk,  value:'#FF3DA5'},
-  {id:'nvy', label:T.colorNvy,  value:'#223B8F'},
-  {id:'grn', label:T.colorGrn,  value:'#3FB55E'},
+  {id:'auto',label:T.colorAuto,value:null},
+  {id:'red', label:T.colorRed, value:'#E63946'},
+  {id:'teal',label:T.colorTeal,value:'#2EC5CE'},
+  {id:'yel', label:T.colorYel, value:'#FFD23F'},
+  {id:'org', label:T.colorOrg, value:'#FF8A1E'},
+  {id:'pur', label:T.colorPur, value:'#6A3FD9'},
+  {id:'pnk', label:T.colorPnk, value:'#FF3DA5'},
+  {id:'nvy', label:T.colorNvy, value:'#223B8F'},
+  {id:'grn', label:T.colorGrn, value:'#3FB55E'},
 ];
 
-function fmtDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return`${y}-${m}-${day}`;}
+function fmtDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dy=String(d.getDate()).padStart(2,'0');return`${y}-${m}-${dy}`;}
 function parseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
 function weekIdx(d){return(d.getDay()+6)%7;}
 function uid(){return'e'+Date.now()+Math.random().toString(36).slice(2,6);}
@@ -160,18 +157,192 @@ function SHead({children}){return(<div style={{fontFamily:'"Reggae One",system-u
 async function ghFetch(token,path,method='GET',body=null){
   const opts={method,headers:{Authorization:`token ${token}`,'Content-Type':'application/json',Accept:'application/vnd.github.v3+json'}};
   if(body)opts.body=JSON.stringify(body);
-  const res=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,opts);
+  const res=await fetch(`https:
   if(!res.ok){const e=await res.json();throw new Error(e.message||res.status);}
   return res.json();
 }
 async function loadGH(token){
   const file=await ghFetch(token,GH_PATH);
-  const json=JSON.parse(atob(file.content.replace(/\n/g,'')));
-  return{data:json,sha:file.sha};
+  return{data:JSON.parse(atob(file.content.replace(/\n/g,''))),sha:file.sha};
 }
 async function saveGH(token,data,sha){
   const content=btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2))));
   await ghFetch(token,GH_PATH,'PUT',{message:`Update events.json ${new Date().toISOString()}`,content,sha});
+}
+
+
+function PerfBlock({role,labelText,addText,bgColor,draft,setDraft,people,nameV,setNameV,xidV,setXidV}){
+  const getSugg=(nq,xq)=>{
+    const q=(nq+xq).toLowerCase().trim();if(!q)return[];
+    const cur=draft[role]||[];
+    return Object.keys(people).filter(k=>!cur.includes(k)&&(k.toLowerCase().includes(q)||people[k].name.toLowerCase().includes(q)||people[k].x.toLowerCase().includes(q))).slice(0,4);
+  };
+  const addPerf=()=>{
+    const name=nameV.trim(), xid=xidV.trim().replace(/^@/,'');
+    if(!xid&&!name)return;
+    const key=xid||(name.toLowerCase().replace(/\s+/g,'_'));
+    if(!people[key])people[key]={name:name||key,x:xid?('@'+xid):''};
+    setDraft(d=>({...d,[role]:d[role].includes(key)?d[role]:[...d[role],key]}));
+    setNameV('');setXidV('');
+  };
+  const pickSugg=k=>{
+    setDraft(d=>({...d,[role]:d[role].includes(k)?d[role]:[...d[role],k]}));
+    setNameV('');setXidV('');
+  };
+  const rmPerf=i=>setDraft(d=>({...d,[role]:d[role].filter((_,j)=>j!==i)}));
+  const sugg=getSugg(nameV,xidV);
+
+  return(
+    <div>
+      <Label>{labelText}</Label>
+      <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:4}}>
+        {(draft[role]||[]).map((id,i)=>{const p=people[id]||{name:id,x:'@'+id};return(
+          <div key={id+i} style={{display:'flex',alignItems:'center',gap:8,background:'#f8f8f8',border:B,borderRadius:8,padding:'8px 12px'}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{p.name}</div>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{p.x||('@'+id)}</div>
+            </div>
+            <button onClick={()=>rmPerf(i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'4px 10px',boxShadow:SS}}>{T.del}</button>
+          </div>
+        );})}
+        <div style={{background:'#f0f0f0',border:BT,borderRadius:10,padding:10,display:'flex',flexDirection:'column',gap:8}}>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555'}}>{T.perfNew}</div>
+          <div style={{display:'flex',gap:6}}>
+            <input value={nameV} onChange={e=>setNameV(e.target.value)} placeholder={T.namePh}
+              style={{flex:1,border:BT,borderRadius:8,padding:'10px',fontSize:13,outline:'none',minWidth:0}}/>
+            <div style={{flex:1,display:'flex',alignItems:'center',border:BT,borderRadius:8,background:'#fff',overflow:'hidden',minWidth:0}}>
+              <span style={{padding:'0 4px 0 8px',fontFamily:'"DotGothic16",monospace',fontSize:13,color:'#888',flexShrink:0}}>@</span>
+              <input value={xidV} onChange={e=>setXidV(e.target.value.replace(/^@/,''))}
+                onKeyDown={e=>e.key==='Enter'&&addPerf()}
+                placeholder={T.xidPh}
+                style={{flex:1,border:'none',padding:'10px 6px 10px 0',fontSize:13,outline:'none',background:'transparent',minWidth:0}}/>
+            </div>
+          </div>
+          <button onClick={addPerf} style={{border:BT,borderRadius:8,padding:'11px',background:bgColor,color:role==='vjs'?'#fff':'#111',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>{addText}</button>
+        </div>
+        {sugg.length>0&&(
+          <div style={{background:'#fff',border:B,borderRadius:8,overflow:'hidden'}}>
+            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',padding:'6px 10px',borderBottom:'1px solid #eee'}}>{T.fromReg}</div>
+            {sugg.map(k=>(<button key={k} onClick={()=>pickSugg(k)} style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'9px 10px',border:'none',borderBottom:'1px solid #eee',background:'transparent',textAlign:'left',cursor:'pointer'}}>
+              <span style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{people[k].name}</span>
+              <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{people[k].x}</span>
+            </button>))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function EventCard({ev,genres,people,dayBgMap,onSave,onDelete}){
+  const[open,setOpen]=React.useState(false);
+  const[draft,setDraft]=React.useState(null);
+  const[savedMark,setSavedMark]=React.useState(false);
+  const[djName,setDjName]=React.useState('');
+  const[djXid,setDjXid]=React.useState('');
+  const[vjName,setVjName]=React.useState('');
+  const[vjXid,setVjXid]=React.useState('');
+
+  const startEdit=()=>{
+    setDraft({date:ev.date,title:ev.title,genre:ev.genre,hashtags:[...(ev.hashtags||[])],djs:[...ev.djs],vjs:[...ev.vjs],flyer:ev.flyer||null,dayBg:dayBgMap[ev.date]??null});
+    setDjName('');setDjXid('');setVjName('');setVjXid('');
+    setOpen(true);
+  };
+  const cancel=()=>{setOpen(false);setDraft(null);};
+  const saveCard=()=>{onSave(ev.id||ev.date,draft);setSavedMark(true);setTimeout(()=>setSavedMark(false),2000);setOpen(false);setDraft(null);};
+  const addTag=()=>{const t=prompt('# '+T.hashL);if(t&&t.trim())setDraft(d=>({...d,hashtags:[...d.hashtags,t.trim()]}));};
+  const rmTag=i=>setDraft(d=>({...d,hashtags:d.hashtags.filter((_,j)=>j!==i)}));
+
+  const d=parseDate(ev.date);
+  const g=genres.find(x=>x.id===ev.genre)||{color:'#666',label:'?'};
+  const curBg=dayBgMap[ev.date]??null;
+  const iSt={width:'100%',border:BT,borderRadius:8,padding:'10px 12px',fontSize:14,background:'#fff',outline:'none'};
+  const chipSt=(on,col)=>({display:'inline-flex',alignItems:'center',gap:4,border:on?'3px solid #111':'2px solid #111',borderRadius:8,padding:'6px 12px',background:on?col:'#fff',color:on?'#fff':'#111',fontFamily:'"DotGothic16",monospace',fontSize:12,cursor:'pointer',boxShadow:on?SS:'none',whiteSpace:'nowrap'});
+
+  return(
+    <div style={{background:'#fff',border:BT,borderRadius:14,overflow:'hidden',boxShadow:S}}>
+      <div onClick={open?undefined:startEdit} style={{display:'flex',gap:10,alignItems:'center',padding:14,cursor:open?'default':'pointer',userSelect:'none',WebkitUserSelect:'none'}}>
+        <div style={{width:52,height:52,flexShrink:0,background:curBg||g.color,color:'#fff',border:B,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9}}>{T.wdays[weekIdx(d)]}</div>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:22,lineHeight:1,textShadow:'1.5px 1.5px 0 #111'}}>{d.getDate()}</div>
+        </div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{display:'flex',gap:5,marginBottom:3,flexWrap:'wrap'}}>
+            <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:['#F5E642','#B8F0B0','#D4B0F0'].includes(g.color)?'#111':'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 6px'}}># {g.label}</span>
+            <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,color:'#666'}}>{ev.date}</span>
+          </div>
+          <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{ev.title}</div>
+        </div>
+        {savedMark
+          ?<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'green',flexShrink:0}}>{T.savedMark}</div>
+          :<div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#111',flexShrink:0,transform:open?'rotate(90deg)':'none',transition:'transform .2s'}}>&#8250;</div>
+        }
+      </div>
+      {open&&draft&&(
+        <div style={{borderTop:BT,padding:16,display:'flex',flexDirection:'column',gap:16}}>
+          <div><Label>{T.dateL}</Label><input type="date" value={draft.date} onChange={e=>setDraft(d=>({...d,date:e.target.value}))} style={iSt}/></div>
+          <div><Label>{T.titleL}</Label><input type="text" value={draft.title} onChange={e=>setDraft(d=>({...d,title:e.target.value}))} placeholder={T.titlePh} style={iSt}/></div>
+          <div>
+            <Label>{T.genreL}</Label>
+            <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>
+              {genres.map(g2=>(<button key={g2.id} onClick={()=>setDraft(d=>({...d,genre:g2.id}))} style={chipSt(draft.genre===g2.id,g2.color)}># {g2.label}</button>))}
+            </div>
+          </div>
+          <div>
+            <Label>{T.colorL}</Label>
+            <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>
+              {DAY_COLORS.map(p=>{const on=(draft.dayBg===p.value)||(p.value===null&&draft.dayBg===null);return(
+                <button key={p.id} title={p.label} onClick={()=>setDraft(d=>({...d,dayBg:p.value}))}
+                  style={{width:38,height:38,border:on?'3px solid #111':'2px solid #111',borderRadius:8,padding:0,background:p.value||'repeating-linear-gradient(45deg,#eee 0 4px,#fff 4px 8px)',boxShadow:on?`0 0 0 2px ${C.yellow},2px 2px 0 #111`:SS,position:'relative',transform:on?'translate(-1px,-1px)':'none'}}>
+                  {p.value===null&&<span style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontFamily:'"DotGothic16",monospace',color:'#111'}}>A</span>}
+                </button>
+              );})}
+            </div>
+          </div>
+          <div>
+            <Label>{T.hashL}</Label>
+            <div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:4}}>
+              {draft.hashtags.map((h,i)=>(
+                <div key={i} style={{display:'inline-flex',alignItems:'center',gap:4,background:C.turquoise,color:'#fff',border:B,borderRadius:20,padding:'5px 10px 5px 12px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>
+                  #{h}<button onClick={()=>rmTag(i)} style={{background:'none',border:'none',color:'#fff',fontSize:16,padding:'0 0 0 4px',lineHeight:1,cursor:'pointer'}}>x</button>
+                </div>
+              ))}
+              <button onClick={addTag} style={{border:BT,borderRadius:20,padding:'5px 12px',background:'#fff',fontFamily:'"DotGothic16",monospace',fontSize:11,boxShadow:SS}}>{T.hashAdd}</button>
+            </div>
+          </div>
+          <PerfBlock role="djs" labelText={T.djL} addText={T.djAdd} bgColor={C.yellow}
+            draft={draft} setDraft={setDraft} people={people}
+            nameV={djName} setNameV={setDjName} xidV={djXid} setXidV={setDjXid}/>
+          <PerfBlock role="vjs" labelText={T.vjL} addText={T.vjAdd} bgColor={C.turquoise}
+            draft={draft} setDraft={setDraft} people={people}
+            nameV={vjName} setNameV={setVjName} xidV={vjXid} setXidV={setVjXid}/>
+          <div>
+            <Label>{T.flyerL}</Label>
+            <div style={{marginTop:6,display:'flex',flexDirection:'column',gap:8}}>
+              {draft.flyer&&(
+                <div style={{position:'relative',border:BT,borderRadius:10,overflow:'hidden',maxWidth:180}}>
+                  <img src={draft.flyer} alt="flyer" style={{width:'100%',display:'block'}}/>
+                  <button onClick={()=>setDraft(d=>({...d,flyer:null}))} style={{position:'absolute',top:6,right:6,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'3px 8px',boxShadow:SS}}>{T.del}</button>
+                </div>
+              )}
+              <label style={{display:'inline-flex',alignItems:'center',gap:8,border:BT,borderRadius:10,padding:'12px 16px',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS,cursor:'pointer'}}>
+                {draft.flyer?T.flyerChg:T.flyerAdd}
+                <input type="file" accept="image/*" onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev2=>setDraft(d=>({...d,flyer:ev2.target.result}));r.readAsDataURL(f);}} style={{display:'none'}}/>
+              </label>
+            </div>
+          </div>
+          <div style={{display:'flex',gap:8,paddingTop:4}}>
+            <button onClick={saveCard} style={{flex:2,border:BT,borderRadius:10,padding:'14px 0',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}>{T.saveBt}</button>
+            <button onClick={cancel} style={{flex:1,border:BT,borderRadius:10,padding:'14px 0',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS}}>{T.cancelBt}</button>
+          </div>
+          <button onClick={()=>{if(confirm(ev.title+T.confirmDel))onDelete(ev.id||ev.date);}}
+            style={{width:'100%',border:BT,borderRadius:10,padding:'11px 0',background:'#fff',color:'#999',fontFamily:'"DotGothic16",monospace',fontSize:12,boxShadow:SS}}>
+            {T.eventDel}
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function LoginScreen({onLogin}){
@@ -180,24 +351,13 @@ function LoginScreen({onLogin}){
   const[step,setStep]=React.useState(()=>sessionStorage.getItem('vb_token')?'token':'pw');
   const[err,setErr]=React.useState('');
   const[busy,setBusy]=React.useState(false);
-
-  const checkPw=()=>{
-    if(pw===ADMIN_PASSWORD){setStep('token');setErr('');}
-    else{setErr(T.pwErr);setTimeout(()=>setErr(''),1500);}
-  };
+  const checkPw=()=>{if(pw===ADMIN_PASSWORD){setStep('token');setErr('');}else{setErr(T.pwErr);setTimeout(()=>setErr(''),1500);}};
   const checkToken=async()=>{
     if(!token.trim()){setErr(T.tokenEmpty);return;}
     setBusy(true);setErr('');
-    try{
-      await ghFetch(token.trim(),GH_PATH);
-      sessionStorage.setItem('vb_token',token.trim());
-      onLogin(token.trim());
-    }catch(e){
-      setErr(T.tokenErr+e.message);
-      setBusy(false);
-    }
+    try{await ghFetch(token.trim(),GH_PATH);sessionStorage.setItem('vb_token',token.trim());onLogin(token.trim());}
+    catch(e){setErr(T.tokenErr+e.message);setBusy(false);}
   };
-
   const iSt={width:'100%',border:BT,borderRadius:10,padding:'12px 14px',fontSize:15,outline:'none',background:'#fff',marginBottom:4};
   return(
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:20,background:C.paper}}>
@@ -210,199 +370,23 @@ function LoginScreen({onLogin}){
           </div>
           <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',marginTop:8}}>{T.adminScreen}</div>
         </div>
-        {step==='pw'&&(
-          <div>
-            <Label>{T.pwL}</Label>
-            <input type="password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&checkPw()} placeholder={T.pwPh} style={iSt} autoComplete="current-password"/>
-            {err&&<div style={{color:C.red,fontFamily:'"DotGothic16",monospace',fontSize:11,marginBottom:8}}>{err}</div>}
-            <button onClick={checkPw} style={{width:'100%',border:BT,borderRadius:10,padding:'13px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}>{T.pwNext}</button>
-          </div>
-        )}
-        {step==='token'&&(
-          <div>
-            <Label>{T.tokenL}</Label>
-            <input type="password" value={token} onChange={e=>setToken(e.target.value)} onKeyDown={e=>e.key==='Enter'&&checkToken()} placeholder={T.tokenPh} style={iSt} autoComplete="off"/>
-            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',marginBottom:12,lineHeight:1.7}}>
-              {T.tokenNote1}<br/>{T.tokenNote2}
-            </div>
-            {err&&<div style={{color:C.red,fontFamily:'"DotGothic16",monospace',fontSize:11,marginBottom:8}}>{err}</div>}
-            <button onClick={checkToken} disabled={busy} style={{width:'100%',border:BT,borderRadius:10,padding:'13px',background:busy?'#999':C.turquoise,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,marginBottom:8}}>
-              {busy?T.tokenCheck:T.tokenLogin}
-            </button>
-            <button onClick={()=>{setStep('pw');setPw('');sessionStorage.removeItem('vb_token');}} style={{width:'100%',border:BT,borderRadius:10,padding:'10px',background:'#fff',fontFamily:'"DotGothic16",monospace',fontSize:12,boxShadow:SS}}>
-              {T.tokenBack}
-            </button>
-          </div>
-        )}
+        {step==='pw'&&(<div>
+          <Label>{T.pwL}</Label>
+          <input type="password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&checkPw()} placeholder={T.pwPh} style={iSt} autoComplete="current-password"/>
+          {err&&<div style={{color:C.red,fontFamily:'"DotGothic16",monospace',fontSize:11,marginBottom:8}}>{err}</div>}
+          <button onClick={checkPw} style={{width:'100%',border:BT,borderRadius:10,padding:'13px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}>{T.pwNext}</button>
+        </div>)}
+        {step==='token'&&(<div>
+          <Label>{T.tokenL}</Label>
+          <input type="password" value={token} onChange={e=>setToken(e.target.value)} onKeyDown={e=>e.key==='Enter'&&checkToken()} placeholder={T.tokenPh} style={iSt} autoComplete="off"/>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',marginBottom:12,lineHeight:1.7}}>{T.tokenNote1}<br/>{T.tokenNote2}</div>
+          {err&&<div style={{color:C.red,fontFamily:'"DotGothic16",monospace',fontSize:11,marginBottom:8}}>{err}</div>}
+          <button onClick={checkToken} disabled={busy} style={{width:'100%',border:BT,borderRadius:10,padding:'13px',background:busy?'#999':C.turquoise,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,marginBottom:8}}>{busy?T.tokenCheck:T.tokenLogin}</button>
+          <button onClick={()=>{setStep('pw');setPw('');sessionStorage.removeItem('vb_token');}} style={{width:'100%',border:BT,borderRadius:10,padding:'10px',background:'#fff',fontFamily:'"DotGothic16",monospace',fontSize:12,boxShadow:SS}}>{T.tokenBack}</button>
+        </div>)}
       </div>
     </div>
   );
-}
-
-function EventCard({ev,genres,people,dayBgMap,onSave,onDelete}){
-  const[open,setOpen]=React.useState(false);
-  const[draft,setDraft]=React.useState(null);
-  const[savedMark,setSavedMark]=React.useState(false);
-
-  const startEdit=()=>{
-    setDraft({date:ev.date,title:ev.title,genre:ev.genre,hashtags:[...(ev.hashtags||[])],djs:[...ev.djs],vjs:[...ev.vjs],flyer:ev.flyer||null,dayBg:dayBgMap[ev.date]??null});
-    setOpen(true);
-  };
-  const cancel=()=>{setOpen(false);setDraft(null);};
-  const saveCard=()=>{onSave(ev.id||ev.date,draft);setSavedMark(true);setTimeout(()=>setSavedMark(false),2000);setOpen(false);setDraft(null);};
-
-  const d=parseDate(ev.date);
-  const g=genres.find(x=>x.id===ev.genre)||{color:'#666',label:'?'};
-  const curBg=dayBgMap[ev.date]??null;
-
-  const addTag=()=>{const t=prompt(T.hashL+'(# '+T.hashAdd.replace('\uff0b ','').replace('\u8ffd\u52a0','')+')');if(t&&t.trim())setDraft(d=>({...d,hashtags:[...d.hashtags,t.trim()]}));};
-  const rmTag=i=>setDraft(d=>({...d,hashtags:d.hashtags.filter((_,j)=>j!==i)}));
-
-  const[djName,setDjName]=React.useState('');
-  const[djXid,setDjXid]=React.useState('');
-  const[vjName,setVjName]=React.useState('');
-  const[vjXid,setVjXid]=React.useState('');
-
-  const getSugg=(role,nq,xq,cur)=>{
-    const q=(nq+xq).toLowerCase().trim();if(!q)return[];
-    return Object.keys(people).filter(k=>!cur.includes(k)&&(k.includes(q)||people[k].name.toLowerCase().includes(q)||people[k].x.toLowerCase().includes(q))).slice(0,4);
-  };
-  const addPerf=(role)=>{
-    const name=(role==='djs'?djName:vjName).trim();
-    const xid=(role==='djs'?djXid:vjXid).trim().replace(/^@/,'');
-    if(!xid&&!name)return;
-    const key=xid||(name.toLowerCase().replace(/[\s]+/g,'_'));
-    if(!people[key])people[key]={name:name||key,x:xid?('@'+xid):''};
-    setDraft(d=>({...d,[role]:d[role].includes(key)?d[role]:[...d[role],key]}));
-    if(role==='djs'){setDjName('');setDjXid('');}else{setVjName('');setVjXid('');}
-  };
-  const pickSugg=(role,k)=>{setDraft(d=>({...d,[role]:d[role].includes(k)?d[role]:[...d[role],k]}));if(role==='djs'){setDjName('');setDjXid('');}else{setVjName('');setVjXid('');}};
-  const rmPerf=(role,i)=>setDraft(d=>({...d,[role]:d[role].filter((_,j)=>j!==i)}));
-  const handleFlyer=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev2=>setDraft(d=>({...d,flyer:ev2.target.result}));r.readAsDataURL(f);};
-
-  const iSt={width:'100%',border:BT,borderRadius:8,padding:'10px 12px',fontSize:14,background:'#fff',outline:'none'};
-  const chipSt=(on,col)=>({display:'inline-flex',alignItems:'center',gap:4,border:on?'3px solid #111':'2px solid #111',borderRadius:8,padding:'6px 12px',background:on?col:'#fff',color:on?'#fff':'#111',fontFamily:'"DotGothic16",monospace',fontSize:12,cursor:'pointer',boxShadow:on?SS:'none',whiteSpace:'nowrap'});
-
-  const PerfBlock=({role,labelText,addText,bgColor,nameV,setNameV,xidV,setXidV})=>(
-    <div>
-      <Label>{labelText}</Label>
-      <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:4}}>
-        {(draft[role]||[]).map((id,i)=>{const p=people[id]||{name:id,x:'@'+id};return(
-          <div key={i} style={{display:'flex',alignItems:'center',gap:8,background:'#f8f8f8',border:B,borderRadius:8,padding:'8px 12px'}}>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{p.name}</div>
-              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{p.x||('@'+id)}</div>
-            </div>
-            <button onClick={()=>rmPerf(role,i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'4px 10px',boxShadow:SS}}>{T.del}</button>
-          </div>
-        );})}
-        <div style={{background:'#f0f0f0',border:BT,borderRadius:10,padding:10,display:'flex',flexDirection:'column',gap:8}}>
-          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555'}}>{T.perfNew}</div>
-          <div style={{display:'flex',gap:6}}>
-            <input value={nameV} onChange={e=>setNameV(e.target.value)} placeholder={T.namePh} style={{flex:1,border:BT,borderRadius:8,padding:'10px',fontSize:13,outline:'none',minWidth:0}}/>
-            <div style={{flex:1,display:'flex',alignItems:'center',border:BT,borderRadius:8,background:'#fff',overflow:'hidden',minWidth:0}}>
-              <span style={{padding:'0 4px 0 8px',fontFamily:'"DotGothic16",monospace',fontSize:13,color:'#888',flexShrink:0}}>@</span>
-              <input value={xidV} onChange={e=>setXidV(e.target.value.replace(/^@/,''))} onKeyDown={e=>e.key==='Enter'&&addPerf(role)} placeholder={T.xidPh} style={{flex:1,border:'none',padding:'10px 6px 10px 0',fontSize:13,outline:'none',background:'transparent',minWidth:0}}/>
-            </div>
-          </div>
-          <button onClick={()=>addPerf(role)} style={{border:BT,borderRadius:8,padding:'11px',background:bgColor,color:role==='vjs'?'#fff':'#111',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>{addText}</button>
-        </div>
-        {(nameV.length>0||xidV.length>0)&&(()=>{const sugg=getSugg(role,nameV,xidV,draft[role]);return sugg.length>0?(
-          <div style={{background:'#fff',border:B,borderRadius:8,overflow:'hidden'}}>
-            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',padding:'6px 10px',borderBottom:'1px solid #eee'}}>{T.fromReg}</div>
-            {sugg.map(k=>(<button key={k} onClick={()=>pickSugg(role,k)} style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'9px 10px',border:'none',borderBottom:'1px solid #eee',background:'transparent',textAlign:'left',cursor:'pointer'}}>
-              <span style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{people[k].name}</span>
-              <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{people[k].x}</span>
-            </button>))}
-          </div>
-        ):null;})()}
-      </div>
-    </div>
-  );
-
-  return(<div style={{background:'#fff',border:BT,borderRadius:14,overflow:'hidden',boxShadow:S}}>
-    <div onClick={open?undefined:startEdit} style={{display:'flex',gap:10,alignItems:'center',padding:14,cursor:open?'default':'pointer',userSelect:'none',WebkitUserSelect:'none'}}>
-      <div style={{width:52,height:52,flexShrink:0,background:curBg||g.color,color:'#fff',border:B,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
-        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9}}>{T.wdays[weekIdx(d)]}</div>
-        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:22,lineHeight:1,textShadow:'1.5px 1.5px 0 #111'}}>{d.getDate()}</div>
-      </div>
-      <div style={{flex:1,minWidth:0}}>
-        <div style={{display:'flex',gap:5,marginBottom:3,flexWrap:'wrap'}}>
-          <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:['#F5E642','#B8F0B0','#D4B0F0'].includes(g.color)?'#111':'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 6px'}}># {g.label}</span>
-          <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,color:'#666'}}>{ev.date}</span>
-        </div>
-        <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{ev.title}</div>
-      </div>
-      {savedMark
-        ? <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'green',flexShrink:0}}>{T.savedMark}</div>
-        : <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#111',flexShrink:0,transform:open?'rotate(90deg)':'none',transition:'transform .2s'}}>&#8250;</div>
-      }
-    </div>
-
-    {open&&draft&&(
-      <div style={{borderTop:BT,padding:16,display:'flex',flexDirection:'column',gap:16}}>
-        <div><Label>{T.dateL}</Label><input type="date" value={draft.date} onChange={e=>setDraft(d=>({...d,date:e.target.value}))} style={iSt}/></div>
-        <div><Label>{T.titleL}</Label><input type="text" value={draft.title} onChange={e=>setDraft(d=>({...d,title:e.target.value}))} placeholder={T.titlePh} style={iSt}/></div>
-
-        <div>
-          <Label>{T.genreL}</Label>
-          <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>
-            {genres.map(g2=>(<button key={g2.id} onClick={()=>setDraft(d=>({...d,genre:g2.id}))} style={chipSt(draft.genre===g2.id,g2.color)}># {g2.label}</button>))}
-          </div>
-        </div>
-
-        <div>
-          <Label>{T.colorL}</Label>
-          <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>
-            {DAY_COLORS.map(p=>{const on=(draft.dayBg===p.value)||(p.value===null&&draft.dayBg===null);return(
-              <button key={p.id} title={p.label} onClick={()=>setDraft(d=>({...d,dayBg:p.value}))}
-                style={{width:38,height:38,border:on?'3px solid #111':'2px solid #111',borderRadius:8,padding:0,background:p.value||'repeating-linear-gradient(45deg,#eee 0 4px,#fff 4px 8px)',boxShadow:on?`0 0 0 2px ${C.yellow},2px 2px 0 #111`:SS,position:'relative',transform:on?'translate(-1px,-1px)':'none'}}>
-                {p.value===null&&<span style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontFamily:'"DotGothic16",monospace',color:'#111'}}>A</span>}
-              </button>
-            );})}
-          </div>
-        </div>
-
-        <div>
-          <Label>{T.hashL}</Label>
-          <div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:4}}>
-            {draft.hashtags.map((h,i)=>(<div key={i} style={{display:'inline-flex',alignItems:'center',gap:4,background:C.turquoise,color:'#fff',border:B,borderRadius:20,padding:'5px 10px 5px 12px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>
-              #{h}<button onClick={()=>rmTag(i)} style={{background:'none',border:'none',color:'#fff',fontSize:16,padding:'0 0 0 4px',lineHeight:1,cursor:'pointer'}}>x</button>
-            </div>))}
-            <button onClick={addTag} style={{border:BT,borderRadius:20,padding:'5px 12px',background:'#fff',fontFamily:'"DotGothic16",monospace',fontSize:11,boxShadow:SS}}>{T.hashAdd}</button>
-          </div>
-        </div>
-
-        <PerfBlock role="djs" labelText={T.djL} addText={T.djAdd} bgColor={C.yellow} nameV={djName} setNameV={setDjName} xidV={djXid} setXidV={setDjXid}/>
-        <PerfBlock role="vjs" labelText={T.vjL} addText={T.vjAdd} bgColor={C.turquoise} nameV={vjName} setNameV={setVjName} xidV={vjXid} setXidV={setVjXid}/>
-
-        <div>
-          <Label>{T.flyerL}</Label>
-          <div style={{marginTop:6,display:'flex',flexDirection:'column',gap:8}}>
-            {draft.flyer&&(
-              <div style={{position:'relative',border:BT,borderRadius:10,overflow:'hidden',maxWidth:180}}>
-                <img src={draft.flyer} alt="flyer" style={{width:'100%',display:'block'}}/>
-                <button onClick={()=>setDraft(d=>({...d,flyer:null}))} style={{position:'absolute',top:6,right:6,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'3px 8px',boxShadow:SS}}>{T.del}</button>
-              </div>
-            )}
-            <label style={{display:'inline-flex',alignItems:'center',gap:8,border:BT,borderRadius:10,padding:'12px 16px',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS,cursor:'pointer'}}>
-              {draft.flyer?T.flyerChg:T.flyerAdd}
-              <input type="file" accept="image/*" onChange={handleFlyer} style={{display:'none'}}/>
-            </label>
-          </div>
-        </div>
-
-        <div style={{display:'flex',gap:8,paddingTop:4}}>
-          <button onClick={saveCard} style={{flex:2,border:BT,borderRadius:10,padding:'14px 0',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}>{T.saveBt}</button>
-          <button onClick={cancel} style={{flex:1,border:BT,borderRadius:10,padding:'14px 0',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS}}>{T.cancelBt}</button>
-        </div>
-        <button onClick={()=>{if(confirm(ev.title+T.confirmDel))onDelete(ev.id||ev.date);}}
-          style={{width:'100%',border:BT,borderRadius:10,padding:'11px 0',background:'#fff',color:'#999',fontFamily:'"DotGothic16",monospace',fontSize:12,boxShadow:SS}}>
-          {T.eventDel}
-        </button>
-      </div>
-    )}
-  </div>);
 }
 
 function AdminApp(){
@@ -417,25 +401,21 @@ function AdminApp(){
   const[errMsg,setErrMsg]=React.useState('');
   const[newLabel,setNewLabel]=React.useState('');
   const[newColor,setNewColor]=React.useState('#E63946');
-
   const handleLogin=tk=>{setToken(tk);setLoggedIn(true);};
 
   React.useEffect(()=>{
     if(!loggedIn||!token)return;
     setStatus('loading');
-    loadGH(token)
-      .then(({data,sha})=>{
-        setEvents(data.events||[]);
-        setGenres(data.genres||GENRES_DEFAULT);
-        setDayBgMap(data.dayBgMap||{});
-        setPeople({...PEOPLE_DEFAULT,...(data.people||{})});
-        setSha(sha);
-        setStatus('idle');
-      })
-      .catch(e=>{
-        if(e.message.includes('401')||e.message.includes('Bad cred')){sessionStorage.removeItem('vb_token');setLoggedIn(false);}
-        setStatus('error');setErrMsg(e.message);
-      });
+    loadGH(token).then(({data,sha})=>{
+      setEvents(data.events||[]);
+      setGenres(data.genres||GENRES_DEFAULT);
+      setDayBgMap(data.dayBgMap||{});
+      setPeople({...PEOPLE_DEFAULT,...(data.people||{})});
+      setSha(sha);setStatus('idle');
+    }).catch(e=>{
+      if(e.message.includes('401')||e.message.includes('Bad cred')){sessionStorage.removeItem('vb_token');setLoggedIn(false);}
+      setStatus('error');setErrMsg(e.message);
+    });
   },[loggedIn,token]);
 
   const doSave=async()=>{
@@ -446,7 +426,6 @@ function AdminApp(){
       setSha(ns);setStatus('saved');setTimeout(()=>setStatus('idle'),2500);
     }catch(e){setStatus('error');setErrMsg(e.message);}
   };
-
   const handleSave=(evId,draft)=>{
     setEvents(prev=>prev.map(e=>(e.id||e.date)!==evId?e:{...e,...draft}));
     setDayBgMap(m=>{const n={...m};if(draft.dayBg===null)delete n[draft.date];else n[draft.date]=draft.dayBg;return n;});
@@ -457,12 +436,10 @@ function AdminApp(){
   const rmGenre=id=>{if(events.some(e=>e.genre===id)){alert(T.genreInUse);return;}setGenres(prev=>prev.filter(g=>g.id!==id));};
   const sorted=React.useMemo(()=>[...events].sort((a,b)=>a.date.localeCompare(b.date)),[events]);
   const logout=()=>{sessionStorage.removeItem('vb_token');setToken('');setLoggedIn(false);};
-
   const barBg=status==='loading'||status==='saving'?'#555':status==='saved'?'#3FB55E':status==='error'?C.red:null;
   const barTx=status==='loading'?T.ghLoading:status==='saving'?T.ghSaving:status==='saved'?T.ghSaved:status==='error'?(T.ghError+errMsg):null;
 
   if(!loggedIn)return <LoginScreen onLogin={handleLogin}/>;
-
   return(
     <div style={{maxWidth:520,margin:'0 auto',minHeight:'100vh',background:C.paper}}>
       <div style={{position:'fixed',top:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:520,zIndex:50,background:C.ink,boxShadow:'0 2px 8px rgba(0,0,0,0.3)'}}>
@@ -482,10 +459,8 @@ function AdminApp(){
         </div>
         {barBg&&<div style={{background:barBg,color:'#fff',fontFamily:'"DotGothic16",monospace',fontSize:11,padding:'7px 16px',textAlign:'center'}}>{barTx}</div>}
       </div>
-
       <div style={{height:barBg?88:60}}/>
       <div style={{padding:'16px 16px 100px',display:'flex',flexDirection:'column',gap:24}}>
-
         <div>
           <SHead>{T.genreMgmt}</SHead>
           <div style={{display:'flex',flexDirection:'column',gap:8}}>
@@ -504,23 +479,18 @@ function AdminApp(){
             </div>
           </div>
         </div>
-
         <div>
           <SHead>{T.eventMgmt}</SHead>
           <div style={{display:'flex',flexDirection:'column',gap:10}}>
             {status==='loading'
-              ? <div style={{textAlign:'center',padding:40,fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#888'}}>{T.loading}</div>
-              : sorted.map(e=>(<EventCard key={e.id||e.date} ev={e} genres={genres} people={people} dayBgMap={dayBgMap} onSave={handleSave} onDelete={handleDelete}/>))
+              ?<div style={{textAlign:'center',padding:40,fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#888'}}>{T.loading}</div>
+              :sorted.map(e=>(<EventCard key={e.id||e.date} ev={e} genres={genres} people={people} dayBgMap={dayBgMap} onSave={handleSave} onDelete={handleDelete}/>))
             }
-            <button onClick={addEvent} style={{border:BT,borderRadius:14,padding:'16px',background:C.yellow,fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginTop:4}}>
-              {T.eventAdd}
-            </button>
+            <button onClick={addEvent} style={{border:BT,borderRadius:14,padding:'16px',background:C.yellow,fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginTop:4}}>{T.eventAdd}</button>
           </div>
         </div>
-
         <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,textAlign:'center',color:'#888',lineHeight:1.8}}>{T.footerNote}</div>
       </div>
-
       <div style={{position:'fixed',bottom:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:520,padding:'12px 16px',background:`linear-gradient(to top,${C.paper} 70%,transparent)`,zIndex:40}}>
         <button onClick={doSave} disabled={status==='loading'||status==='saving'}
           style={{width:'100%',border:BT,borderRadius:12,padding:'15px',background:status==='saved'?'#3FB55E':C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:SB,opacity:status==='loading'||status==='saving'?0.6:1}}>
