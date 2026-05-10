@@ -29,30 +29,101 @@
 
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
 
+  <script>
+  window.T = {
+    kanri: "管理",
+    hozon: "💾 保存",
+    logout: "ログアウト",
+    ghHozon: "💾 GitHubに保存",
+    hozonChu: "⏳ 保存中...",
+    hozonKanryo: "✅ 保存完了",
+    loading: "⏳ GitHubからロード中...",
+    savingGH: "⏳ GitHubに保存中...",
+    savedGH: "✅ 保存完了！GitHub Pagesに反映されます",
+    loadingDots: "ロード中...",
+    genre_mgmt: "ジャンル管理",
+    genre_new: "新規ジャンル追加",
+    genre_name_ph: "ジャンル名",
+    genre_add: "追加",
+    genre_del: "削除",
+    event_mgmt: "イベント管理",
+    event_add: "＋ イベントを追加",
+    event_new_title: "新規イベント",
+    event_del: "🗑️ このイベントを削除",
+    date_label: "日付",
+    title_label: "イベント名",
+    title_ph: "イベント名",
+    genre_label: "ジャンル",
+    color_label: "カレンダー日色",
+    color_auto: "自動",
+    hashtag_label: "ハッシュタグ",
+    hashtag_add: "＋ 追加",
+    dj_label: "出演DJ",
+    vj_label: "出演VJ",
+    performer_new: "新規追加 / 検索して追加",
+    name_ph: "名前",
+    xid_ph: "X の ID",
+    dj_add: "＋ DJ を追加",
+    vj_add: "＋ VJ を追加",
+    registered: "登録済みから選択",
+    del_btn: "削除",
+    flyer_label: "フライヤー画像",
+    flyer_add: "📎 画像を追加",
+    flyer_change: "📎 画像を変更",
+    flyer_del: "削除",
+    save_btn: "💾 保存",
+    cancel_btn: "キャンセル",
+    saved_mark: "✓ 保存済",
+    footer_note: "編集後は必ず上の「保存」ボタンを押してください。\n保存後 1〜2分で GitHub Pages に反映されます。",
+    pw_label: "パスワード",
+    pw_ph: "パスワードを入力",
+    pw_next: "次へ →",
+    pw_err: "パスワードが違います",
+    token_label: "GitHub Personal Access Token",
+    token_ph: "ghp_xxxxxxxxxxxx",
+    token_note1: "※ タブを閉じるまで保持されます",
+    token_note2: "※ GitHub Settings → Developer settings → Fine-grained tokens",
+    token_login: "ログイン",
+    token_checking: "確認中...",
+    token_back: "← パスワード入力に戻る",
+    token_err_prefix: "トークンエラー: ",
+    confirm_delete: "を削除しますか？",
+    genre_in_use: "このジャンルを使っているイベントがあります。",
+    genres: {
+      vocabuki: "ボカブキ",
+      anime:    "アニメ",
+      vocaloid: "ボカロ",
+      external: "外部主催",
+    },
+    p_nonose: "乃々瀬",
+    p_ayumu:  "あゆむ",
+  };
+  </script>
+
   <script type="text/babel" charset="utf-8">
-  // \u2500\u2500\u2500 \u30ea\u30dd\u30b8\u30c8\u30ea\u8a2d\u5b9a\uff08\u30c8\u30fc\u30af\u30f3\u306f\u3053\u3053\u306b\u66f8\u304b\u306a\u3044\uff09 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  
   const GH_OWNER = 'vocabuki-io';
   const GH_REPO  = 'eventcalendar';
   const GH_PATH  = 'events.json';
-  const ADMIN_PASSWORD = 'shinjuku@2452'; // \u2190 \u7ba1\u7406\u753b\u9762\u30d1\u30b9\u30ef\u30fc\u30c9
-  // \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  const ADMIN_PASSWORD = 'shinjuku@2452'; 
+  
 
   const C={turquoise:'#2EC5CE',turquoiseDark:'#1EA3AC',yellow:'#FFD23F',red:'#E63946',orange:'#FF8A1E',paper:'#FFFBEC',ink:'#111111'};
   const B='3px solid #111',BT='4px solid #111',S='4px 4px 0 #111',SB='6px 6px 0 #111',SS='2px 2px 0 #111';
   const pat={halftone:(c)=>`radial-gradient(circle at 3px 3px,${c} 1.8px,transparent 2px)`};
 
   const GENRES_DEFAULT=[
-    {id:'vocabuki',label:'\u30dc\u30ab\u30d6\u30ad',color:'#F5E642'},
-    {id:'anime',label:'\u30a2\u30cb\u30e1',color:'#E63946'},
-    {id:'vocaloid',label:'\u30dc\u30ab\u30ed',color:'#39C5BB'},
-    {id:'external',label:'\u5916\u90e8\u4e3b\u50ac',color:'#B8F0B0'},
+    {id:'vocabuki',label:T.genres.vocabuki,color:'#F5E642'},
+    {id:'anime',label:T.genres.anime,color:'#E63946'},
+    {id:'vocaloid',label:T.genres.vocaloid,color:'#39C5BB'},
+    {id:'external',label:T.genres.external,color:'#B8F0B0'},
     {id:'vtuber',label:'Vtuber',color:'#D4B0F0'},
   ];
   const PEOPLE_DEFAULT={
     drag_on_3:       {name:'dragon3', x:'@drag_on_3'},
-    rockstar_saihan: {name:'\u0438ASU',   x:'@rockstar_saihan'},
-    nono4e:          {name:'\u4e43\u3005\u702c', x:'@nono4e'},
-    aym_pngn:        {name:'\u3042\u3086\u3080', x:'@aym_pngn'},
+    rockstar_saihan: {name:'\u0418ASU',   x:'@rockstar_saihan'},
+    nono4e:          {name:T.p_nonose, x:'@nono4e'},
+    aym_pngn:        {name:T.p_ayumu, x:'@aym_pngn'},
   };
 
   const WDAYS=['\u6708','\u706b','\u6c34','\u6728','\u91d1','\u571f','\u65e5'];
@@ -73,14 +144,14 @@
     {id:'nvy',label:'\u30cd\u30a4\u30d3\u30fc',value:'#223B8F'},{id:'grn',label:'\u7dd1',value:'#3FB55E'},
   ];
 
-  // \u2500\u2500\u2500 GitHub API\uff08token\u306f\u5f15\u6570\u3067\u53d7\u3051\u53d6\u308b\uff09 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  
   async function ghFetch(token, path, method='GET', body=null){
     const opts={
       method,
       headers:{Authorization:`token ${token}`,'Content-Type':'application/json',Accept:'application/vnd.github.v3+json'},
     };
     if(body)opts.body=JSON.stringify(body);
-    const res=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,opts);
+    const res=await fetch(`https:
     if(!res.ok){const e=await res.json();throw new Error(e.message||res.status);}
     return res.json();
   }
@@ -97,7 +168,7 @@
     });
   }
 
-  // \u2500\u2500\u2500 \u30ed\u30b0\u30a4\u30f3\u753b\u9762 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  
   function LoginScreen({onLogin}){
     const[pw,setPw]=React.useState('');
     const[token,setToken]=React.useState(()=>sessionStorage.getItem('vb_token')||'');
@@ -107,7 +178,7 @@
 
     const checkPw=()=>{
       if(pw===ADMIN_PASSWORD){setStep('token');setErr('');}
-      else{setErr('\u30d1\u30b9\u30ef\u30fc\u30c9\u304c\u9055\u3044\u307e\u3059');setTimeout(()=>setErr(''),1500);}
+      else{setErr(T.pw_err);setTimeout(()=>setErr(''),1500);}
     };
 
     const checkToken=async()=>{
@@ -118,7 +189,7 @@
         sessionStorage.setItem('vb_token',token.trim());
         onLogin(token.trim());
       }catch(e){
-        setErr(`\u30c8\u30fc\u30af\u30f3\u30a8\u30e9\u30fc: ${e.message}`);
+        setErr(`${T.token_err_prefix}${e.message}`);
         setLoading(false);
       }
     };
@@ -139,10 +210,10 @@
 
           {step==='pw'&&(
             <div>
-              <Label>\u30d1\u30b9\u30ef\u30fc\u30c9</Label>
+              <Label>{T.pw_label}</Label>
               <input type="password" value={pw} onChange={e=>setPw(e.target.value)}
                 onKeyDown={e=>e.key==='Enter'&&checkPw()}
-                placeholder="\u30d1\u30b9\u30ef\u30fc\u30c9\u3092\u5165\u529b" style={inputSt}
+                placeholder={T.pw_ph} style={inputSt}
                 autoComplete="current-password"/>
               {err&&<div style={{color:C.red,fontFamily:'"DotGothic16",monospace',fontSize:11,marginBottom:8}}>{err}</div>}
               <button onClick={checkPw} style={{width:'100%',border:BT,borderRadius:10,padding:'13px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}>
@@ -153,7 +224,7 @@
 
           {step==='token'&&(
             <div>
-              <Label>GitHub Personal Access Token</Label>
+              <Label>{T.token_label}</Label>
               <input type="password" value={token} onChange={e=>setToken(e.target.value)}
                 onKeyDown={e=>e.key==='Enter'&&checkToken()}
                 placeholder="ghp_xxxxxxxxxxxx" style={inputSt}
@@ -178,7 +249,7 @@
     );
   }
 
-  // \u2500\u2500\u2500 \u30a4\u30d9\u30f3\u30c8\u7de8\u96c6\u30ab\u30fc\u30c9 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  
   function EventEditCard({ev,genres,people,dayBgMap,onSave,onDelete}){
     const[open,setOpen]=React.useState(false);
     const[draft,setDraft]=React.useState(null);
@@ -233,13 +304,13 @@
                 <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{p.name}</div>
                 <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{p.x||('@'+id)}</div>
               </div>
-              <button onClick={()=>rmPerformer(role,i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'4px 10px',boxShadow:SS}}>\u524a\u9664</button>
+              <button onClick={()=>rmPerformer(role,i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'4px 10px',boxShadow:SS}}>{T.genre_del}</button>
             </div>
           );})}
           <div style={{background:'#f0f0f0',border:BT,borderRadius:10,padding:10,display:'flex',flexDirection:'column',gap:8}}>
-            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555'}}>\u65b0\u898f\u8ffd\u52a0 / \u691c\u7d22\u3057\u3066\u8ffd\u52a0</div>
+            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555'}}>{T.performer_new}</div>
             <div style={{display:'flex',gap:6}}>
-              <input value={nameV} onChange={e=>setNameV(e.target.value)} placeholder="\u540d\u524d" style={{flex:1,border:BT,borderRadius:8,padding:'10px 10px',fontSize:13,outline:'none',minWidth:0}}/>
+              <input value={nameV} onChange={e=>setNameV(e.target.value)} placeholder={T.name_ph} style={{flex:1,border:BT,borderRadius:8,padding:'10px 10px',fontSize:13,outline:'none',minWidth:0}}/>
               <div style={{flex:1,display:'flex',alignItems:'center',border:BT,borderRadius:8,background:'#fff',overflow:'hidden',minWidth:0}}>
                 <span style={{padding:'0 4px 0 8px',fontFamily:'"DotGothic16",monospace',fontSize:13,color:'#888',flexShrink:0}}>@</span>
                 <input value={xidV} onChange={e=>setXidV(e.target.value.replace(/^@/,''))} onKeyDown={e=>e.key==='Enter'&&addPerformer(role)} placeholder="X \u306e ID" style={{flex:1,border:'none',padding:'10px 6px 10px 0',fontSize:13,outline:'none',background:'transparent',minWidth:0}}/>
@@ -249,7 +320,7 @@
           </div>
           {(nameV.length>0||xidV.length>0)&&(()=>{const sugg=getSugg(role,nameV,xidV,draft[role]);return sugg.length>0?(
             <div style={{background:'#fff',border:B,borderRadius:8,overflow:'hidden'}}>
-              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',padding:'6px 10px',borderBottom:'1px solid #eee'}}>\u767b\u9332\u6e08\u307f\u304b\u3089\u9078\u629e</div>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',padding:'6px 10px',borderBottom:'1px solid #eee'}}>{T.registered}</div>
               {sugg.map(k=>(<button key={k} onClick={()=>pickSugg(role,k)} style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'9px 10px',border:'none',borderBottom:'1px solid #eee',background:'transparent',textAlign:'left',cursor:'pointer'}}>
                 <span style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{people[k].name}</span>
                 <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{people[k].x}</span>
@@ -274,24 +345,24 @@
           <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{ev.title}</div>
         </div>
         {saved
-          ? <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'green',flexShrink:0}}>\u2713 \u4fdd\u5b58\u6e08</div>
+          ? <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'green',flexShrink:0}}>{T.saved_mark}</div>
           : <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#111',flexShrink:0,transform:open?'rotate(90deg)':'none',transition:'transform .2s'}}>\u203a</div>
         }
       </div>
 
       {open&&draft&&(<div style={{borderTop:BT,padding:16,display:'flex',flexDirection:'column',gap:16}}>
-        <div><Label>\u65e5\u4ed8</Label><input type="date" value={draft.date} onChange={e=>setDraft(d=>({...d,date:e.target.value}))} style={inputSt}/></div>
-        <div><Label>\u30a4\u30d9\u30f3\u30c8\u540d</Label><input type="text" value={draft.title} onChange={e=>setDraft(d=>({...d,title:e.target.value}))} style={inputSt} placeholder="\u30a4\u30d9\u30f3\u30c8\u540d"/></div>
+        <div><Label>{T.date_label}</Label><input type="date" value={draft.date} onChange={e=>setDraft(d=>({...d,date:e.target.value}))} style={inputSt}/></div>
+        <div><Label>{T.title_label}</Label><input type="text" value={draft.title} onChange={e=>setDraft(d=>({...d,title:e.target.value}))} style={inputSt} placeholder={T.title_ph}/></div>
 
         <div>
-          <Label>\u30b8\u30e3\u30f3\u30eb</Label>
+          <Label>{T.genre_label}</Label>
           <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>
             {genres.map(g2=>(<button key={g2.id} onClick={()=>setDraft(d=>({...d,genre:g2.id}))} style={chipSt(draft.genre===g2.id,g2.color)}># {g2.label}</button>))}
           </div>
         </div>
 
         <div>
-          <Label>\u30ab\u30ec\u30f3\u30c0\u30fc\u65e5\u8272</Label>
+          <Label>{T.color_label}</Label>
           <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>
             {DAY_COLOR_PRESETS.map(p=>{const isAct=(draft.dayBg===p.value)||(p.value===null&&draft.dayBg===null);return(
               <button key={p.id} title={p.label} onClick={()=>setDraft(d=>({...d,dayBg:p.value}))}
@@ -303,7 +374,7 @@
         </div>
 
         <div>
-          <Label>\u30cf\u30c3\u30b7\u30e5\u30bf\u30b0</Label>
+          <Label>{T.hashtag_label}</Label>
           <div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:4}}>
             {draft.hashtags.map((h,i)=>(<div key={i} style={{display:'inline-flex',alignItems:'center',gap:4,background:C.turquoise,color:'#fff',border:B,borderRadius:20,padding:'5px 10px 5px 12px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>
               #{h}<button onClick={()=>rmTag(i)} style={{background:'none',border:'none',color:'#fff',fontSize:16,padding:'0 0 0 4px',lineHeight:1,cursor:'pointer'}}>\u00d7</button>
@@ -316,11 +387,11 @@
         <PerformerBlock role="vjs" name_ja="\u51fa\u6f14VJ" bg={C.turquoise} nameV={vjName} setNameV={setVjName} xidV={vjXid} setXidV={setVjXid}/>
 
         <div>
-          <Label>\u30d5\u30e9\u30a4\u30e4\u30fc\u753b\u50cf</Label>
+          <Label>{T.flyer_label}</Label>
           <div style={{marginTop:6,display:'flex',flexDirection:'column',gap:8}}>
             {draft.flyer&&(<div style={{position:'relative',border:BT,borderRadius:10,overflow:'hidden',maxWidth:180}}>
               <img src={draft.flyer} alt="flyer" style={{width:'100%',display:'block'}}/>
-              <button onClick={()=>setDraft(d=>({...d,flyer:null}))} style={{position:'absolute',top:6,right:6,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'3px 8px',boxShadow:SS}}>\u524a\u9664</button>
+              <button onClick={()=>setDraft(d=>({...d,flyer:null}))} style={{position:'absolute',top:6,right:6,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'3px 8px',boxShadow:SS}}>{T.genre_del}</button>
             </div>)}
             <label style={{display:'inline-flex',alignItems:'center',gap:8,border:BT,borderRadius:10,padding:'12px 16px',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS,cursor:'pointer'}}>
               \u1f4ce \u753b\u50cf\u3092{draft.flyer?'\u5909\u66f4':'\u8ffd\u52a0'}
@@ -331,9 +402,9 @@
 
         <div style={{display:'flex',gap:8,paddingTop:4}}>
           <button onClick={save} style={{flex:2,border:BT,borderRadius:10,padding:'14px 0',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}>\u1f4be \u4fdd\u5b58</button>
-          <button onClick={cancel} style={{flex:1,border:BT,borderRadius:10,padding:'14px 0',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS}}>\u30ad\u30e3\u30f3\u30bb\u30eb</button>
+          <button onClick={cancel} style={{flex:1,border:BT,borderRadius:10,padding:'14px 0',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS}}>{T.cancel_btn}</button>
         </div>
-        <button onClick={()=>{if(confirm(`\u300c${ev.title}\u300d\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f`))onDelete(ev.id||ev.date);}}
+        <button onClick={()=>{if(confirm(`\${ev.title}${T.confirm_delete}`))onDelete(ev.id||ev.date);}}
           style={{width:'100%',border:BT,borderRadius:10,padding:'11px 0',background:'#fff',color:'#999',fontFamily:'"DotGothic16",monospace',fontSize:12,boxShadow:SS}}>
           \u1f5d1\ufe0f \u3053\u306e\u30a4\u30d9\u30f3\u30c8\u3092\u524a\u9664
         </button>
@@ -341,7 +412,7 @@
     </div>);
   }
 
-  // \u2500\u2500\u2500 \u30e1\u30a4\u30f3\u7ba1\u7406\u753b\u9762 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  
   function AdminApp(){
     const[token,setToken]=React.useState(()=>sessionStorage.getItem('vb_token')||'');
     const[loggedIn,setLoggedIn]=React.useState(()=>!!sessionStorage.getItem('vb_token'));
@@ -358,7 +429,7 @@
 
     const handleLogin=(tk)=>{setToken(tk);setLoggedIn(true);};
 
-    // \u30ed\u30b0\u30a4\u30f3\u5f8c\u306bGitHub\u304b\u3089\u30ed\u30fc\u30c9
+    
     React.useEffect(()=>{
       if(!loggedIn||!token)return;
       setStatus('loading');
@@ -397,16 +468,16 @@
       setDayBgMap(m=>{const n={...m};if(draft.dayBg===null)delete n[draft.date];else n[draft.date]=draft.dayBg;return n;});
     };
     const handleDelete=evId=>setEvents(prev=>prev.filter(e=>(e.id||e.date)!==evId));
-    const addEvent=()=>setEvents(prev=>[...prev,{id:uid(),date:fmtDate(TODAY),title:'\u65b0\u898f\u30a4\u30d9\u30f3\u30c8',genre:genres[0]?.id||'vocabuki',hashtags:['\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8'],djs:[],vjs:[],flyer:null}]);
+    const addEvent=()=>setEvents(prev=>[...prev,{id:uid(),date:fmtDate(TODAY),title:T.event_new_title,genre:genres[0]?.id||'vocabuki',hashtags:['\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8'],djs:[],vjs:[],flyer:null}]);
     const addGenre=()=>{const label=newLabel.trim();if(!label)return;const id=label.replace(/[\s\u3000]+/g,'').toLowerCase();setGenres(prev=>[...prev,{id,label,color:newColor}]);setNewLabel('');};
-    const rmGenre=id=>{if(events.some(e=>e.genre===id)){alert('\u3053\u306e\u30b8\u30e3\u30f3\u30eb\u3092\u4f7f\u3063\u3066\u3044\u308b\u30a4\u30d9\u30f3\u30c8\u304c\u3042\u308a\u307e\u3059\u3002');return;}setGenres(prev=>prev.filter(g=>g.id!==id));};
+    const rmGenre=id=>{if(events.some(e=>e.genre===id)){alert(T.genre_in_use);return;}setGenres(prev=>prev.filter(g=>g.id!==id));};
     const sorted=React.useMemo(()=>[...events].sort((a,b)=>a.date.localeCompare(b.date)),[events]);
     const logout=()=>{sessionStorage.removeItem('vb_token');setToken('');setLoggedIn(false);};
 
     const barInfo=()=>{
-      if(status==='loading')return{bg:'#555',text:'\u23f3 GitHub\u304b\u3089\u30ed\u30fc\u30c9\u4e2d...'};
-      if(status==='saving')return{bg:'#555',text:'\u23f3 GitHub\u306b\u4fdd\u5b58\u4e2d...'};
-      if(status==='saved')return{bg:'#3FB55E',text:'\u2705 \u4fdd\u5b58\u5b8c\u4e86\uff01GitHub Pages\u306b\u53cd\u6620\u3055\u308c\u307e\u3059'};
+      if(status==='loading')return{bg:'#555',text:T.loading};
+      if(status==='saving')return{bg:'#555',text:T.savingGH};
+      if(status==='saved')return{bg:'#3FB55E',text:T.savedGH};
       if(status==='error')return{bg:C.red,text:`\u274c ${errMsg}`};
       return null;
     };
@@ -421,7 +492,7 @@
             <div style={{display:'flex',alignItems:'center',gap:8}}>
               <span style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#fff'}}>VOCA</span>
               <span style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:C.turquoise}}>BUKI</span>
-              <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#aaa'}}>\u7ba1\u7406</span>
+              <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#aaa'}}>{T.kanri}</span>
             </div>
             <div style={{display:'flex',gap:8,alignItems:'center'}}>
               <button onClick={doSave} disabled={status==='loading'||status==='saving'}
@@ -441,19 +512,19 @@
 
           {/* \u30b8\u30e3\u30f3\u30eb\u7ba1\u7406 */}
           <div style={{marginBottom:24}}>
-            <SectionHead>\u30b8\u30e3\u30f3\u30eb\u7ba1\u7406</SectionHead>
+            <SectionHead>{T.genre_mgmt}</SectionHead>
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
               {genres.map(g=>(<div key={g.id} style={{display:'flex',alignItems:'center',gap:10,background:'#fff',border:BT,borderRadius:10,padding:'12px 14px',boxShadow:SS}}>
                 <div style={{width:30,height:30,borderRadius:6,background:g.color,border:B,flexShrink:0}}/>
                 <div style={{flex:1,fontFamily:'"RocknRoll One",system-ui',fontSize:14}}># {g.label}<span style={{color:'#888',fontFamily:'"DotGothic16",monospace',fontSize:10,marginLeft:6}}>{g.id}</span></div>
-                <button onClick={()=>rmGenre(g.id)} style={{background:'#fff',border:B,borderRadius:6,fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#666',padding:'4px 10px',boxShadow:SS}}>\u524a\u9664</button>
+                <button onClick={()=>rmGenre(g.id)} style={{background:'#fff',border:B,borderRadius:6,fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#666',padding:'4px 10px',boxShadow:SS}}>{T.genre_del}</button>
               </div>))}
               <div style={{background:'#fff',border:BT,borderRadius:10,padding:12,boxShadow:SS}}>
                 <Label>\u65b0\u898f\u30b8\u30e3\u30f3\u30eb\u8ffd\u52a0</Label>
                 <div style={{display:'flex',gap:8,marginTop:4}}>
-                  <input value={newLabel} onChange={e=>setNewLabel(e.target.value)} placeholder="\u30b8\u30e3\u30f3\u30eb\u540d" style={{flex:1,border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none'}}/>
+                  <input value={newLabel} onChange={e=>setNewLabel(e.target.value)} placeholder={T.genre_name_ph} style={{flex:1,border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none'}}/>
                   <input type="color" value={newColor} onChange={e=>setNewColor(e.target.value)} style={{width:48,height:48,border:BT,borderRadius:8,padding:2,cursor:'pointer'}}/>
-                  <button onClick={addGenre} style={{border:BT,borderRadius:8,padding:'8px 14px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>\u8ffd\u52a0</button>
+                  <button onClick={addGenre} style={{border:BT,borderRadius:8,padding:'8px 14px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>{T.genre_add}</button>
                 </div>
               </div>
             </div>
@@ -461,10 +532,10 @@
 
           {/* \u30a4\u30d9\u30f3\u30c8\u7ba1\u7406 */}
           <div>
-            <SectionHead>\u30a4\u30d9\u30f3\u30c8\u7ba1\u7406</SectionHead>
+            <SectionHead>{T.event_mgmt}</SectionHead>
             <div style={{display:'flex',flexDirection:'column',gap:10}}>
               {status==='loading'
-                ? <div style={{textAlign:'center',padding:40,fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#888'}}>\u30ed\u30fc\u30c9\u4e2d...</div>
+                ? <div style={{textAlign:'center',padding:40,fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#888'}}>{T.loadingDots}</div>
                 : sorted.map(e=>(<EventEditCard key={e.id||e.date} ev={e} genres={genres} people={people} dayBgMap={dayBgMap} onSave={handleSave} onDelete={handleDelete}/>))
               }
               <button onClick={addEvent} style={{border:BT,borderRadius:14,padding:'16px',background:C.yellow,fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginTop:4}}>
@@ -483,7 +554,7 @@
         <div style={{position:'fixed',bottom:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:520,padding:'12px 16px',background:`linear-gradient(to top,${C.paper} 70%,transparent)`,zIndex:40}}>
           <button onClick={doSave} disabled={status==='loading'||status==='saving'}
             style={{width:'100%',border:BT,borderRadius:12,padding:'15px',background:status==='saved'?'#3FB55E':C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:SB,opacity:status==='loading'||status==='saving'?0.6:1}}>
-            {status==='saving'?'\u23f3 \u4fdd\u5b58\u4e2d...':status==='saved'?'\u2705 \u4fdd\u5b58\u5b8c\u4e86':'\u1f4be GitHub\u306b\u4fdd\u5b58'}
+            {status==='saving'?T.hozonChu:status==='saved'?T.hozonKanryo:'\u1f4be GitHub\u306b\u4fdd\u5b58'}
           </button>
         </div>
       </div>
