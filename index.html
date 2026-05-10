@@ -386,7 +386,7 @@
   }
   function LoadingScreen({event,genres}){
     const g=genres.find(x=>x.id===event.genre)||{color:C.red,label:'?'};
-    const dots=['\u1f3b5','\u1f3a7','\u1f3a4'];
+    const dots=['\ud83c\udfb5','\ud83c\udfa7','\ud83c\udfa4'];
     return(<div style={{position:'fixed',inset:0,zIndex:30,maxWidth:480,margin:'0 auto',background:C.paper,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:24}}>
       <div style={{position:'absolute',inset:0,pointerEvents:'none',backgroundImage:pat.halftone('rgba(46,197,206,0.18)'),backgroundSize:'8px 8px'}}/>
       <div style={{position:'absolute',top:-20,left:-20,width:130,height:130,borderRadius:'50%',background:C.yellow,border:BT,opacity:0.7}}/>
@@ -425,7 +425,7 @@
               {isPast&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#666',color:'#fff',border:'2px solid #111',borderRadius:4,padding:'1px 8px'}}>&#32066;&#20102;</span>}
             </div>
             <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
-              {(event.hashtags||[]).map(h=>(<div key={h} style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#fff',border:'2px solid #111',borderRadius:4,padding:'2px 6px',color:C.turquoiseDark,fontWeight:700}}>&#8017;7 #{h}</div>))}
+              {(event.hashtags||[]).map(h=>(<div key={h} style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#fff',border:'2px solid #111',borderRadius:4,padding:'2px 6px',color:C.turquoiseDark,fontWeight:700}}>{'\ud83d\udd17'} #{h}</div>))}
             </div>
           </div>
         </div>
@@ -516,7 +516,7 @@
       <div style={{position:'fixed',inset:0,background:C.paper,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:20}}>
         <div style={{position:'absolute',inset:0,backgroundImage:pat.halftone('rgba(46,197,206,0.18)'),backgroundSize:'8px 8px'}}/>
         <div style={{position:'relative',display:'flex',gap:14}}>
-          {['\u1f3b5','\u1f3a7','\u1f3a4'].map((d,i)=>(<div key={i} className="vb-loading-dot" style={{fontSize:32,animationDelay:`${i*0.12}s`}}>{d}</div>))}
+          {['\ud83c\udfb5','\ud83c\udfa7','\ud83c\udfa4'].map((d,i)=>(<div key={i} className="vb-loading-dot" style={{fontSize:32,animationDelay:`${i*0.12}s`}}>{d}</div>))}
         </div>
         <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',letterSpacing:2,position:'relative'}}>LOADING...</div>
       </div>
