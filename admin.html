@@ -23,82 +23,44 @@
 <div id="root"></div>
 
 <script>
-window.T = {
-  mgmt:       "\u7ba1\u7406",
-  save:       "\ud83d\udcbe \u4fdd\u5b58",
-  logout:     "\u30ed\u30b0\u30a2\u30a6\u30c8",
-  ghSave:     "\ud83d\udcbe GitHub\u306b\u4fdd\u5b58",
-  saving:     "\u4fdd\u5b58\u4e2d...",
-  saved:      "\u2705 \u4fdd\u5b58\u5b8c\u4e86",
-  loading:    "\u30ed\u30fc\u30c9\u4e2d...",
-  ghLoading:  "\u23f3 GitHub\u304b\u3089\u30ed\u30fc\u30c9\u4e2d...",
-  ghSaving:   "\u23f3 GitHub\u306b\u4fdd\u5b58\u4e2d...",
-  ghSaved:    "\u2705 \u4fdd\u5b58\u5b8c\u4e86\uff01\u53cd\u6620\u307e\u3067\uff11\uff5e\uff12\u5206\u304b\u304b\u308a\u307e\u3059",
-  ghError:    "\u274c \u30a8\u30e9\u30fc: ",
-  genreMgmt:  "\u30b8\u30e3\u30f3\u30eb\u7ba1\u7406",
-  genreNew:   "\u65b0\u898f\u30b8\u30e3\u30f3\u30eb\u8ffd\u52a0",
-  genreNamePh:"\u30b8\u30e3\u30f3\u30eb\u540d",
-  genreAdd:   "\u8ffd\u52a0",
-  del:        "\u524a\u9664",
-  eventMgmt:  "\u30a4\u30d9\u30f3\u30c8\u7ba1\u7406",
-  eventAdd:   "\uff0b \u30a4\u30d9\u30f3\u30c8\u3092\u8ffd\u52a0",
-  eventNew:   "\u65b0\u898f\u30a4\u30d9\u30f3\u30c8",
-  eventDel:   "\ud83d\uddd1\ufe0f \u3053\u306e\u30a4\u30d9\u30f3\u30c8\u3092\u524a\u9664",
-  dateL:      "\u65e5\u4ed8",
-  titleL:     "\u30a4\u30d9\u30f3\u30c8\u540d",
-  titlePh:    "\u30a4\u30d9\u30f3\u30c8\u540d",
-  genreL:     "\u30b8\u30e3\u30f3\u30eb",
-  colorL:     "\u30ab\u30ec\u30f3\u30c0\u30fc\u65e5\u8272",
-  colorAuto:  "\u81ea\u52d5(\u30b8\u30e3\u30f3\u30eb\u8272)",
-  hashL:      "\u30cf\u30c3\u30b7\u30e5\u30bf\u30b0",
-  hashAdd:    "\uff0b \u8ffd\u52a0",
-  djL:        "\u51fa\u6f14DJ",
-  vjL:        "\u51fa\u6f14VJ",
-  perfNew:    "\u65b0\u898f\u8ffd\u52a0 / \u691c\u7d22\u3057\u3066\u8ffd\u52a0",
-  namePh:     "\u540d\u524d",
-  xidPh:      "X \u306e ID",
-  djAdd:      "\uff0b DJ \u3092\u8ffd\u52a0",
-  vjAdd:      "\uff0b VJ \u3092\u8ffd\u52a0",
-  fromReg:    "\u767b\u9332\u6e08\u307f\u304b\u3089\u9078\u629e",
-  flyerL:     "\u30d5\u30e9\u30a4\u30e4\u30fc\u753b\u50cf",
-  flyerAdd:   "\ud83d\udcce \u753b\u50cf\u3092\u8ffd\u52a0",
-  flyerChg:   "\ud83d\udcce \u753b\u50cf\u3092\u5909\u66f4",
-  saveBt:     "\ud83d\udcbe \u4fdd\u5b58",
-  cancelBt:   "\u30ad\u30e3\u30f3\u30bb\u30eb",
-  savedMark:  "\u2713 \u4fdd\u5b58\u6e08",
-  footerNote: "\u7de8\u96c6\u5f8c\u306f\u5fc5\u305a\u4e0a\u306e\u300c\u4fdd\u5b58\u300d\u30dc\u30bf\u30f3\u3092\u62bc\u3057\u3066\u304f\u3060\u3055\u3044\u3002\u4fdd\u5b58\u5f8c1\uff5e2\u5206\u3067GitHub Pages\u306b\u53cd\u6620\u3055\u308c\u307e\u3059\u3002",
-  pwL:        "\u30d1\u30b9\u30ef\u30fc\u30c9",
-  pwPh:       "\u30d1\u30b9\u30ef\u30fc\u30c9\u3092\u5165\u529b",
-  pwNext:     "\u6b21\u3078 \u2192",
-  pwErr:      "\u30d1\u30b9\u30ef\u30fc\u30c9\u304c\u9055\u3044\u307e\u3059",
-  tokenL:     "GitHub Personal Access Token",
-  tokenPh:    "ghp_xxxxxxxxxxxx",
-  tokenNote1: "\u203b \u30bf\u30d6\u3092\u9583\u3058\u308b\u307e\u3067\u4fdd\u6301\u3055\u308c\u307e\u3059",
-  tokenNote2: "\u203b GitHub Settings\u2192Developer settings\u2192Fine-grained tokens",
-  tokenLogin: "\u30ed\u30b0\u30a4\u30f3",
-  tokenCheck: "\u78ba\u8a8d\u4e2d...",
-  tokenBack:  "\u2190 \u30d1\u30b9\u30ef\u30fc\u30c9\u5165\u529b\u306b\u623b\u308b",
-  tokenErr:   "\u30c8\u30fc\u30af\u30f3\u30a8\u30e9\u30fc: ",
-  tokenEmpty: "\u30c8\u30fc\u30af\u30f3\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044",
-  confirmDel: "\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f",
-  genreInUse: "\u3053\u306e\u30b8\u30e3\u30f3\u30eb\u3092\u4f7f\u3063\u3066\u3044\u308b\u30a4\u30d9\u30f3\u30c8\u304c\u3042\u308a\u307e\u3059\u3002",
-  wdays:      ["\u6708","\u706b","\u6c34","\u6728","\u91d1","\u571f","\u65e5"],
-  gVocabuki:  "\u30dc\u30ab\u30d6\u30ad",
-  gAnime:     "\u30a2\u30cb\u30e1",
-  gVocaloid:  "\u30dc\u30ab\u30ed",
-  gExternal:  "\u5916\u90e8\u4e3b\u50ac",
-  gVtuber:    "Vtuber",
-  pNonose:    "\u4e43\u3005\u702c",
-  pAyumu:     "\u3042\u3086\u3080",
-  pIASU:      "\u0418ASU",
-  colorRed:   "\u8d64",
-  colorTeal:  "\u30bf\u30fc\u30b3\u30a4\u30ba",
-  colorYel:   "\u9ec4",
-  colorOrg:   "\u30aa\u30ec\u30f3\u30b8",
-  colorPur:   "\u7d2b",
-  colorPnk:   "\u30d4\u30f3\u30af",
-  colorNvy:   "\u30cd\u30a4\u30d3\u30fc",
-  colorGrn:   "\u7dd1",
+window.T={
+  mgmt:"\u7ba1\u7406",save:"\ud83d\udcbe \u4fdd\u5b58",logout:"\u30ed\u30b0\u30a2\u30a6\u30c8",
+  ghSave:"\ud83d\udcbe GitHub\u306b\u4fdd\u5b58",saving:"\u4fdd\u5b58\u4e2d...",saved:"\u2705 \u4fdd\u5b58\u5b8c\u4e86",
+  loading:"\u30ed\u30fc\u30c9\u4e2d...",ghLoading:"\u23f3 GitHub\u304b\u3089\u30ed\u30fc\u30c9\u4e2d...",
+  ghSaving:"\u23f3 GitHub\u306b\u4fdd\u5b58\u4e2d...",
+  ghSaved:"\u2705 \u4fdd\u5b58\u5b8c\u4e86\uff01\u53cd\u6620\u307e\u3067\uff11\uff5e\uff12\u5206\u304b\u304b\u308a\u307e\u3059",
+  ghError:"\u274c \u30a8\u30e9\u30fc: ",
+  genreMgmt:"\u30b8\u30e3\u30f3\u30eb\u7ba1\u7406",genreNew:"\u65b0\u898f\u30b8\u30e3\u30f3\u30eb\u8ffd\u52a0",
+  genreNamePh:"\u30b8\u30e3\u30f3\u30eb\u540d",genreAdd:"\u8ffd\u52a0",del:"\u524a\u9664",
+  eventMgmt:"\u30a4\u30d9\u30f3\u30c8\u7ba1\u7406",eventAdd:"\uff0b \u30a4\u30d9\u30f3\u30c8\u3092\u8ffd\u52a0",
+  eventNew:"\u65b0\u898f\u30a4\u30d9\u30f3\u30c8",eventDel:"\ud83d\uddd1\ufe0f \u3053\u306e\u30a4\u30d9\u30f3\u30c8\u3092\u524a\u9664",
+  dateL:"\u65e5\u4ed8",titleL:"\u30a4\u30d9\u30f3\u30c8\u540d",titlePh:"\u30a4\u30d9\u30f3\u30c8\u540d",
+  genreL:"\u30b8\u30e3\u30f3\u30eb",colorL:"\u30ab\u30ec\u30f3\u30c0\u30fc\u65e5\u8272",
+  colorAuto:"\u81ea\u52d5(\u30b8\u30e3\u30f3\u30eb\u8272)",hashL:"\u30cf\u30c3\u30b7\u30e5\u30bf\u30b0",
+  hashAdd:"\uff0b \u8ffd\u52a0",djL:"\u51fa\u6f14DJ",vjL:"\u51fa\u6f14VJ",
+  perfNew:"\u65b0\u898f\u8ffd\u52a0 / \u691c\u7d22\u3057\u3066\u8ffd\u52a0",
+  namePh:"\u540d\u524d",xidPh:"X \u306e ID",djAdd:"\uff0b DJ \u3092\u8ffd\u52a0",vjAdd:"\uff0b VJ \u3092\u8ffd\u52a0",
+  fromReg:"\u767b\u9332\u6e08\u307f\u304b\u3089\u9078\u629e",
+  flyerL:"\u30d5\u30e9\u30a4\u30e4\u30fc\u753b\u50cf",flyerAdd:"\ud83d\udcce \u753b\u50cf\u3092\u8ffd\u52a0",
+  flyerChg:"\ud83d\udcce \u753b\u50cf\u3092\u5909\u66f4",
+  saveBt:"\ud83d\udcbe \u4fdd\u5b58",cancelBt:"\u30ad\u30e3\u30f3\u30bb\u30eb",savedMark:"\u2713 \u4fdd\u5b58\u6e08",
+  footerNote:"\u7de8\u96c6\u5f8c\u306f\u5fc5\u305a\u4e0a\u306e\u300c\u4fdd\u5b58\u300d\u30dc\u30bf\u30f3\u3092\u62bc\u3057\u3066\u304f\u3060\u3055\u3044\u3002\u4fdd\u5b58\u5f8c1\uff5e2\u5206\u3067GitHub Pages\u306b\u53cd\u6620\u3055\u308c\u307e\u3059\u3002",
+  pwL:"\u30d1\u30b9\u30ef\u30fc\u30c9",pwPh:"\u30d1\u30b9\u30ef\u30fc\u30c9\u3092\u5165\u529b",pwNext:"\u6b21\u3078 \u2192",
+  pwErr:"\u30d1\u30b9\u30ef\u30fc\u30c9\u304c\u9055\u3044\u307e\u3059",
+  tokenL:"GitHub Personal Access Token",tokenPh:"ghp_xxxxxxxxxxxx",
+  tokenNote1:"\u203b \u30bf\u30d6\u3092\u9583\u3058\u308b\u307e\u3067\u4fdd\u6301\u3055\u308c\u307e\u3059",
+  tokenNote2:"\u203b GitHub Settings\u2192Developer settings\u2192Fine-grained tokens",
+  tokenLogin:"\u30ed\u30b0\u30a4\u30f3",tokenCheck:"\u78ba\u8a8d\u4e2d...",
+  tokenBack:"\u2190 \u30d1\u30b9\u30ef\u30fc\u30c9\u5165\u529b\u306b\u623b\u308b",
+  tokenErr:"\u30c8\u30fc\u30af\u30f3\u30a8\u30e9\u30fc: ",tokenEmpty:"\u30c8\u30fc\u30af\u30f3\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044",
+  confirmDel:"\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f",
+  genreInUse:"\u3053\u306e\u30b8\u30e3\u30f3\u30eb\u3092\u4f7f\u3063\u3066\u3044\u308b\u30a4\u30d9\u30f3\u30c8\u304c\u3042\u308a\u307e\u3059\u3002",
+  wdays:["\u6708","\u706b","\u6c34","\u6728","\u91d1","\u571f","\u65e5"],
+  gVocabuki:"\u30dc\u30ab\u30d6\u30ad",gAnime:"\u30a2\u30cb\u30e1",gVocaloid:"\u30dc\u30ab\u30ed",
+  gExternal:"\u5916\u90e8\u4e3b\u50ac",gVtuber:"Vtuber",
+  pNonose:"\u4e43\u3005\u702c",pAyumu:"\u3042\u3086\u3080",pIASU:"\u0418ASU",
+  colorRed:"\u8d64",colorTeal:"\u30bf\u30fc\u30b3\u30a4\u30ba",colorYel:"\u9ec4",colorOrg:"\u30aa\u30ec\u30f3\u30b8",
+  colorPur:"\u7d2b",colorPnk:"\u30d4\u30f3\u30af",colorNvy:"\u30cd\u30a4\u30d3\u30fc",colorGrn:"\u7dd1",
   adminScreen:"\u7ba1\u7406\u753b\u9762",
 };
 </script>
@@ -110,94 +72,92 @@ window.T = {
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
 
 <script type="text/babel">
-const GH_OWNER = 'vocabuki-io';
-const GH_REPO  = 'eventcalendar';
-const GH_PATH  = 'events.json';
-const ADMIN_PASSWORD = 'shinjuku@2452';
-
-const T = window.T;
-const C = {turquoise:'#2EC5CE',turquoiseDark:'#1EA3AC',yellow:'#FFD23F',red:'#E63946',orange:'#FF8A1E',paper:'#FFFBEC',ink:'#111111'};
-const B='3px solid #111', BT='4px solid #111', S='4px 4px 0 #111', SB='6px 6px 0 #111', SS='2px 2px 0 #111';
-const pat = { halftone: c => `radial-gradient(circle at 3px 3px,${c} 1.8px,transparent 2px)` };
-
-const GENRES_DEFAULT = [
-  {id:'vocabuki', label:T.gVocabuki, color:'#F5E642'},
-  {id:'anime',    label:T.gAnime,    color:'#E63946'},
-  {id:'vocaloid', label:T.gVocaloid, color:'#39C5BB'},
-  {id:'external', label:T.gExternal, color:'#B8F0B0'},
-  {id:'vtuber',   label:T.gVtuber,   color:'#D4B0F0'},
+const GH_OWNER='vocabuki-io';
+const GH_REPO='eventcalendar';
+const GH_PATH='events.json';
+const ADMIN_PASSWORD='shinjuku@2452';
+const T=window.T;
+const C={turquoise:'#2EC5CE',turquoiseDark:'#1EA3AC',yellow:'#FFD23F',red:'#E63946',orange:'#FF8A1E',paper:'#FFFBEC',ink:'#111111'};
+const B='3px solid #111',BT='4px solid #111',S='4px 4px 0 #111',SB='6px 6px 0 #111',SS='2px 2px 0 #111';
+const pat={halftone:c=>`radial-gradient(circle at 3px 3px,${c} 1.8px,transparent 2px)`};
+const GENRES_DEFAULT=[
+  {id:'vocabuki',label:T.gVocabuki,color:'#F5E642'},
+  {id:'anime',label:T.gAnime,color:'#E63946'},
+  {id:'vocaloid',label:T.gVocaloid,color:'#39C5BB'},
+  {id:'external',label:T.gExternal,color:'#B8F0B0'},
+  {id:'vtuber',label:T.gVtuber,color:'#D4B0F0'},
 ];
-const PEOPLE_DEFAULT = {
-  drag_on_3:       {name:'dragon3', x:'@drag_on_3'},
-  rockstar_saihan: {name:T.pIASU,   x:'@rockstar_saihan'},
-  nono4e:          {name:T.pNonose, x:'@nono4e'},
-  aym_pngn:        {name:T.pAyumu,  x:'@aym_pngn'},
+const PEOPLE_DEFAULT={
+  drag_on_3:{name:'dragon3',x:'@drag_on_3'},
+  rockstar_saihan:{name:T.pIASU,x:'@rockstar_saihan'},
+  nono4e:{name:T.pNonose,x:'@nono4e'},
+  aym_pngn:{name:T.pAyumu,x:'@aym_pngn'},
 };
-const DAY_COLORS = [
+const DAY_COLORS=[
   {id:'auto',label:T.colorAuto,value:null},
-  {id:'red', label:T.colorRed, value:'#E63946'},
+  {id:'red',label:T.colorRed,value:'#E63946'},
   {id:'teal',label:T.colorTeal,value:'#2EC5CE'},
-  {id:'yel', label:T.colorYel, value:'#FFD23F'},
-  {id:'org', label:T.colorOrg, value:'#FF8A1E'},
-  {id:'pur', label:T.colorPur, value:'#6A3FD9'},
-  {id:'pnk', label:T.colorPnk, value:'#FF3DA5'},
-  {id:'nvy', label:T.colorNvy, value:'#223B8F'},
-  {id:'grn', label:T.colorGrn, value:'#3FB55E'},
+  {id:'yel',label:T.colorYel,value:'#FFD23F'},
+  {id:'org',label:T.colorOrg,value:'#FF8A1E'},
+  {id:'pur',label:T.colorPur,value:'#6A3FD9'},
+  {id:'pnk',label:T.colorPnk,value:'#FF3DA5'},
+  {id:'nvy',label:T.colorNvy,value:'#223B8F'},
+  {id:'grn',label:T.colorGrn,value:'#3FB55E'},
 ];
-
 function fmtDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dy=String(d.getDate()).padStart(2,'0');return`${y}-${m}-${dy}`;}
 function parseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
 function weekIdx(d){return(d.getDay()+6)%7;}
 function uid(){return'e'+Date.now()+Math.random().toString(36).slice(2,6);}
 const TODAY=new Date();
 
-function Label({children}){return <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#555',marginBottom:3}}>{children}</div>;}
+function Label({children}){return(<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#555',marginBottom:3}}>{children}</div>);}
 function SHead({children}){return(<div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,background:C.ink,color:'#fff',border:BT,borderRadius:8,padding:'4px 12px',transform:'rotate(-1deg)',boxShadow:SS,display:'inline-block',marginBottom:12}}>{children}</div>);}
 
-async function ghFetch(token,path,method='GET',body=null){
-  const opts={method,headers:{Authorization:`token ${token}`,'Content-Type':'application/json',Accept:'application/vnd.github.v3+json'}};
+async function ghFetch(token,path,method,body){
+  method=method||'GET';
+  const hdrs={Authorization:'token '+token,'Content-Type':'application/json',Accept:'application/vnd.github.v3+json'};
+  const opts={method,headers:hdrs};
   if(body)opts.body=JSON.stringify(body);
-  const res=await fetch(`https:
+  const url='https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+path;
+  const res=await fetch(url,opts);
   if(!res.ok){const e=await res.json();throw new Error(e.message||res.status);}
   return res.json();
 }
 async function loadGH(token){
   const file=await ghFetch(token,GH_PATH);
-  return{data:JSON.parse(atob(file.content.replace(/\n/g,''))),sha:file.sha};
+  return{data:JSON.parse(atob(file.content.replace(/
+/g,''))),sha:file.sha};
 }
 async function saveGH(token,data,sha){
   const content=btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2))));
-  await ghFetch(token,GH_PATH,'PUT',{message:`Update events.json ${new Date().toISOString()}`,content,sha});
+  const msg='Update events.json '+new Date().toISOString();
+  await ghFetch(token,GH_PATH,'PUT',{message:msg,content,sha});
 }
 
-
 function PerfBlock({role,labelText,addText,bgColor,draft,setDraft,people,nameV,setNameV,xidV,setXidV}){
-  const getSugg=(nq,xq)=>{
-    const q=(nq+xq).toLowerCase().trim();if(!q)return[];
-    const cur=draft[role]||[];
+  const cur=draft[role]||[];
+  const getSugg=()=>{
+    const q=(nameV+xidV).toLowerCase().trim();
+    if(!q)return[];
     return Object.keys(people).filter(k=>!cur.includes(k)&&(k.toLowerCase().includes(q)||people[k].name.toLowerCase().includes(q)||people[k].x.toLowerCase().includes(q))).slice(0,4);
   };
   const addPerf=()=>{
-    const name=nameV.trim(), xid=xidV.trim().replace(/^@/,'');
+    const name=nameV.trim(),xid=xidV.trim().replace(/^@/,'');
     if(!xid&&!name)return;
     const key=xid||(name.toLowerCase().replace(/\s+/g,'_'));
     if(!people[key])people[key]={name:name||key,x:xid?('@'+xid):''};
     setDraft(d=>({...d,[role]:d[role].includes(key)?d[role]:[...d[role],key]}));
     setNameV('');setXidV('');
   };
-  const pickSugg=k=>{
-    setDraft(d=>({...d,[role]:d[role].includes(k)?d[role]:[...d[role],k]}));
-    setNameV('');setXidV('');
-  };
+  const pickSugg=k=>{setDraft(d=>({...d,[role]:d[role].includes(k)?d[role]:[...d[role],k]}));setNameV('');setXidV('');};
   const rmPerf=i=>setDraft(d=>({...d,[role]:d[role].filter((_,j)=>j!==i)}));
-  const sugg=getSugg(nameV,xidV);
-
+  const sugg=getSugg();
   return(
     <div>
       <Label>{labelText}</Label>
       <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:4}}>
-        {(draft[role]||[]).map((id,i)=>{const p=people[id]||{name:id,x:'@'+id};return(
-          <div key={id+i} style={{display:'flex',alignItems:'center',gap:8,background:'#f8f8f8',border:B,borderRadius:8,padding:'8px 12px'}}>
+        {cur.map((id,i)=>{const p=people[id]||{name:id,x:'@'+id};return(
+          <div key={id} style={{display:'flex',alignItems:'center',gap:8,background:'#f8f8f8',border:B,borderRadius:8,padding:'8px 12px'}}>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{p.name}</div>
               <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{p.x||('@'+id)}</div>
@@ -242,23 +202,19 @@ function EventCard({ev,genres,people,dayBgMap,onSave,onDelete}){
   const[djXid,setDjXid]=React.useState('');
   const[vjName,setVjName]=React.useState('');
   const[vjXid,setVjXid]=React.useState('');
-
   const startEdit=()=>{
     setDraft({date:ev.date,title:ev.title,genre:ev.genre,hashtags:[...(ev.hashtags||[])],djs:[...ev.djs],vjs:[...ev.vjs],flyer:ev.flyer||null,dayBg:dayBgMap[ev.date]??null});
-    setDjName('');setDjXid('');setVjName('');setVjXid('');
-    setOpen(true);
+    setDjName('');setDjXid('');setVjName('');setVjXid('');setOpen(true);
   };
   const cancel=()=>{setOpen(false);setDraft(null);};
   const saveCard=()=>{onSave(ev.id||ev.date,draft);setSavedMark(true);setTimeout(()=>setSavedMark(false),2000);setOpen(false);setDraft(null);};
-  const addTag=()=>{const t=prompt('# '+T.hashL);if(t&&t.trim())setDraft(d=>({...d,hashtags:[...d.hashtags,t.trim()]}));};
+  const addTag=()=>{const t=prompt('# tag');if(t&&t.trim())setDraft(d=>({...d,hashtags:[...d.hashtags,t.trim()]}));};
   const rmTag=i=>setDraft(d=>({...d,hashtags:d.hashtags.filter((_,j)=>j!==i)}));
-
   const d=parseDate(ev.date);
   const g=genres.find(x=>x.id===ev.genre)||{color:'#666',label:'?'};
   const curBg=dayBgMap[ev.date]??null;
   const iSt={width:'100%',border:BT,borderRadius:8,padding:'10px 12px',fontSize:14,background:'#fff',outline:'none'};
   const chipSt=(on,col)=>({display:'inline-flex',alignItems:'center',gap:4,border:on?'3px solid #111':'2px solid #111',borderRadius:8,padding:'6px 12px',background:on?col:'#fff',color:on?'#fff':'#111',fontFamily:'"DotGothic16",monospace',fontSize:12,cursor:'pointer',boxShadow:on?SS:'none',whiteSpace:'nowrap'});
-
   return(
     <div style={{background:'#fff',border:BT,borderRadius:14,overflow:'hidden',boxShadow:S}}>
       <div onClick={open?undefined:startEdit} style={{display:'flex',gap:10,alignItems:'center',padding:14,cursor:open?'default':'pointer',userSelect:'none',WebkitUserSelect:'none'}}>
@@ -310,12 +266,8 @@ function EventCard({ev,genres,people,dayBgMap,onSave,onDelete}){
               <button onClick={addTag} style={{border:BT,borderRadius:20,padding:'5px 12px',background:'#fff',fontFamily:'"DotGothic16",monospace',fontSize:11,boxShadow:SS}}>{T.hashAdd}</button>
             </div>
           </div>
-          <PerfBlock role="djs" labelText={T.djL} addText={T.djAdd} bgColor={C.yellow}
-            draft={draft} setDraft={setDraft} people={people}
-            nameV={djName} setNameV={setDjName} xidV={djXid} setXidV={setDjXid}/>
-          <PerfBlock role="vjs" labelText={T.vjL} addText={T.vjAdd} bgColor={C.turquoise}
-            draft={draft} setDraft={setDraft} people={people}
-            nameV={vjName} setNameV={setVjName} xidV={vjXid} setXidV={setVjXid}/>
+          <PerfBlock role="djs" labelText={T.djL} addText={T.djAdd} bgColor={C.yellow} draft={draft} setDraft={setDraft} people={people} nameV={djName} setNameV={setDjName} xidV={djXid} setXidV={setDjXid}/>
+          <PerfBlock role="vjs" labelText={T.vjL} addText={T.vjAdd} bgColor={C.turquoise} draft={draft} setDraft={setDraft} people={people} nameV={vjName} setNameV={setVjName} xidV={vjXid} setXidV={setVjXid}/>
           <div>
             <Label>{T.flyerL}</Label>
             <div style={{marginTop:6,display:'flex',flexDirection:'column',gap:8}}>
@@ -402,7 +354,6 @@ function AdminApp(){
   const[newLabel,setNewLabel]=React.useState('');
   const[newColor,setNewColor]=React.useState('#E63946');
   const handleLogin=tk=>{setToken(tk);setLoggedIn(true);};
-
   React.useEffect(()=>{
     if(!loggedIn||!token)return;
     setStatus('loading');
@@ -417,7 +368,6 @@ function AdminApp(){
       setStatus('error');setErrMsg(e.message);
     });
   },[loggedIn,token]);
-
   const doSave=async()=>{
     setStatus('saving');
     try{
@@ -431,14 +381,13 @@ function AdminApp(){
     setDayBgMap(m=>{const n={...m};if(draft.dayBg===null)delete n[draft.date];else n[draft.date]=draft.dayBg;return n;});
   };
   const handleDelete=evId=>setEvents(prev=>prev.filter(e=>(e.id||e.date)!==evId));
-  const addEvent=()=>setEvents(prev=>[...prev,{id:uid(),date:fmtDate(TODAY),title:T.eventNew,genre:genres[0]?.id||'vocabuki',hashtags:['vocabuki'],djs:[],vjs:[],flyer:null}]);
+  const addEvent=()=>setEvents(prev=>[...prev,{id:uid(),date:fmtDate(TODAY),title:T.eventNew,genre:genres[0]&&genres[0].id||'vocabuki',hashtags:['vocabuki'],djs:[],vjs:[],flyer:null}]);
   const addGenre=()=>{const lbl=newLabel.trim();if(!lbl)return;const id=lbl.toLowerCase().replace(/\s+/g,'');setGenres(prev=>[...prev,{id,label:lbl,color:newColor}]);setNewLabel('');};
   const rmGenre=id=>{if(events.some(e=>e.genre===id)){alert(T.genreInUse);return;}setGenres(prev=>prev.filter(g=>g.id!==id));};
   const sorted=React.useMemo(()=>[...events].sort((a,b)=>a.date.localeCompare(b.date)),[events]);
   const logout=()=>{sessionStorage.removeItem('vb_token');setToken('');setLoggedIn(false);};
   const barBg=status==='loading'||status==='saving'?'#555':status==='saved'?'#3FB55E':status==='error'?C.red:null;
   const barTx=status==='loading'?T.ghLoading:status==='saving'?T.ghSaving:status==='saved'?T.ghSaved:status==='error'?(T.ghError+errMsg):null;
-
   if(!loggedIn)return <LoginScreen onLogin={handleLogin}/>;
   return(
     <div style={{maxWidth:520,margin:'0 auto',minHeight:'100vh',background:C.paper}}>
