@@ -125,7 +125,10 @@ async function ghFetch(token,path,method,body){
 }
 async function loadGH(token){
   const file=await ghFetch(token,GH_PATH);
-  return{data:JSON.parse(atob(file.content.replace(/\n/g,''))),sha:file.sha};
+  const bin=atob(file.content.replace(/\n/g,''));
+  const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
+  const text=new TextDecoder('utf-8').decode(bytes);
+  return{data:JSON.parse(text),sha:file.sha};
 }
 async function saveGH(token,data,sha){
   const content=btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2))));
