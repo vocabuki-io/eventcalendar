@@ -203,7 +203,7 @@ function EventCard({ev,genres,people,dayBgMap,onSave,onDelete}){
   const[vjName,setVjName]=React.useState('');
   const[vjXid,setVjXid]=React.useState('');
   const startEdit=()=>{
-    setDraft({date:ev.date,title:ev.title,genre:ev.genre,hashtags:[...(ev.hashtags||[])],djs:[...ev.djs],vjs:[...ev.vjs],flyer:ev.flyer||null,dayBg:dayBgMap[ev.date]??null});
+    setDraft({date:ev.date,title:ev.title,genre:ev.genre,hashtags:[...(ev.hashtags||[])],djs:[...ev.djs],vjs:[...ev.vjs],flyer:ev.flyer||null,dayBg:(dayBgMap[ev.date]!==undefined?dayBgMap[ev.date]:null)});
     setDjName('');setDjXid('');setVjName('');setVjXid('');setOpen(true);
   };
   const cancel=()=>{setOpen(false);setDraft(null);};
@@ -212,7 +212,7 @@ function EventCard({ev,genres,people,dayBgMap,onSave,onDelete}){
   const rmTag=i=>setDraft(d=>({...d,hashtags:d.hashtags.filter((_,j)=>j!==i)}));
   const d=parseDate(ev.date);
   const g=genres.find(x=>x.id===ev.genre)||{color:'#666',label:'?'};
-  const curBg=dayBgMap[ev.date]??null;
+  const curBg=(dayBgMap[ev.date]!==undefined?dayBgMap[ev.date]:null);
   const iSt={width:'100%',border:BT,borderRadius:8,padding:'10px 12px',fontSize:14,background:'#fff',outline:'none'};
   const chipSt=(on,col)=>({display:'inline-flex',alignItems:'center',gap:4,border:on?'3px solid #111':'2px solid #111',borderRadius:8,padding:'6px 12px',background:on?col:'#fff',color:on?'#fff':'#111',fontFamily:'"DotGothic16",monospace',fontSize:12,cursor:'pointer',boxShadow:on?SS:'none',whiteSpace:'nowrap'});
   return(
