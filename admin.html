@@ -125,10 +125,8 @@ async function ghFetch(token,path,method,body){
 }
 async function loadGH(token){
   const file=await ghFetch(token,GH_PATH);
-  const bin=atob(file.content.replace(/\n/g,''));
-  const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
-  const text=new TextDecoder('utf-8').decode(bytes);
-  return{data:JSON.parse(text),sha:file.sha};
+  return{data:JSON.parse(atob(file.content.replace(/
+/g,''))),sha:file.sha};
 }
 async function saveGH(token,data,sha){
   const content=btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2))));
@@ -349,6 +347,7 @@ function AdminApp(){
   const[events,setEvents]=React.useState([]);
   const[genres,setGenres]=React.useState(GENRES_DEFAULT);
   const[dayBgMap,setDayBgMap]=React.useState({});
+  const[closedDays,setClosedDays]=React.useState([]);
   const[people,setPeople]=React.useState(PEOPLE_DEFAULT);
   const[sha,setSha]=React.useState(null);
   const[status,setStatus]=React.useState('idle');
@@ -363,6 +362,7 @@ function AdminApp(){
       setEvents(data.events||[]);
       setGenres(data.genres||GENRES_DEFAULT);
       setDayBgMap(data.dayBgMap||{});
+      setClosedDays(data.closedDays||[]);
       setPeople({...PEOPLE_DEFAULT,...(data.people||{})});
       setSha(sha);setStatus('idle');
     }).catch(e=>{
@@ -373,7 +373,7 @@ function AdminApp(){
   const doSave=async()=>{
     setStatus('saving');
     try{
-      await saveGH(token,{events,genres,dayBgMap,people},sha);
+      await saveGH(token,{events,genres,dayBgMap,closedDays,people},sha);
       const{sha:ns}=await loadGH(token);
       setSha(ns);setStatus('saved');setTimeout(()=>setStatus('idle'),2500);
     }catch(e){setStatus('error');setErrMsg(e.message);}
@@ -412,6 +412,28 @@ function AdminApp(){
       </div>
       <div style={{height:barBg?88:60}}/>
       <div style={{padding:'16px 16px 100px',display:'flex',flexDirection:'column',gap:24}}>
+        <div>
+          <SHead>&#20241;&#26989;&#26085;&#31649;&#29702;</SHead>
+          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            <div style={{background:'#fff',border:BT,borderRadius:10,padding:12,boxShadow:SS}}>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',marginBottom:8}}>&#20241;&#26989;&#26085;&#12434;&#35373;&#23450;&#12377;&#12427;&#12392;&#12459;&#12524;&#12531;&#12480;&#12540;&#12395;&#65288;&#20241;&#65289;&#12392;&#34920;&#31034;&#12373;&#12428;&#12414;&#12377;</div>
+              <div style={{display:'flex',gap:8,marginBottom:8}}>
+                <input type="date" id="closedInput" style={{flex:1,border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none'}}/>
+                <button onClick={()=>{const v=document.getElementById('closedInput').value;if(!v)return;if(!closedDays.includes(v))setClosedDays(prev=>[...prev,v].sort());document.getElementById('closedInput').value='';}}
+                  style={{border:BT,borderRadius:8,padding:'8px 14px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS,flexShrink:0}}>&#8853; &#36861;&#21152;</button>
+              </div>
+              {closedDays.length===0
+                ? <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#aaa',textAlign:'center',padding:'8px 0'}}>&#20241;&#26989;&#26085;&#12394;&#12375;</div>
+                : <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                    {closedDays.map(d=>(<div key={d} style={{display:'inline-flex',alignItems:'center',gap:4,background:'#eee',border:B,borderRadius:20,padding:'4px 8px 4px 10px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>
+                      {d}<button onClick={()=>setClosedDays(prev=>prev.filter(x=>x!==d))} style={{background:'none',border:'none',fontSize:14,padding:'0 0 0 4px',lineHeight:1,cursor:'pointer',color:'#666'}}>x</button>
+                    </div>))}
+                  </div>
+              }
+            </div>
+          </div>
+        </div>
+
         <div>
           <SHead>{T.genreMgmt}</SHead>
           <div style={{display:'flex',flexDirection:'column',gap:8}}>
