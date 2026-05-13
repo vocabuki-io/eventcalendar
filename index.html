@@ -87,7 +87,7 @@
   };
 
   // STATIC DATA
-  const TODAY=new Date(2026,3,19);
+  const TODAY=new Date();
   const GENRES_DEFAULT=[
     {id:'game',label:'\u30b2\u30fc\u30e0',color:'#E63946'},
     {id:'anison',label:'\u30a2\u30cb\u30bd\u30f3',color:'#FF8A1E'},
@@ -234,26 +234,27 @@
       );})}
     </div>);
   }
-  function DayCell({cell,event,isToday,isPast,isFavorite,onClick,dayBg,genres}){
+  function DayCell({cell,event,isToday,isPast,isFavorite,onClick,dayBg,genres,isClosed}){
     const d=cell.date,wi=weekIdx(d),isSat=wi===5,isSun=wi===6;
     const genre=event&&(Array.isArray(event.genre)?genres.find(g=>g.id===event.genre[0]):genres.find(g=>g.id===event.genre));
     const defaultAccent=isSat?C.turquoise:wi===4?C.red:null;
-    const bg=event?(dayBg||(genre?genre.color:C.yellow)):(cell.outside?'rgba(255,255,255,0.4)':(defaultAccent||'#fff'));
+    const bg=isClosed?'#ccc':event?(dayBg||(genre?genre.color:C.yellow)):(cell.outside?'rgba(255,255,255,0.4)':(defaultAccent||'#fff'));
     const isBgColored=event||(!!defaultAccent&&!cell.outside);
     return(<button onClick={onClick} disabled={!event}
       style={{position:'relative',aspectRatio:'1/1.15',border:B,borderRadius:8,minWidth:0,background:bg,padding:4,cursor:event?'pointer':'default',opacity:(cell.outside||isPast)?0.55:1,filter:isPast?'saturate(0.4)':'none',boxShadow:event&&!isPast?SS:'none',display:'flex',flexDirection:'column',alignItems:'flex-start',overflow:'visible',textAlign:'left',transform:isToday?'scale(1.02)':'none',outline:isToday?`3px solid ${C.ink}`:'none',outlineOffset:isToday?'2px':0}}>
       {isToday&&<div style={{position:'absolute',top:-10,right:-6,zIndex:10,pointerEvents:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,lineHeight:1,color:'#fff',WebkitTextStroke:'3px #FF3DA5',paintOrder:'stroke fill',transform:'rotate(-8deg)'}}>NOW</div>}
+      {isClosed&&!cell.outside&&<div style={{position:'absolute',top:1,left:0,right:0,textAlign:'center',fontFamily:'"DotGothic16",monospace',fontSize:8,color:'#fff',background:'rgba(80,80,80,0.85)',borderRadius:3,padding:'1px 0',lineHeight:1.2}}>&#20241;</div>}
       {isFavorite&&<div style={{position:'absolute',top:2,left:2,fontSize:10}}>&#11088;</div>}
       <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16,lineHeight:1,color:isBgColored?'#fff':(isSun?C.red:isSat?C.turquoiseDark:'#111'),textShadow:isBgColored?'1.5px 1.5px 0 #111':'none',marginTop:1,marginLeft:2}}>{d.getDate()}</div>
       {event&&(()=>{const full=event.title||'',head=Array.from(full).slice(0,4).join(''),label=Array.from(full).length>4?`${head}\u2026`:head;return(<div style={{marginTop:'auto',width:'100%',fontFamily:'"Reggae One",system-ui',fontSize:10.5,lineHeight:1,color:'#fff',WebkitTextStroke:'2.5px #111',paintOrder:'stroke fill',textAlign:'center',overflow:'hidden',whiteSpace:'nowrap',padding:'2px 2px 3px'}}>{label}</div>);})()}
     </button>);
   }
-  function MonthGrid({cells,eventByDate,onPick,favorites,dayBgMap,genres}){
+  function MonthGrid({cells,eventByDate,onPick,favorites,dayBgMap,genres,closedDays}){
     return(<div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,padding:'6px 14px'}}>
       {cells.map((c,i)=>{
         const key=fmtDate(c.date),ev=eventByDate[key],isToday=sameDay(c.date,TODAY);
         const isPast=c.date<new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
-        return(<DayCell key={i} cell={c} event={ev} isToday={isToday} isPast={isPast} isFavorite={!!(ev&&favorites[key])} dayBg={ev&&dayBgMap?dayBgMap[key]:undefined} onClick={()=>ev&&onPick(ev)} genres={genres}/>);
+        const isClosed=closedDays&&closedDays.includes(key);return(<DayCell key={i} cell={c} event={ev} isToday={isToday} isPast={isPast} isFavorite={!!(ev&&favorites[key])} dayBg={ev&&dayBgMap?dayBgMap[key]:undefined} onClick={()=>ev&&onPick(ev)} genres={genres} isClosed={isClosed}/>);
       })}
     </div>);
   }
@@ -404,174 +405,18 @@
   }
 
   function AboutScreen({onClose,people}){
-    const[section,setSection]=React.useState(null);
-    const menus=[
-      {id:'access',icon:'&#128205;',label:'&#12450;&#12463;&#12475;&#12473;'},
-      {id:'qa',icon:'&#10067;',label:'Q&A'},
-      {id:'drink',icon:'&#127867;',label:'&#12489;&#12522;&#12531;&#12463;&#12513;&#12491;&#12517;&#12540;'},
-      {id:'accounts',icon:'&#128142;',label:'X&#12452;&#12505;&#12531;&#12488;&#12450;&#12459;&#12454;&#12531;&#12488;&#19968;&#35239;'},
-      {id:'sns',icon:'&#127758;',label:'&#20844;&#24335;SNS&#12539;&#12473;&#12479;&#12483;&#12501;'},
-      {id:'quiz',icon:'&#127914;',label:'&#12452;&#12505;&#12531;&#12488;&#35&#65533;;&#26029;'},
-    ];
-
-    const ACCESS_TEXT=[
-      '&#12508;&#12459;&#12525;&#23554;&#38272;&#12490;&#12452;&#12488;&#12463;&#12521;&#12502;&#12288;&#12508;&#12459;&#12502;&#12461;',
-      '&#12288;',
-      '&#38477;&#12426;&#12383;&#25163;&#65306;&#26032;&#23417;&#35611;&#27497;&#21306;&#12288;&#27468;&#33310;&#20238;&#30010;&#20956;&#21475;',
-      '&#20013;&#22830;&#20869;&#12450;&#12463;&#12475;&#12473;&#65306;1&#19979;&#30446;&#24049;&#20837;&#12427;&#12289;&#12288;&#12288;&#12288;&#12288;&#12288;&#12288;&#12288;&#12288;&#12288;&#12288;&#12288;&#12288;&#12288;&#12288;&#12288;',
-      '&#12288;&#12288;&#12288;&#12288;&#12288;&#12288;&#12288;&#12288;&#12288;&#12288;&#12288;&#20462;&#25972;&#20013;',
-      '&#12288;',
-      '&#20301;&#32622;&#65306;&#26032;&#23447;&#35611;&#27493;&#29991;&#21306; 2-45-2 Gest32&#12499;&#12523; 5F',
-      '&#26178;&#38291;&#65306;24:00 &#12288;&#8212;&#8212;&#8212;&#8212;&#12288; 5:00',
-      '&#12288;',
-      '&#12288;',
-    ];
-    const QA=[
-        {q:'&#20837;&#22580;&#26009;&#12399;&#12356;&#12367;&#12425;&#12391;&#12377;&#12363;&#65311;',a:'&#22522;&#26412; 2,500&#20870;&#65288;1D&#36796;&#65289;&#12290;&#12452;&#12505;&#12531;&#12488;&#12395;&#12424;&#12387;&#12390;&#36064;&#12394;&#12427;&#22580;&#21512;&#12364;&#12354;&#12426;&#12414;&#12377;&#12290;'},
-        {q:'&#26410;&#25104;&#24180;&#12399;&#20837;&#12428;&#12414;&#12377;&#12363;&#65311;',a:'20&#27507;&#26410;&#28168;&#12398;&#26041;&#12399;&#20837;&#22580;&#12391;&#12365;&#12414;&#12379;&#12435;&#12290;'},
-        {q:'&#12393;&#12435;&#12394;&#26381;&#35069;&#12391;&#34892;&#12369;&#12400;&#12356;&#12356;&#65311;',a:'&#12489;&#12524;&#12473;&#12467;&#12540;&#12489;&#12399;&#29305;&#12395;&#12354;&#12426;&#12414;&#12379;&#12435;&#12290;&#12393;&#12358;&#12382;&#27671;&#36731;&#12395;&#12362;&#36234;&#12375;&#12367;&#12384;&#12373;&#12356;&#12290;'},
-        {q:'&#21306;&#20869;&#12399;&#25705;&#12360;&#12414;&#12377;&#12363;&#65311;',a:'&#12479;&#12496;&#12467;&#12399;&#21306;&#20869;&#30000;&#22580;&#12395;&#12066;&#12362;&#39340;&#12356;&#12375;&#12414;&#12377;&#12290;'},
-        {q:'&#22899;&#24615;&#12399;&#31282;&#26009;&#12395;&#12394;&#12426;&#12414;&#12377;&#12363;&#65311;',a:'&#12452;&#12505;&#12531;&#12488;&#12395;&#12424;&#12387;&#12390;&#22899;&#24615;&#31282;&#26009;&#12398;&#22580;&#21512;&#12364;&#12354;&#12426;&#12414;&#12377;&#12290;&#21305;&#12392;&#31295;&#12434;&#12054;&#30906;&#35469;&#12367;&#12384;&#12373;&#12356;&#12290;'},
-        {q:'&#20351;&#12387;&#12390;&#12356;&#12427;&#26354;&#12399;&#12393;&#12435;&#12394;&#12418;&#12398;&#65311;',a:'&#12508;&#12459;&#12525;&#26354;&#12434;&#12362;&#23637;&#12391;&#12375;&#12390;&#12356;&#12414;&#12377;&#12290;&#12508;&#12459;&#12525;&#12539;&#12508;&#12459;&#12525;&#25104;&#20998;&#26354;&#30067;&#12395;&#12424;&#12387;&#12066;&#12399;&#12450;&#12491;&#12477;&#12531;&#12420;&#12466;&#12540;&#12512;&#26354;&#12364;&#27969;&#12428;&#12427;&#12053;&#12392;&#12418;&#12354;&#12426;&#12414;&#12377;&#12290;'},
-      ];
-    const ACCOUNTS=[
-      {name:'&#12508;&#12459;&#12502;&#12461;',xid:'vocabuki',desc:'&#20844;&#24335;&#12450;&#12459;&#12454;&#12531;&#12488;'},
-      {name:'&#12508;&#12459;&#12502;&#12461; &#12452;&#12505;&#12531;&#12488;',xid:'vocabuki_event',desc:'&#12452;&#12505;&#12531;&#12488;&#24460;&#36000;&#12289;&#12479;&#12452;&#12510;&#12398;&#20844;&#38283;'},
-    ];
-    const STAFF_IDS=['drag_on_3','rockstar_saihan','nono4e','aym_pngn'];
-
-    const back=()=>setSection(null);
-
-    const sectionContent=()=>{
-      if(section==='access')return(
-        <div style={{display:'flex',flexDirection:'column',gap:12}}>
-          <div style={{background:'#fff',border:BT,borderRadius:14,padding:16,boxShadow:S}}>
-            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16,marginBottom:12,color:C.red}}>&#12508;&#12459;&#12525;&#23554;&#38272;&#12490;&#12452;&#12488;&#12463;&#12521;&#12502;</div>
-            {[
-              ['&#128205;','&#20301;&#32622;','&#26032;&#23447;&#35611;&#27493;&#29992;&#21306; 2-45-2 Gest32&#12499;&#12523; 5F'],
-              ['&#9200;','&#22659;&#26989;&#26178;&#38291;','&#27627;&#26085; OPEN 24:00 &#8212; CLOSE 5:00'],
-              ['&#128683;','&#26410;&#25104;&#24180;','20&#27507;&#26410;&#28168;&#12398;&#26041;&#12399;&#20837;&#22580;&#19981;&#21487;'],
-            ].map(([icon,label,val],i)=>(
-              <div key={i} style={{display:'flex',gap:12,alignItems:'flex-start',padding:'8px 0',borderBottom:i<2?'1px solid #eee':'none'}}>
-                <span style={{fontSize:18,flexShrink:0}}>{icon}</span>
-                <div>
-                  <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',marginBottom:2}} dangerouslySetInnerHTML={{__html:label}}/>
-                  <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}} dangerouslySetInnerHTML={{__html:val}}/>
-                </div>
-              </div>
-            ))}
-          </div>
-          <a href="https://maps.app.goo.gl/vocabuki" target="_blank" rel="noreferrer"
-            style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:C.turquoise,color:'#fff',border:BT,borderRadius:12,padding:'14px',textDecoration:'none',fontFamily:'"Reggae One",system-ui',fontSize:15,boxShadow:S}}>
-            &#128205; Google Maps&#12391;&#38283;&#12367;
-          </a>
-        </div>
-      );
-      if(section==='qa')return(
-        <div style={{display:'flex',flexDirection:'column',gap:10}}>
-          {QA.map((item,i)=>(
-            <div key={i} style={{background:'#fff',border:BT,borderRadius:12,padding:'12px 14px',boxShadow:SS}}>
-              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13,color:C.red,marginBottom:6}} dangerouslySetInnerHTML={{__html:'Q. '+item.q}}/>
-              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,lineHeight:1.7,color:'#333'}} dangerouslySetInnerHTML={{__html:'A. '+item.a}}/>
-            </div>
-          ))}
-        </div>
-      );
-      if(section==='drink')return(
-        <div style={{background:'#fff',border:BT,borderRadius:14,padding:32,boxShadow:S,textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:16}}>
-          <div style={{fontSize:48}}>&#127867;</div>
-          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:C.turquoise}}>DRINK MENU</div>
-          <div style={{background:C.yellow,border:BT,borderRadius:10,padding:'10px 20px',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:SS,color:C.ink}}>COMING SOON...</div>
-          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#888'}}>&#30011;&#20687;&#12391;&#20551;&#12398;&#20844;&#38283;&#20170;&#12375;&#12400;&#12425;&#12367;&#12362;&#24453;&#12385;&#12367;&#12384;&#12373;&#12356;</div>
-        </div>
-      );
-      if(section==='accounts')return(
-        <div style={{display:'flex',flexDirection:'column',gap:10}}>
-          {ACCOUNTS.map((ac,i)=>(
-            <a key={i} href={'https://x.com/'+ac.xid} target="_blank" rel="noreferrer"
-              style={{display:'flex',alignItems:'center',gap:12,background:'#fff',border:BT,borderRadius:12,padding:'12px 14px',textDecoration:'none',color:'#111',boxShadow:SS}}>
-              <div style={{width:40,height:40,background:C.ink,borderRadius:'50%',border:B,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                <XIcon size={20}/>
-              </div>
-              <div>
-                <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:14}} dangerouslySetInnerHTML={{__html:ac.name}}/>
-                <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>@{ac.xid} &#8212; <span dangerouslySetInnerHTML={{__html:ac.desc}}/></div>
-              </div>
-              <div style={{marginLeft:'auto',fontFamily:'"Reggae One",system-ui',fontSize:18}}>&#8599;</div>
-            </a>
-          ))}
-        </div>
-      );
-      if(section==='sns')return(
-        <div style={{display:'flex',flexDirection:'column',gap:12}}>
-          <div style={{display:'flex',flexDirection:'column',gap:8}}>
-            {[
-              {label:'X (Twitter)',url:'https://x.com/vocabuki',bg:C.ink},
-              {label:'Instagram',url:'https://instagram.com/vocabuki',bg:'linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)'},
-              {label:'TikTok',url:'https://tiktok.com/@vocabuki',bg:'#111'},
-            ].map((s,i)=>(
-              <a key={i} href={s.url} target="_blank" rel="noreferrer"
-                style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,background:s.bg,color:'#fff',border:BT,borderRadius:12,padding:'14px',textDecoration:'none',fontFamily:'"Reggae One",system-ui',fontSize:15,boxShadow:SS}}>
-                &#127758; {s.label}
-              </a>
-            ))}
-          </div>
-          <div style={{marginTop:8}}>
-            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16,background:C.ink,color:'#fff',border:BT,borderRadius:8,padding:'4px 12px',display:'inline-block',boxShadow:SS,transform:'rotate(-1deg)',marginBottom:12}}>&#12473;&#12479;&#12483;&#12501;</div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
-              {STAFF_IDS.map(id=><PersonRow key={id} id={id} people={people}/>)}
-            </div>
-          </div>
-        </div>
-      );
-      if(section==='quiz')return(
-        <div style={{background:'#fff',border:BT,borderRadius:14,padding:24,boxShadow:S,textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:16}}>
-          <div style={{fontSize:48}}>&#127914;</div>
-          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:22,color:C.turquoise}}>&#12452;&#12505;&#12531;&#12488;&#35914;&#26029;</div>
-          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:13,color:'#888',lineHeight:1.8}}>
-            6&#21839;&#31572;&#12360;&#12390;<br/>
-            &#12354;&#12394;&#12383;&#12395;&#12458;&#12473;&#12473;&#12513;&#12398;<br/>
-            &#12508;&#12459;&#12502;&#12461;&#12452;&#12505;&#12531;&#12488;&#12434;&#35914;&#26029;&#65281;
-          </div>
-          <div style={{background:C.yellow,border:BT,borderRadius:10,padding:'10px 20px',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:SS,color:C.ink}}>
-            COMING SOON...
-          </div>
-        </div>
-      );
-      return null;
-    };
-
     return(<div className="vb-detail-enter" style={{position:'fixed',inset:0,zIndex:30,background:C.paper,overflow:'auto',maxWidth:480,margin:'0 auto'}}>
       <div style={{position:'absolute',inset:0,pointerEvents:'none',opacity:0.4,backgroundImage:pat.halftone('rgba(46,197,206,0.2)'),backgroundSize:'6px 6px'}}/>
-      <div style={{position:'sticky',top:0,zIndex:5,padding:'14px 16px 10px',background:`linear-gradient(to bottom,${C.paper} 75%,transparent)`,display:'flex',alignItems:'center',gap:10}}>
-        {section
-          ?<button onClick={back} style={{display:'flex',alignItems:'center',gap:6,background:'#fff',border:BT,borderRadius:999,padding:'8px 14px 8px 12px',boxShadow:S,fontFamily:'"Reggae One",system-ui',fontSize:14}}><span style={{fontSize:18}}>&#8592;</span>&#25147;&#12427;</button>
-          :<button onClick={onClose} style={{display:'flex',alignItems:'center',gap:6,background:'#fff',border:BT,borderRadius:999,padding:'8px 14px 8px 12px',boxShadow:S,fontFamily:'"Reggae One",system-ui',fontSize:14}}><span style={{fontSize:18}}>&#8592;</span>&#25147;&#12427;</button>
-        }
-        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,color:C.ink}}>
-          {section?menus.find(m=>m.id===section)&&<span dangerouslySetInnerHTML={{__html:menus.find(m=>m.id===section).label}}/>:'&#12508;&#12459;&#12502;&#12461;&#12395;&#12388;&#12356;&#12390;'}
-        </div>
+      <div style={{position:'sticky',top:0,zIndex:5,padding:'14px 16px 10px',background:`linear-gradient(to bottom,${C.paper} 75%,transparent)`}}>
+        <button onClick={onClose} style={{display:'flex',alignItems:'center',gap:6,background:'#fff',border:BT,borderRadius:999,padding:'8px 14px 8px 12px',boxShadow:S,fontFamily:'"Reggae One",system-ui',fontSize:14}}><span style={{fontSize:18}}>&#8592;</span>&#25147;&#12427;</button>
       </div>
-      <div style={{position:'relative',padding:'4px 16px 32px'}}>
-        {!section&&(
-          <div>
-            <div style={{background:C.ink,color:'#fff',border:BT,borderRadius:14,padding:'16px',boxShadow:SB,marginBottom:20,textAlign:'center'}}>
-              <div style={{fontFamily:'"Reggae One",system-ui',fontSize:22,letterSpacing:2,marginBottom:4}}>VOCABUKI</div>
-              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#aaa',lineHeight:1.8}}>&#12508;&#12459;&#12525;&#23554;&#38272;&#12490;&#12452;&#12488;&#12463;&#12521;&#12502;<br/>&#27468;&#33310;&#20238;&#30010; 2-45-2 Gest32&#12499;&#12523; 5F<br/>OPEN 24:00 &#8212;&#8212; CLOSE 5:00</div>
-            </div>
-            <div style={{display:'flex',flexDirection:'column',gap:10}}>
-              {menus.map(m=>(
-                <button key={m.id} onClick={()=>setSection(m.id)}
-                  style={{display:'flex',alignItems:'center',gap:14,background:'#fff',border:BT,borderRadius:14,padding:'16px',boxShadow:S,textAlign:'left',cursor:'pointer',width:'100%'}}>
-                  <div style={{fontSize:26,flexShrink:0,width:40,textAlign:'center'}} dangerouslySetInnerHTML={{__html:m.icon}}/>
-                  <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:16}} dangerouslySetInnerHTML={{__html:m.label}}/>
-                  <div style={{marginLeft:'auto',fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#999'}}>&#8250;</div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-        {section&&sectionContent()}
+      <div style={{position:'relative',padding:'20px 16px',display:'flex',flexDirection:'column',alignItems:'center',gap:20,textAlign:'center'}}>
+        <div style={{background:C.ink,color:'#fff',border:BT,borderRadius:14,padding:'20px',boxShadow:SB,width:'100%'}}>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:24,letterSpacing:2,marginBottom:6}}>VOCABUKI</div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#aaa',lineHeight:1.8}}>&#12508;&#12459;&#12525;&#23554;&#38272;&#12490;&#12452;&#12488;&#12463;&#12521;&#12502;<br/>&#27468;&#33310;&#20238;&#30010; 2-45-2 Gest32&#12499;&#12523; 5F<br/>OPEN 24:00 &#8212;&#8212; CLOSE 5:00</div>
+        </div>
+        <div style={{background:C.yellow,border:BT,borderRadius:12,padding:'14px 24px',fontFamily:'"Reggae One",system-ui',fontSize:18,boxShadow:S,color:C.ink}}>COMING SOON...</div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#888'}}>&#12371;&#12398;&#12467;&#12540;&#12490;&#12540;&#12399;&#20914;&#20869;&#20908;&#12395;&#20853;&#23455;&#12375;&#12414;&#12377;</div>
       </div>
     </div>);
   }
@@ -636,6 +481,7 @@
     const[events,setEvents]=React.useState([]);
     const[genres,setGenres]=React.useState(GENRES_DEFAULT);
     const[dayBgMap,setDayBgMap]=React.useState({});
+    const[closedDays,setClosedDays]=React.useState([]);
     const[loading,setLoading]=React.useState(true);
     const[fetchErr,setFetchErr]=React.useState(false);
     const[people,setPeople]=React.useState(PEOPLE_DEFAULT);
@@ -649,6 +495,7 @@
           setGenres(data.genres||GENRES_DEFAULT);
           setDayBgMap(data.dayBgMap||{});
           setPeople({...PEOPLE_DEFAULT,...(data.people||{})});
+          setClosedDays(data.closedDays||[]);
           setLoading(false);
         })
         .catch(()=>{
@@ -734,7 +581,7 @@
         </div>
         <div style={{padding:'0 16px 10px'}}><GenreFilter activeSet={genreSet} toggleGenre={toggleGenre} genres={genres}/></div>
         {view==='month'&&<WeekdayRow/>}
-        {view==='month'&&(<><MonthGrid cells={cells} eventByDate={eventByDate} onPick={openEvent} favorites={favorites} dayBgMap={dayBgMap} genres={genres}/><UpcomingList events={filteredEvents} onPick={openEvent} favorites={favorites} genres={genres}/></>)}
+        {view==='month'&&(<><MonthGrid cells={cells} eventByDate={eventByDate} onPick={openEvent} favorites={favorites} dayBgMap={dayBgMap} genres={genres} closedDays={closedDays}/><UpcomingList events={filteredEvents} onPick={openEvent} favorites={favorites} genres={genres}/></>)}
         {view==='week'&&<div style={{paddingTop:10}}><WeekView start={weekStart} eventByDate={eventByDate} onPick={openEvent} favorites={favorites} genres={genres}/></div>}
         {view==='list'&&<ListView events={filteredEvents} onPick={openEvent} favorites={favorites} genres={genres}/>}
         <div style={{textAlign:'center',padding:'14px 16px 30px',fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666'}}>&#12508;&#12459;&#12525;&#23554;&#38272;&#12490;&#12452;&#12488;&#12463;&#12521;&#12502; &#12508;&#12459;&#12502;&#12461;<br/>&#27468;&#33310;&#20238;&#30010; 2-45-2 Gest32&#12499;&#12523; 5F / &#27598;&#26085;&#21942;&#26989; 24:00-5:00</div>
