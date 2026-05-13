@@ -1,0 +1,1015 @@
+{
+  "events": [
+    {
+      "id": "ev_20260109_doubleo",
+      "date": "2026-01-09",
+      "title": "00（ダブルオー）",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキイベント",
+        "タブオー"
+      ],
+      "djs": [
+        "kairuidesu",
+        "cosgaso",
+        "tobira2000",
+        "makimaki_UP",
+        "3756siya",
+        "005_900",
+        "rairai_c7",
+        "shard_0315",
+        "kanamari_nakoti",
+        "drag_on_3"
+      ],
+      "vjs": [
+        "cosgaso"
+      ],
+      "flyer": null,
+      "xurl": null
+    },
+    {
+      "id": "ev_20260131_bokaconcafe",
+      "date": "2026-01-31",
+      "title": "ボカコンカフェ vol.5",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキイベント",
+        "ボカコンカフェ"
+      ],
+      "djs": [
+        "EtdK9",
+        "eri219flower",
+        "ecila_39",
+        "sr_0p__q0",
+        "Oo__UxwxU__oO",
+        "_yuyadayo_",
+        "pIpIPOTETO"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "xurl": null
+    },
+    {
+      "id": "ev_20260214_orchoco",
+      "date": "2026-02-14",
+      "title": "俺チョコ",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキイベント",
+        "俺チョコ"
+      ],
+      "djs": [
+        "ea_miku",
+        "005_900",
+        "yume_desu_yo",
+        "eri219flower",
+        "dauuFa",
+        "3756siya",
+        "makimaki_UP",
+        "shard_0315",
+        "aym_pngn"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "xurl": null
+    },
+    {
+      "id": "ev_20260221_vuibuki",
+      "date": "2026-02-21",
+      "title": "ぶいぶき",
+      "genre": "vtuber",
+      "hashtags": [
+        "ボカブキイベント",
+        "ぶいぶき"
+      ],
+      "djs": [
+        "DJWILDPARTY",
+        "chibiice",
+        "Marble_masahide",
+        "xxxcreme7",
+        "akkun6019",
+        "0xsion_zZ",
+        "mosoup_dj",
+        "nora3dj"
+      ],
+      "vjs": [
+        "ECVJstart24",
+        "chibiice"
+      ],
+      "flyer": null,
+      "xurl": null
+    },
+    {
+      "id": "ev_20260227_bokamodo",
+      "date": "2026-02-27",
+      "title": "ボカ戻せ（緊急開催）",
+      "genre": "vocaloid",
+      "hashtags": [
+        "ボカブキイベント",
+        "ボカ戻せ"
+      ],
+      "djs": [
+        "HGfarisha",
+        "willwiLu",
+        "mitotti_v",
+        "005_900",
+        "ABOGADoooooooo0",
+        "syarurepokeka",
+        "3756siya"
+      ],
+      "vjs": [
+        "shard_0315",
+        "hosimiya_star"
+      ],
+      "flyer": null,
+      "xurl": null
+    },
+    {
+      "id": "ev_shadownight_mar",
+      "date": "2026-03-01",
+      "title": "Shadow Night（3月）",
+      "genre": "external",
+      "hashtags": [
+        "ボカブキイベント",
+        "シャドナ"
+      ],
+      "djs": [
+        "milk_86_",
+        "___A____O___",
+        "3k15__",
+        "mosoup_dj",
+        "Sona2525rt",
+        "HAN3dayo",
+        "akisame9_nsx",
+        "blues_nemaki"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "xurl": null
+    },
+    {
+      "id": "ev_20260313_girlsparty",
+      "date": "2026-03-13",
+      "title": "VOCABUKI GIRLs PARTY",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキイベント",
+        "ボカブキ"
+      ],
+      "djs": [
+        "eri219flower",
+        "ecila_39",
+        "Ribbon_Kazane",
+        "ringo_VovoV",
+        "005_900",
+        "rencun_hshs",
+        "nono4e",
+        "izumiz_0o0"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "xurl": null
+    },
+    {
+      "id": "ev_20260319_dolbuki",
+      "date": "2026-03-19",
+      "title": "ドルブキ！",
+      "genre": "anime",
+      "hashtags": [
+        "ボカブキイベント"
+      ],
+      "djs": [
+        "sr_0p__q0",
+        "kanamari_nakoti",
+        "Oo__UxwxU__oO",
+        "hosimiya_star",
+        "dj_hinami",
+        "Tokoneri0506",
+        "tobira2000",
+        "ashmaro_dj"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "xurl": null
+    },
+    {
+      "id": "ev_20260321_bokagame",
+      "date": "2026-03-21",
+      "title": "ボカゲーム",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキイベント",
+        "ボカゲーム"
+      ],
+      "djs": [
+        "djsmith_4889",
+        "Loup1108",
+        "syarurepokeka",
+        "goma334334",
+        "HGfarisha",
+        "makimaki_UP",
+        "___A____O___",
+        "silverArsene"
+      ],
+      "vjs": [
+        "tobira2000",
+        "ECVJstart24"
+      ],
+      "flyer": null,
+      "xurl": null
+    },
+    {
+      "id": "ev_shadownight_apr",
+      "date": "2026-04-01",
+      "title": "Shadow Night（4月）",
+      "genre": "external",
+      "hashtags": [
+        "ボカブキイベント",
+        "シャドナ"
+      ],
+      "djs": [
+        "kanteac_xxx",
+        "milk_86_",
+        "runa_runa_0513_",
+        "Jack_Sava_Miso",
+        "furyuto_ayahata",
+        "Tenngokuumare",
+        "ecila_39",
+        "rencun_hshs",
+        "nono4e"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "xurl": null
+    },
+    {
+      "id": "ev_20260410_bokamodo",
+      "date": "2026-04-10",
+      "title": "ボカ戻せ",
+      "genre": "vocaloid",
+      "hashtags": [
+        "ボカブキイベント",
+        "ボカ戻せ"
+      ],
+      "djs": [
+        "EuphuRi",
+        "kanamari_kototi",
+        "giza_miku_39",
+        "kunugirasuku",
+        "Nico_kinakoxx"
+      ],
+      "vjs": [
+        "tobira2000",
+        "mik_claire"
+      ],
+      "flyer": null,
+      "xurl": null
+    },
+    {
+      "id": "ev_20260411_utamata",
+      "date": "2026-04-11",
+      "title": "歌ってみたで、回してみた！",
+      "genre": "anime",
+      "hashtags": [
+        "ボカブキイベント",
+        "うたまた"
+      ],
+      "djs": [
+        "tadano_ryu",
+        "anju_rachel_cos",
+        "shard_0315",
+        "3756siya",
+        "Loup1108",
+        "furyuto_ayahata",
+        "3k15__",
+        "ABOGADoooooooo0",
+        "tobira2000",
+        "aym_pngn",
+        "nono4e"
+      ],
+      "vjs": [
+        "ECVJstart24"
+      ],
+      "flyer": null,
+      "xurl": null
+    },
+    {
+      "id": "ev_20260417_girlsparty",
+      "date": "2026-04-17",
+      "title": "VOCABUKI GIRLs PARTY",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキイベント",
+        "ボカブキ"
+      ],
+      "djs": [
+        "Oo__UxwxU__oO",
+        "ecila_39",
+        "005_900",
+        "yume_desu_yo",
+        "anju_rachel_cos",
+        "nono4e"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "xurl": null
+    },
+    {
+      "id": "ev_20260420_nomimande",
+      "date": "2026-04-20",
+      "title": "月曜日から飲みマンデイ",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキイベント",
+        "飲みマンデイ"
+      ],
+      "djs": [
+        "HGfarisha",
+        "HAN3dayo",
+        "hrn_amane",
+        "ABOGADoooooooo0",
+        "nono4e",
+        "SamflySamurai",
+        "aym_pngn",
+        "akkun6019",
+        "goma334334"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "xurl": null
+    },
+    {
+      "id": "ev_20260501_kikizakekai",
+      "date": "2026-05-01",
+      "title": "決起酒会",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキイベント",
+        "決起酒会"
+      ],
+      "djs": [
+        "_yuyadayo_",
+        "nora3dj",
+        "hakuya_huyu",
+        "rairai_c7",
+        "005_900",
+        "mosoup_dj",
+        "vocaloid_uraraP",
+        "kea_vcrock",
+        "kanamari_nakoti",
+        "yume_desu_yo",
+        "eri219flower",
+        "Oo__UxwxU__oO",
+        "Inuzaki_maru",
+        "ABOGADoooooooo0"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "xurl": "https://x.com/vocabuki/status/2049068220322373848"
+    },
+    {
+      "id": "ev_20260502_tetonight",
+      "date": "2026-05-02",
+      "title": "テトナイト mini!",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキイベント"
+      ],
+      "djs": [
+        "tobira2000",
+        "hosimiya_star",
+        "HAN3dayo",
+        "makimaki_UP",
+        "nono4e",
+        "ringo_VovoV",
+        "tky_tuki",
+        "shard_0315",
+        "drag_on_3"
+      ],
+      "vjs": [
+        "shard_0315",
+        "tky_tuki",
+        "tobira2000"
+      ],
+      "flyer": null,
+      "xurl": "https://x.com/vocabuki/status/2047321046676893990"
+    },
+    {
+      "id": "ev_20260503_fukabuki",
+      "date": "2026-05-03",
+      "title": "ふかブキ！",
+      "genre": "vocaloid",
+      "hashtags": [
+        "ボカブキイベント",
+        "ふかブキ"
+      ],
+      "djs": [
+        "___A____O___",
+        "kokeshi_0406",
+        "nino010101",
+        "hosimiya_star",
+        "Nico_kinakoxx",
+        "ringo_VovoV",
+        "nono4e",
+        "rockstar_saihan"
+      ],
+      "vjs": [
+        "Pepper_vvj",
+        "aseike1"
+      ],
+      "flyer": null,
+      "xurl": "https://x.com/vocabuki/status/2047650455116038538"
+    },
+    {
+      "id": "ev_20260504_nomimande",
+      "date": "2026-05-04",
+      "title": "月曜から飲みマンデイ",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキイベント",
+        "飲みマンデイ"
+      ],
+      "djs": [
+        "ktkr154",
+        "akkun6019",
+        "YuUz_zUra",
+        "nora3dj",
+        "k_yukito0210",
+        "2azmn",
+        "ABOGADoooooooo0",
+        "goma334334",
+        "kemshi_arkroyal",
+        "___A____O___",
+        "HGfarisha",
+        "s77dj",
+        "aym_pngn",
+        "drag_on_3",
+        "tobira2000"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "xurl": "https://x.com/nomimannd/status/2051187634706465177"
+    },
+    {
+      "id": "ev_20260505_renshuu",
+      "date": "2026-05-05",
+      "title": "ИASU DJ練習会 #練チューズデイ",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキイベント",
+        "練チューズデイ"
+      ],
+      "djs": [
+        "rockstar_saihan"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "xurl": null
+    },
+    {
+      "id": "ev_20260506_nonose_meshi",
+      "date": "2026-05-06",
+      "title": "ののせのまよなかご飯やさん",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキイベント"
+      ],
+      "djs": [
+        "nono4e"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "xurl": null
+    },
+    {
+      "id": "ev_20260507_ayumu",
+      "date": "2026-05-07",
+      "title": "あゆむ担当日",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキイベント"
+      ],
+      "djs": [
+        "aym_pngn"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "xurl": "https://x.com/aym_pngn/status/2051300683425722794"
+    },
+    {
+      "id": "ev_20260508_girlsparty",
+      "date": "2026-05-08",
+      "title": "Vocabuki GIRLs Party",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキイベント",
+        "ボカブキガルパ"
+      ],
+      "djs": [
+        "eri219flower",
+        "Oo__UxwxU__oO",
+        "dauuFa",
+        "pomeyama_amu",
+        "Tenngokuumare",
+        "005_900",
+        "nono4e"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "xurl": "https://x.com/vgp_buki_vom/status/2046522575543816358"
+    },
+    {
+      "id": "ev_20260509_utamata",
+      "date": "2026-05-09",
+      "title": "歌ってみたで、回してみた！",
+      "genre": "anime",
+      "hashtags": [
+        "ボカブキイベント",
+        "うたまた"
+      ],
+      "djs": [
+        "3756siya",
+        "dauuFa",
+        "Nico_kinakoxx",
+        "Loup1108",
+        "zax_million",
+        "hakuya_huyu",
+        "xpanpandax"
+      ],
+      "vjs": [
+        "shard_0315",
+        "ECVJstart24"
+      ],
+      "flyer": null,
+      "xurl": "https://x.com/utamata_buki/status/2046528073307509054"
+    },
+    {
+      "id": "ev_20260511_nomimande",
+      "date": "2026-05-11",
+      "title": "月曜から飲みマンデイ",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキイベント",
+        "飲みマンデイ"
+      ],
+      "djs": [
+        "hrn_amane",
+        "ABOGADoooooooo0",
+        "17chan_64",
+        "drag_on_3",
+        "Loup1108",
+        "nono4e",
+        "aym_pngn",
+        "akkun6019",
+        "HGfarisha"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "xurl": "https://x.com/nomimannd/status/2053761358865588363"
+    },
+    {
+      "id": "ev_20260517_bokagame",
+      "date": "2026-05-15",
+      "title": "ボカゲーム",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキイベント",
+        "ボカゲーム"
+      ],
+      "djs": [
+        "ktkr154",
+        "Sona2525rt",
+        "Tenngokuumare",
+        "Kak02174",
+        "3756siya",
+        "Tokoneri0506",
+        "shard_0315",
+        "GAME_Dash38"
+      ],
+      "vjs": [
+        "GAME_Dash38",
+        "ECVJstart24"
+      ],
+      "flyer": null,
+      "xurl": "https://x.com/vocabuki/status/2035458279032467505"
+    },
+    {
+      "id": "ev_20260516_iasu_birthday",
+      "date": "2026-05-16",
+      "title": "ИASU 生誕？",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキイベント"
+      ],
+      "djs": [
+        "rockstar_saihan"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "xurl": "https://x.com/rockstar_saihan/status/2040733144362680696"
+    }
+  ],
+  "genres": [
+    {
+      "id": "vocabuki",
+      "label": "ボカブキ",
+      "color": "#F5E642"
+    },
+    {
+      "id": "anime",
+      "label": "アニメ",
+      "color": "#E63946"
+    },
+    {
+      "id": "vocaloid",
+      "label": "ボカロ",
+      "color": "#39C5BB"
+    },
+    {
+      "id": "external",
+      "label": "外部主催",
+      "color": "#B8F0B0"
+    },
+    {
+      "id": "vtuber",
+      "label": "Vtuber",
+      "color": "#D4B0F0"
+    }
+  ],
+  "dayBgMap": {},
+  "people": {
+    "ktkr154": {
+      "name": "人間失格",
+      "x": "@ktkr154"
+    },
+    "Sona2525rt": {
+      "name": "そな",
+      "x": "@Sona2525rt"
+    },
+    "Tenngokuumare": {
+      "name": "天国生まれ",
+      "x": "@Tenngokuumare"
+    },
+    "Kak02174": {
+      "name": "かこ",
+      "x": "@Kak02174"
+    },
+    "3756siya": {
+      "name": "しんしや",
+      "x": "@3756siya"
+    },
+    "Tokoneri0506": {
+      "name": "床寝すくれ",
+      "x": "@Tokoneri0506"
+    },
+    "shard_0315": {
+      "name": "カモ",
+      "x": "@shard_0315"
+    },
+    "GAME_Dash38": {
+      "name": "Dash",
+      "x": "@GAME_Dash38"
+    },
+    "ECVJstart24": {
+      "name": "EC",
+      "x": "@ECVJstart24"
+    },
+    "HGfarisha": {
+      "name": "やじろん",
+      "x": "@HGfarisha"
+    },
+    "HAN3dayo": {
+      "name": "HaN",
+      "x": "@HAN3dayo"
+    },
+    "hrn_amane": {
+      "name": "春ノ雨音",
+      "x": "@hrn_amane"
+    },
+    "ABOGADoooooooo0": {
+      "name": "あぼがど",
+      "x": "@ABOGADoooooooo0"
+    },
+    "nono4e": {
+      "name": "乃々瀬",
+      "x": "@nono4e"
+    },
+    "SamflySamurai": {
+      "name": "薬師丸さむを",
+      "x": "@SamflySamurai"
+    },
+    "aym_pngn": {
+      "name": "あゆむ",
+      "x": "@aym_pngn"
+    },
+    "akkun6019": {
+      "name": "あっくん",
+      "x": "@akkun6019"
+    },
+    "goma334334": {
+      "name": "ゴマ",
+      "x": "@goma334334"
+    },
+    "Oo__UxwxU__oO": {
+      "name": "ぽめ丸",
+      "x": "@Oo__UxwxU__oO"
+    },
+    "ecila_39": {
+      "name": "えしら",
+      "x": "@ecila_39"
+    },
+    "005_900": {
+      "name": "なぴ",
+      "x": "@005_900"
+    },
+    "yume_desu_yo": {
+      "name": "ゆめ",
+      "x": "@yume_desu_yo"
+    },
+    "anju_rachel_cos": {
+      "name": "リーシャ",
+      "x": "@anju_rachel_cos"
+    },
+    "tadano_ryu": {
+      "name": "ただのん",
+      "x": "@tadano_ryu"
+    },
+    "Loup1108": {
+      "name": "Loup",
+      "x": "@Loup1108"
+    },
+    "furyuto_ayahata": {
+      "name": "けあ",
+      "x": "@furyuto_ayahata"
+    },
+    "3k15__": {
+      "name": "みけいず",
+      "x": "@3k15__"
+    },
+    "tobira2000": {
+      "name": "扉",
+      "x": "@tobira2000"
+    },
+    "EuphuRi": {
+      "name": "EuphuRi",
+      "x": "@EuphuRi"
+    },
+    "kanamari_kototi": {
+      "name": "にや",
+      "x": "@kanamari_kototi"
+    },
+    "giza_miku_39": {
+      "name": "ギザ",
+      "x": "@giza_miku_39"
+    },
+    "kunugirasuku": {
+      "name": "くぬぎ",
+      "x": "@kunugirasuku"
+    },
+    "Nico_kinakoxx": {
+      "name": "きなこ",
+      "x": "@Nico_kinakoxx"
+    },
+    "mik_claire": {
+      "name": "mikaze.",
+      "x": "@mik_claire"
+    },
+    "kanteac_xxx": {
+      "name": "かんてゐく",
+      "x": "@kanteac_xxx"
+    },
+    "milk_86_": {
+      "name": "みるこ",
+      "x": "@milk_86_"
+    },
+    "runa_runa_0513_": {
+      "name": "ルナたゃ",
+      "x": "@runa_runa_0513_"
+    },
+    "Jack_Sava_Miso": {
+      "name": "さばみそ",
+      "x": "@Jack_Sava_Miso"
+    },
+    "rencun_hshs": {
+      "name": "はる",
+      "x": "@rencun_hshs"
+    },
+    "djsmith_4889": {
+      "name": "すみす",
+      "x": "@djsmith_4889"
+    },
+    "syarurepokeka": {
+      "name": "シャルレ",
+      "x": "@syarurepokeka"
+    },
+    "makimaki_UP": {
+      "name": "maki.",
+      "x": "@makimaki_UP"
+    },
+    "___A____O___": {
+      "name": "あお",
+      "x": "@___A____O___"
+    },
+    "silverArsene": {
+      "name": "銀ノ侍",
+      "x": "@silverArsene"
+    },
+    "sr_0p__q0": {
+      "name": "さちか",
+      "x": "@sr_0p__q0"
+    },
+    "kanamari_nakoti": {
+      "name": "にや",
+      "x": "@kanamari_nakoti"
+    },
+    "hosimiya_star": {
+      "name": "ホシミヤ",
+      "x": "@hosimiya_star"
+    },
+    "dj_hinami": {
+      "name": "Hinami",
+      "x": "@dj_hinami"
+    },
+    "ashmaro_dj": {
+      "name": "あしゅまろ",
+      "x": "@ashmaro_dj"
+    },
+    "eri219flower": {
+      "name": "えりふら",
+      "x": "@eri219flower"
+    },
+    "Ribbon_Kazane": {
+      "name": "飾音りぼん",
+      "x": "@Ribbon_Kazane"
+    },
+    "ringo_VovoV": {
+      "name": "卯月りんご",
+      "x": "@ringo_VovoV"
+    },
+    "izumiz_0o0": {
+      "name": "izumiz",
+      "x": "@izumiz_0o0"
+    },
+    "mosoup_dj": {
+      "name": "mosoup",
+      "x": "@mosoup_dj"
+    },
+    "akisame9_nsx": {
+      "name": "zensen",
+      "x": "@akisame9_nsx"
+    },
+    "blues_nemaki": {
+      "name": "青井ねまき",
+      "x": "@blues_nemaki"
+    },
+    "willwiLu": {
+      "name": "wiLu",
+      "x": "@willwiLu"
+    },
+    "mitotti_v": {
+      "name": "みとっち",
+      "x": "@mitotti_v"
+    },
+    "DJWILDPARTY": {
+      "name": "DJ WILD PARTY",
+      "x": "@DJWILDPARTY"
+    },
+    "chibiice": {
+      "name": "Bivi",
+      "x": "@chibiice"
+    },
+    "Marble_masahide": {
+      "name": "Marble",
+      "x": "@Marble_masahide"
+    },
+    "xxxcreme7": {
+      "name": "七草くりむ",
+      "x": "@xxxcreme7"
+    },
+    "0xsion_zZ": {
+      "name": "ruki",
+      "x": "@0xsion_zZ"
+    },
+    "nora3dj": {
+      "name": "nora",
+      "x": "@nora3dj"
+    },
+    "ea_miku": {
+      "name": "えあ",
+      "x": "@ea_miku"
+    },
+    "dauuFa": {
+      "name": "オマンタ",
+      "x": "@dauuFa"
+    },
+    "EtdK9": {
+      "name": "成澤",
+      "x": "@EtdK9"
+    },
+    "_yuyadayo_": {
+      "name": "ゆや",
+      "x": "@_yuyadayo_"
+    },
+    "pIpIPOTETO": {
+      "name": "sion",
+      "x": "@pIpIPOTETO"
+    },
+    "kairuidesu": {
+      "name": "KAIRUI",
+      "x": "@kairuidesu"
+    },
+    "cosgaso": {
+      "name": "cosgaso",
+      "x": "@cosgaso"
+    },
+    "rairai_c7": {
+      "name": "ライチ",
+      "x": "@rairai_c7"
+    },
+    "drag_on_3": {
+      "name": "dragon3",
+      "x": "@drag_on_3"
+    },
+    "rockstar_saihan": {
+      "name": "ИASU",
+      "x": "@rockstar_saihan"
+    },
+    "sanada_nagi": {
+      "name": "真田なぎ",
+      "x": "@sanada_nagi"
+    },
+    "hakuya_huyu": {
+      "name": "Jinx",
+      "x": "@hakuya_huyu"
+    },
+    "vocaloid_uraraP": {
+      "name": "うらぴー",
+      "x": "@vocaloid_uraraP"
+    },
+    "kea_vcrock": {
+      "name": "けあ",
+      "x": "@kea_vcrock"
+    },
+    "Inuzaki_maru": {
+      "name": "イヌザキ",
+      "x": "@Inuzaki_maru"
+    },
+    "tky_tuki": {
+      "name": "タクヤ",
+      "x": "@tky_tuki"
+    },
+    "kokeshi_0406": {
+      "name": "苔氏",
+      "x": "@kokeshi_0406"
+    },
+    "nino010101": {
+      "name": "NiNO01",
+      "x": "@nino010101"
+    },
+    "Pepper_vvj": {
+      "name": "Pepper",
+      "x": "@Pepper_vvj"
+    },
+    "aseike1": {
+      "name": "aseike",
+      "x": "@aseike1"
+    },
+    "YuUz_zUra": {
+      "name": "YuUz_zUra",
+      "x": "@YuUz_zUra"
+    },
+    "k_yukito0210": {
+      "name": "k_yukito",
+      "x": "@k_yukito0210"
+    },
+    "2azmn": {
+      "name": "2azmn",
+      "x": "@2azmn"
+    },
+    "kemshi_arkroyal": {
+      "name": "kemshi",
+      "x": "@kemshi_arkroyal"
+    },
+    "s77dj": {
+      "name": "s77dj",
+      "x": "@s77dj"
+    },
+    "pomeyama_amu": {
+      "name": "ポメ山あむ",
+      "x": "@pomeyama_amu"
+    },
+    "zax_million": {
+      "name": "ざっくす",
+      "x": "@zax_million"
+    },
+    "xpanpandax": {
+      "name": "DJこころ",
+      "x": "@xpanpandax"
+    },
+    "17chan_64": {
+      "name": "17chan",
+      "x": "@17chan_64"
+    }
+  },
+  "closedDays": []
+}
