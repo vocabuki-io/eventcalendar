@@ -62,6 +62,9 @@ window.T={
   colorRed:"\u8d64",colorTeal:"\u30bf\u30fc\u30b3\u30a4\u30ba",colorYel:"\u9ec4",colorOrg:"\u30aa\u30ec\u30f3\u30b8",
   colorPur:"\u7d2b",colorPnk:"\u30d4\u30f3\u30af",colorNvy:"\u30cd\u30a4\u30d3\u30fc",colorGrn:"\u7dd1",
   adminScreen:"\u7ba1\u7406\u753b\u9762",
+  closedMgmt:"\u4f11\u696d\u65e5\u7ba1\u7406",
+  closedNote:"\u4f11\u696d\u65e5\u3092\u8a2d\u5b9a\u3059\u308b\u3068\u30ab\u30ec\u30f3\u30c0\u30fc\u306b\uff08\u4f11\uff09\u3068\u8868\u793a\u3055\u308c\u307e\u3059",
+  closedAdd:"\u8ffd\u52a0",closedEmpty:"\u4f11\u696d\u65e5\u306a\u3057",
 };
 </script>
 
@@ -125,8 +128,10 @@ async function ghFetch(token,path,method,body){
 }
 async function loadGH(token){
   const file=await ghFetch(token,GH_PATH);
-  return{data:JSON.parse(atob(file.content.replace(/
-/g,''))),sha:file.sha};
+  const bin=atob(file.content.replace(/\s/g,''));
+  const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
+  const text=new TextDecoder('utf-8').decode(bytes);
+  return{data:JSON.parse(text),sha:file.sha};
 }
 async function saveGH(token,data,sha){
   const content=btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2))));
@@ -297,6 +302,32 @@ function EventCard({ev,genres,people,dayBgMap,onSave,onDelete}){
   );
 }
 
+function ClosedDaysBlock({closedDays,setClosedDays}){
+  const[input,setInput]=React.useState('');
+  const add=()=>{
+    if(!input)return;
+    if(!closedDays.includes(input))setClosedDays(prev=>[...prev,input].sort());
+    setInput('');
+  };
+  return(
+    <div style={{background:'#fff',border:BT,borderRadius:10,padding:12,boxShadow:SS}}>
+      <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',marginBottom:8}}>{T.closedNote}</div>
+      <div style={{display:'flex',gap:8,marginBottom:8}}>
+        <input type="date" value={input} onChange={e=>setInput(e.target.value)} style={{flex:1,border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none',minWidth:0}}/>
+        <button onClick={add} style={{border:BT,borderRadius:8,padding:'8px 14px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS,flexShrink:0}}>&#43; {T.closedAdd}</button>
+      </div>
+      {closedDays.length===0
+        ?<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#aaa',textAlign:'center',padding:'8px 0'}}>{T.closedEmpty}</div>
+        :<div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+          {closedDays.map(d=>(<div key={d} style={{display:'inline-flex',alignItems:'center',gap:4,background:'#eee',border:B,borderRadius:20,padding:'4px 8px 4px 10px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>
+            {d}<button onClick={()=>setClosedDays(prev=>prev.filter(x=>x!==d))} style={{background:'none',border:'none',fontSize:14,padding:'0 0 0 4px',lineHeight:1,cursor:'pointer',color:'#666'}}>x</button>
+          </div>))}
+        </div>
+      }
+    </div>
+  );
+}
+
 function LoginScreen({onLogin}){
   const[pw,setPw]=React.useState('');
   const[token,setToken]=React.useState(()=>sessionStorage.getItem('vb_token')||'');
@@ -413,27 +444,9 @@ function AdminApp(){
       <div style={{height:barBg?88:60}}/>
       <div style={{padding:'16px 16px 100px',display:'flex',flexDirection:'column',gap:24}}>
         <div>
-          <SHead>&#20241;&#26989;&#26085;&#31649;&#29702;</SHead>
-          <div style={{display:'flex',flexDirection:'column',gap:8}}>
-            <div style={{background:'#fff',border:BT,borderRadius:10,padding:12,boxShadow:SS}}>
-              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',marginBottom:8}}>&#20241;&#26989;&#26085;&#12434;&#35373;&#23450;&#12377;&#12427;&#12392;&#12459;&#12524;&#12531;&#12480;&#12540;&#12395;&#65288;&#20241;&#65289;&#12392;&#34920;&#31034;&#12373;&#12428;&#12414;&#12377;</div>
-              <div style={{display:'flex',gap:8,marginBottom:8}}>
-                <input type="date" id="closedInput" style={{flex:1,border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none'}}/>
-                <button onClick={()=>{const v=document.getElementById('closedInput').value;if(!v)return;if(!closedDays.includes(v))setClosedDays(prev=>[...prev,v].sort());document.getElementById('closedInput').value='';}}
-                  style={{border:BT,borderRadius:8,padding:'8px 14px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS,flexShrink:0}}>&#8853; &#36861;&#21152;</button>
-              </div>
-              {closedDays.length===0
-                ? <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#aaa',textAlign:'center',padding:'8px 0'}}>&#20241;&#26989;&#26085;&#12394;&#12375;</div>
-                : <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-                    {closedDays.map(d=>(<div key={d} style={{display:'inline-flex',alignItems:'center',gap:4,background:'#eee',border:B,borderRadius:20,padding:'4px 8px 4px 10px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>
-                      {d}<button onClick={()=>setClosedDays(prev=>prev.filter(x=>x!==d))} style={{background:'none',border:'none',fontSize:14,padding:'0 0 0 4px',lineHeight:1,cursor:'pointer',color:'#666'}}>x</button>
-                    </div>))}
-                  </div>
-              }
-            </div>
-          </div>
+          <SHead>{T.closedMgmt}</SHead>
+          <ClosedDaysBlock closedDays={closedDays} setClosedDays={setClosedDays}/>
         </div>
-
         <div>
           <SHead>{T.genreMgmt}</SHead>
           <div style={{display:'flex',flexDirection:'column',gap:8}}>
