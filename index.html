@@ -3,492 +3,599 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8"/>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
-  <title>VOCABUKI ADMIN</title>
+  <title>VOCABUKI EVENT CALENDAR</title>
+  <link rel="icon" href="fabicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Reggae+One&family=RocknRoll+One&family=DotGothic16&family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
-    html, body { margin:0; padding:0; background:#FFFBEC; font-family:"M PLUS Rounded 1c",system-ui; overflow-x:hidden; }
-    body { -webkit-overflow-scrolling: touch; }
+    html { margin:0; padding:0; background:#111; height:100%; }
+    body {
+      margin:0; padding:0; font-family:"M PLUS Rounded 1c",system-ui;
+      background:#111;
+      min-height:100%; min-height:100dvh;
+      display:flex; justify-content:center; align-items:flex-start;
+    }
+    /* スマホ・PC共通: app-shell がスクロールコンテナ */
+    #app-shell {
+      width:100%; max-width:480px;
+      height:100vh; height:100dvh;
+      position:relative; background:#FFFBEC;
+      overflow-y: auto;
+      overflow-x: hidden;
+      /* fixed要素の基準をapp-shellに閉じ込める */
+      transform: translateZ(0);
+      -webkit-overflow-scrolling: touch;
+    }
+    #app {
+      width:100%;
+      position:relative;
+      min-height:100%;
+    }
     button { font-family:inherit; cursor:pointer; }
     input, textarea, select { font-family:inherit; }
-    ::-webkit-scrollbar { width:4px; }
-    ::-webkit-scrollbar-thumb { background:rgba(17,17,17,0.2); border-radius:2px; }
+    /* スクロールバー: PCのみ細く表示、スマホは非表示 */
+    #app-shell::-webkit-scrollbar { width:0; }
+    @keyframes vbSpin { to { transform: rotate(360deg); } }
+    @keyframes vbBounce { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-14px) scale(1.15)} }
+    @keyframes vbFadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .vb-loading-dot { animation: vbBounce 0.7s ease-in-out infinite; }
+    .vb-loading-dot:nth-child(2) { animation-delay: 0.12s; }
+    .vb-loading-dot:nth-child(3) { animation-delay: 0.24s; }
+    .vb-detail-enter { animation: vbFadeIn 0.22s ease-out both; }
+    /* カードプレス状態 */
+    .vb-card { transition: transform 0.08s, box-shadow 0.08s; }
+    .vb-card.pressed { transform: translate(3px,3px) !important; box-shadow: 1px 1px 0 #111 !important; }
+    /* ↑ FABをbodyに対してstickyで固定 */
+    .vb-fab {
+      position: sticky;
+      bottom: 18px;
+      float: right;
+      right: 16px;
+      margin-right: 16px;
+      z-index: 20;
+      pointer-events: auto;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      #app-shell::-webkit-scrollbar { width: 4px; }
+      #app-shell::-webkit-scrollbar-track { background: transparent; }
+      #app-shell::-webkit-scrollbar-thumb { background: rgba(17,17,17,0.2); border-radius: 2px; }
+    }
   </style>
 </head>
 <body>
-<div id="root"></div>
+  <div id="app-shell">
+    <div id="app"></div>
+  </div>
 
-<script>
-window.T={
-  mgmt:"\u7ba1\u7406",save:"\ud83d\udcbe \u4fdd\u5b58",logout:"\u30ed\u30b0\u30a2\u30a6\u30c8",
-  ghSave:"\ud83d\udcbe GitHub\u306b\u4fdd\u5b58",saving:"\u4fdd\u5b58\u4e2d...",saved:"\u2705 \u4fdd\u5b58\u5b8c\u4e86",
-  loading:"\u30ed\u30fc\u30c9\u4e2d...",ghLoading:"\u23f3 GitHub\u304b\u3089\u30ed\u30fc\u30c9\u4e2d...",
-  ghSaving:"\u23f3 GitHub\u306b\u4fdd\u5b58\u4e2d...",
-  ghSaved:"\u2705 \u4fdd\u5b58\u5b8c\u4e86\uff01\u53cd\u6620\u307e\u3067\uff11\uff5e\uff12\u5206\u304b\u304b\u308a\u307e\u3059",
-  ghError:"\u274c \u30a8\u30e9\u30fc: ",
-  genreMgmt:"\u30b8\u30e3\u30f3\u30eb\u7ba1\u7406",genreNew:"\u65b0\u898f\u30b8\u30e3\u30f3\u30eb\u8ffd\u52a0",
-  genreNamePh:"\u30b8\u30e3\u30f3\u30eb\u540d",genreAdd:"\u8ffd\u52a0",del:"\u524a\u9664",
-  eventMgmt:"\u30a4\u30d9\u30f3\u30c8\u7ba1\u7406",eventAdd:"\uff0b \u30a4\u30d9\u30f3\u30c8\u3092\u8ffd\u52a0",
-  eventNew:"\u65b0\u898f\u30a4\u30d9\u30f3\u30c8",eventDel:"\ud83d\uddd1\ufe0f \u3053\u306e\u30a4\u30d9\u30f3\u30c8\u3092\u524a\u9664",
-  dateL:"\u65e5\u4ed8",titleL:"\u30a4\u30d9\u30f3\u30c8\u540d",titlePh:"\u30a4\u30d9\u30f3\u30c8\u540d",
-  genreL:"\u30b8\u30e3\u30f3\u30eb",colorL:"\u30ab\u30ec\u30f3\u30c0\u30fc\u65e5\u8272",
-  colorAuto:"\u81ea\u52d5(\u30b8\u30e3\u30f3\u30eb\u8272)",hashL:"\u30cf\u30c3\u30b7\u30e5\u30bf\u30b0",
-  hashAdd:"\uff0b \u8ffd\u52a0",djL:"\u51fa\u6f14DJ",vjL:"\u51fa\u6f14VJ",
-  perfNew:"\u65b0\u898f\u8ffd\u52a0 / \u691c\u7d22\u3057\u3066\u8ffd\u52a0",
-  namePh:"\u540d\u524d",xidPh:"X \u306e ID",djAdd:"\uff0b DJ \u3092\u8ffd\u52a0",vjAdd:"\uff0b VJ \u3092\u8ffd\u52a0",
-  fromReg:"\u767b\u9332\u6e08\u307f\u304b\u3089\u9078\u629e",
-  flyerL:"\u30d5\u30e9\u30a4\u30e4\u30fc\u753b\u50cf",flyerAdd:"\ud83d\udcce \u753b\u50cf\u3092\u8ffd\u52a0",
-  flyerChg:"\ud83d\udcce \u753b\u50cf\u3092\u5909\u66f4",
-  saveBt:"\ud83d\udcbe \u4fdd\u5b58",cancelBt:"\u30ad\u30e3\u30f3\u30bb\u30eb",savedMark:"\u2713 \u4fdd\u5b58\u6e08",
-  footerNote:"\u7de8\u96c6\u5f8c\u306f\u5fc5\u305a\u4e0a\u306e\u300c\u4fdd\u5b58\u300d\u30dc\u30bf\u30f3\u3092\u62bc\u3057\u3066\u304f\u3060\u3055\u3044\u3002\u4fdd\u5b58\u5f8c1\uff5e2\u5206\u3067GitHub Pages\u306b\u53cd\u6620\u3055\u308c\u307e\u3059\u3002",
-  pwL:"\u30d1\u30b9\u30ef\u30fc\u30c9",pwPh:"\u30d1\u30b9\u30ef\u30fc\u30c9\u3092\u5165\u529b",pwNext:"\u6b21\u3078 \u2192",
-  pwErr:"\u30d1\u30b9\u30ef\u30fc\u30c9\u304c\u9055\u3044\u307e\u3059",
-  tokenL:"GitHub Personal Access Token",tokenPh:"ghp_xxxxxxxxxxxx",
-  tokenNote1:"\u203b \u30bf\u30d6\u3092\u9583\u3058\u308b\u307e\u3067\u4fdd\u6301\u3055\u308c\u307e\u3059",
-  tokenNote2:"\u203b GitHub Settings\u2192Developer settings\u2192Fine-grained tokens",
-  tokenLogin:"\u30ed\u30b0\u30a4\u30f3",tokenCheck:"\u78ba\u8a8d\u4e2d...",
-  tokenBack:"\u2190 \u30d1\u30b9\u30ef\u30fc\u30c9\u5165\u529b\u306b\u623b\u308b",
-  tokenErr:"\u30c8\u30fc\u30af\u30f3\u30a8\u30e9\u30fc: ",tokenEmpty:"\u30c8\u30fc\u30af\u30f3\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044",
-  confirmDel:"\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f",
-  genreInUse:"\u3053\u306e\u30b8\u30e3\u30f3\u30eb\u3092\u4f7f\u3063\u3066\u3044\u308b\u30a4\u30d9\u30f3\u30c8\u304c\u3042\u308a\u307e\u3059\u3002",
-  wdays:["\u6708","\u706b","\u6c34","\u6728","\u91d1","\u571f","\u65e5"],
-  gVocabuki:"\u30dc\u30ab\u30d6\u30ad",gAnime:"\u30a2\u30cb\u30e1",gVocaloid:"\u30dc\u30ab\u30ed",
-  gExternal:"\u5916\u90e8\u4e3b\u50ac",gVtuber:"Vtuber",
-  pNonose:"\u4e43\u3005\u702c",pAyumu:"\u3042\u3086\u3080",pIASU:"\u0418ASU",
-  colorRed:"\u8d64",colorTeal:"\u30bf\u30fc\u30b3\u30a4\u30ba",colorYel:"\u9ec4",colorOrg:"\u30aa\u30ec\u30f3\u30b8",
-  colorPur:"\u7d2b",colorPnk:"\u30d4\u30f3\u30af",colorNvy:"\u30cd\u30a4\u30d3\u30fc",colorGrn:"\u7dd1",
-  adminScreen:"\u7ba1\u7406\u753b\u9762",
-  closedMgmt:"\u4f11\u696d\u65e5\u7ba1\u7406",
-  closedNote:"\u4f11\u696d\u65e5\u3092\u8a2d\u5b9a\u3059\u308b\u3068\u30ab\u30ec\u30f3\u30c0\u30fc\u306b\uff08\u4f11\uff09\u3068\u8868\u793a\u3055\u308c\u307e\u3059",
-  closedAdd:"\u8ffd\u52a0",closedEmpty:"\u4f11\u696d\u65e5\u306a\u3057",
-};
-</script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
 
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
 
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
 
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
-
-<script type="text/babel">
-const GH_OWNER='vocabuki-io';
-const GH_REPO='eventcalendar';
-const GH_PATH='events.json';
-const ADMIN_PASSWORD='shinjuku@2452';
-const T=window.T;
-const C={turquoise:'#2EC5CE',turquoiseDark:'#1EA3AC',yellow:'#FFD23F',red:'#E63946',orange:'#FF8A1E',paper:'#FFFBEC',ink:'#111111'};
-const B='3px solid #111',BT='4px solid #111',S='4px 4px 0 #111',SB='6px 6px 0 #111',SS='2px 2px 0 #111';
-const pat={halftone:c=>`radial-gradient(circle at 3px 3px,${c} 1.8px,transparent 2px)`};
-const GENRES_DEFAULT=[
-  {id:'vocabuki',label:T.gVocabuki,color:'#F5E642'},
-  {id:'anime',label:T.gAnime,color:'#E63946'},
-  {id:'vocaloid',label:T.gVocaloid,color:'#39C5BB'},
-  {id:'external',label:T.gExternal,color:'#B8F0B0'},
-  {id:'vtuber',label:T.gVtuber,color:'#D4B0F0'},
-];
-const PEOPLE_DEFAULT={
-  drag_on_3:{name:'dragon3',x:'@drag_on_3'},
-  rockstar_saihan:{name:T.pIASU,x:'@rockstar_saihan'},
-  nono4e:{name:T.pNonose,x:'@nono4e'},
-  aym_pngn:{name:T.pAyumu,x:'@aym_pngn'},
-};
-const DAY_COLORS=[
-  {id:'auto',label:T.colorAuto,value:null},
-  {id:'red',label:T.colorRed,value:'#E63946'},
-  {id:'teal',label:T.colorTeal,value:'#2EC5CE'},
-  {id:'yel',label:T.colorYel,value:'#FFD23F'},
-  {id:'org',label:T.colorOrg,value:'#FF8A1E'},
-  {id:'pur',label:T.colorPur,value:'#6A3FD9'},
-  {id:'pnk',label:T.colorPnk,value:'#FF3DA5'},
-  {id:'nvy',label:T.colorNvy,value:'#223B8F'},
-  {id:'grn',label:T.colorGrn,value:'#3FB55E'},
-];
-function fmtDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dy=String(d.getDate()).padStart(2,'0');return`${y}-${m}-${dy}`;}
-function parseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
-function weekIdx(d){return(d.getDay()+6)%7;}
-function uid(){return'e'+Date.now()+Math.random().toString(36).slice(2,6);}
-const TODAY=new Date();
-
-function Label({children}){return(<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#555',marginBottom:3}}>{children}</div>);}
-function SHead({children}){return(<div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,background:C.ink,color:'#fff',border:BT,borderRadius:8,padding:'4px 12px',transform:'rotate(-1deg)',boxShadow:SS,display:'inline-block',marginBottom:12}}>{children}</div>);}
-
-async function ghFetch(token,path,method,body){
-  method=method||'GET';
-  const hdrs={Authorization:'token '+token,'Content-Type':'application/json',Accept:'application/vnd.github.v3+json'};
-  const opts={method,headers:hdrs};
-  if(body)opts.body=JSON.stringify(body);
-  const url='https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+path;
-  const res=await fetch(url,opts);
-  if(!res.ok){const e=await res.json();throw new Error(e.message||res.status);}
-  return res.json();
-}
-async function loadGH(token){
-  const file=await ghFetch(token,GH_PATH);
-  const bin=atob(file.content.replace(/\s/g,''));
-  const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
-  const text=new TextDecoder('utf-8').decode(bytes);
-  return{data:JSON.parse(text),sha:file.sha};
-}
-async function saveGH(token,data,sha){
-  const content=btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2))));
-  const msg='Update events.json '+new Date().toISOString();
-  await ghFetch(token,GH_PATH,'PUT',{message:msg,content,sha});
-}
-
-function PerfBlock({role,labelText,addText,bgColor,draft,setDraft,people,nameV,setNameV,xidV,setXidV}){
-  const cur=draft[role]||[];
-  const getSugg=()=>{
-    const q=(nameV+xidV).toLowerCase().trim();
-    if(!q)return[];
-    return Object.keys(people).filter(k=>!cur.includes(k)&&(k.toLowerCase().includes(q)||people[k].name.toLowerCase().includes(q)||people[k].x.toLowerCase().includes(q))).slice(0,4);
+  <script type="text/babel">
+  // DESIGN TOKENS
+  const C={turquoise:'#2EC5CE',turquoiseDark:'#1EA3AC',yellow:'#FFD23F',red:'#E63946',orange:'#FF8A1E',paper:'#FFFBEC',ink:'#111111'};
+  const B='3px solid #111',BT='4px solid #111',S='4px 4px 0 #111',SB='6px 6px 0 #111',SS='2px 2px 0 #111';
+  const pat={
+    halftone:(c='#E63946')=>`radial-gradient(circle at 3px 3px,${c} 1.8px,transparent 2px)`,
+    stripes:(a,b)=>`repeating-linear-gradient(45deg,${a} 0 6px,${b} 6px 14px)`,
+    stripesB:(a,b)=>`repeating-linear-gradient(45deg,${a} 0 10px,${b} 10px 22px)`,
   };
-  const addPerf=()=>{
-    const name=nameV.trim(),xid=xidV.trim().replace(/^@/,'');
-    if(!xid&&!name)return;
-    const key=xid||(name.toLowerCase().replace(/\s+/g,'_'));
-    if(!people[key])people[key]={name:name||key,x:xid?('@'+xid):''};
-    setDraft(d=>({...d,[role]:d[role].includes(key)?d[role]:[...d[role],key]}));
-    setNameV('');setXidV('');
+
+  // STATIC DATA
+  const TODAY=new Date();
+  const GENRES_DEFAULT=[
+    {id:'game',label:'\u30b2\u30fc\u30e0',color:'#E63946'},
+    {id:'anison',label:'\u30a2\u30cb\u30bd\u30f3',color:'#FF8A1E'},
+    {id:'classic',label:'\u30af\u30e9\u30b7\u30c3\u30af',color:'#2EC5CE'},
+    {id:'remix',label:'\u30ea\u30df\u30c3\u30af\u30b9',color:'#6A3FD9'},
+    {id:'allnight',label:'\u30aa\u30fc\u30eb\u30ca\u30a4\u30c8',color:'#111'},
+  ];
+  const PEOPLE_DEFAULT={
+    dragon3:{name:'dragon3',x:'@drag_on_3'},inasu:{name:'\u0438ASU',x:'@rockstar_saihan'},
+    nonose:{name:'\u4e43\u3005\u702c',x:'@nono4e'},ayumu:{name:'\u3042\u3086\u3080',x:'@aym_pngn'},
+    kaito:{name:'KAITO-P',x:'@kaito_p_dj'},mikumiku:{name:'\u307f\u304f\u307f\u304f',x:'@mikumiku_dj'},
+    rin_len:{name:'\u30ea\u30f3\u30ec\u30f3\u5c4b',x:'@rinlen_ya'},negiboshi:{name:'\u30cd\u30ae\u661f',x:'@negiboshi_dj'},
+    sakura_b:{name:'\u3055\u304f\u3089B',x:'@sakura_b_dj'},gumiota:{name:'\u30b0\u30df\u30f2\u30bf',x:'@gumiota_dj'},
+    luka_luka:{name:'\u30eb\u30ab\u30eb\u30ab\u59c9\u3055\u3093',x:'@lukaluka_n'},eight_en:{name:'\u30a8\u30a4\u30c8\u5712',x:'@eighten_dj'},
+    futaba:{name:'\u3075\u305f\u3070',x:'@futaba_dj'},yomogi:{name:'\u3088\u3082\u304e',x:'@yomogi_beats'},
+    beeeer:{name:'BEEEER',x:'@beeeer_dj'},kirin_kun:{name:'\u30ad\u30ea\u30f3\u304f\u3093',x:'@kirin_kun_dj'},
+    vj_noise:{name:'NOIZU',x:'@noizu_vj'},vj_pop:{name:'\u30dd\u30c3\u30d7\u304f\u3093',x:'@popkun_vj'},
+    vj_dot:{name:'DOT8',x:'@dot8_vj'},vj_kiri:{name:'\u304d\u308a\u308a',x:'@kiriri_vj'},
+    vj_neko:{name:'\u30cd\u30b3\u76ee\u7dda',x:'@nekomesen_vj'},vj_onigiri:{name:'\u30aa\u30cb\u30ae\u30ea',x:'@onigiri_vj'},
   };
-  const pickSugg=k=>{setDraft(d=>({...d,[role]:d[role].includes(k)?d[role]:[...d[role],k]}));setNameV('');setXidV('');};
-  const rmPerf=i=>setDraft(d=>({...d,[role]:d[role].filter((_,j)=>j!==i)}));
-  const sugg=getSugg();
-  return(
-    <div>
-      <Label>{labelText}</Label>
-      <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:4}}>
-        {cur.map((id,i)=>{const p=people[id]||{name:id,x:'@'+id};return(
-          <div key={id} style={{display:'flex',alignItems:'center',gap:8,background:'#f8f8f8',border:B,borderRadius:8,padding:'8px 12px'}}>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{p.name}</div>
-              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{p.x||('@'+id)}</div>
-            </div>
-            <button onClick={()=>rmPerf(i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'4px 10px',boxShadow:SS}}>{T.del}</button>
-          </div>
-        );})}
-        <div style={{background:'#f0f0f0',border:BT,borderRadius:10,padding:10,display:'flex',flexDirection:'column',gap:8}}>
-          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555'}}>{T.perfNew}</div>
-          <div style={{display:'flex',gap:6}}>
-            <input value={nameV} onChange={e=>setNameV(e.target.value)} placeholder={T.namePh}
-              style={{flex:1,border:BT,borderRadius:8,padding:'10px',fontSize:13,outline:'none',minWidth:0}}/>
-            <div style={{flex:1,display:'flex',alignItems:'center',border:BT,borderRadius:8,background:'#fff',overflow:'hidden',minWidth:0}}>
-              <span style={{padding:'0 4px 0 8px',fontFamily:'"DotGothic16",monospace',fontSize:13,color:'#888',flexShrink:0}}>@</span>
-              <input value={xidV} onChange={e=>setXidV(e.target.value.replace(/^@/,''))}
-                onKeyDown={e=>e.key==='Enter'&&addPerf()}
-                placeholder={T.xidPh}
-                style={{flex:1,border:'none',padding:'10px 6px 10px 0',fontSize:13,outline:'none',background:'transparent',minWidth:0}}/>
-            </div>
-          </div>
-          <button onClick={addPerf} style={{border:BT,borderRadius:8,padding:'11px',background:bgColor,color:role==='vjs'?'#fff':'#111',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>{addText}</button>
-        </div>
-        {sugg.length>0&&(
-          <div style={{background:'#fff',border:B,borderRadius:8,overflow:'hidden'}}>
-            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',padding:'6px 10px',borderBottom:'1px solid #eee'}}>{T.fromReg}</div>
-            {sugg.map(k=>(<button key={k} onClick={()=>pickSugg(k)} style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'9px 10px',border:'none',borderBottom:'1px solid #eee',background:'transparent',textAlign:'left',cursor:'pointer'}}>
-              <span style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{people[k].name}</span>
-              <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{people[k].x}</span>
-            </button>))}
-          </div>
-        )}
+  const STAFF=['dragon3','inasu','nonose','ayumu'];
+  const EVENTS_DEFAULT=[
+    {id:'e1',date:'2026-04-04',title:'\u30dc\u30ab\u30af\u30e9 Vol.23',genre:'classic',hashtags:['\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8'],djs:['luka_luka','sakura_b','beeeer'],vjs:['vj_kiri','vj_pop'],flyer:null},
+    {id:'e2',date:'2026-04-11',title:'\u30cd\u30ae\u30de\u30cb\u30a2\uff01',genre:'anison',hashtags:['\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8'],djs:['negiboshi','mikumiku','futaba','yomogi'],vjs:['vj_noise','vj_dot'],flyer:null},
+    {id:'e3',date:'2026-04-18',title:'\u30dc\u30ab\u30b2\u30fc\u30e0',genre:'game',hashtags:['\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8'],djs:['kaito','rin_len','gumiota','eight_en','kirin_kun'],vjs:['vj_dot','vj_neko','vj_onigiri'],flyer:null},
+    {id:'e4',date:'2026-04-19',title:'SPRING REMIX PARTY',genre:'remix',hashtags:['\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8'],djs:['beeeer','sakura_b','futaba'],vjs:['vj_pop','vj_kiri'],flyer:null},
+    {id:'e5',date:'2026-04-25',title:'\u30aa\u30fc\u30eb\u30ca\u30a4\u30c8\u82b1\u898b',genre:'allnight',hashtags:['\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8'],djs:['mikumiku','luka_luka','negiboshi','yomogi','kirin_kun','gumiota'],vjs:['vj_noise','vj_onigiri','vj_neko'],flyer:null},
+    {id:'e6',date:'2026-05-02',title:'\u30b4\u30fc\u30eb\u30c7\u30f3\u30dc\u30ab\u30af\u30e9',genre:'classic',hashtags:['\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8'],djs:['kaito','luka_luka','beeeer','eight_en'],vjs:['vj_kiri'],flyer:null},
+    {id:'e7',date:'2026-05-09',title:'\u30dc\u30ab\u30b2\u30fc\u30e0 Vol.12',genre:'game',hashtags:['\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8'],djs:['rin_len','negiboshi','gumiota','yomogi'],vjs:['vj_dot','vj_onigiri'],flyer:null},
+    {id:'e8',date:'2026-05-16',title:'REMIX NIGHT \u3075\u305f\u3070',genre:'remix',hashtags:['\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8'],djs:['futaba','mikumiku','sakura_b'],vjs:['vj_pop'],flyer:null},
+    {id:'e9',date:'2026-05-23',title:'\u30a2\u30cb\u30bd\u30f3\u00d7\u30dc\u30ab\u30ed',genre:'anison',hashtags:['\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8'],djs:['kirin_kun','negiboshi','beeeer','kaito'],vjs:['vj_neko','vj_noise'],flyer:null},
+    {id:'e10',date:'2026-05-30',title:'\u30aa\u30fc\u30eb\u30ca\u30a4\u30c8\u521d\u590f',genre:'allnight',hashtags:['\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8'],djs:['luka_luka','yomogi','eight_en','futaba','gumiota','rin_len'],vjs:['vj_dot','vj_kiri','vj_pop'],flyer:null},
+    {id:'e11',date:'2026-06-06',title:'\u30dc\u30ab\u30af\u30e9 Vol.24',genre:'classic',hashtags:['\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8'],djs:['mikumiku','sakura_b','kaito'],vjs:['vj_kiri','vj_onigiri'],flyer:null},
+    {id:'e12',date:'2026-06-13',title:'\u30cd\u30ae\u30cd\u30aeFES',genre:'anison',hashtags:['\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8'],djs:['negiboshi','rin_len','kirin_kun','futaba'],vjs:['vj_noise'],flyer:null},
+    {id:'e13',date:'2026-06-20',title:'\u30dc\u30ab\u30b2\u30fc\u30e0 Vol.13',genre:'game',hashtags:['\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8'],djs:['gumiota','eight_en','yomogi','beeeer'],vjs:['vj_dot','vj_neko'],flyer:null},
+    {id:'e14',date:'2026-06-27',title:'SUMMER REMIX',genre:'remix',hashtags:['\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8'],djs:['luka_luka','futaba','mikumiku','sakura_b'],vjs:['vj_pop','vj_kiri'],flyer:null},
+  ];
+
+  // STORAGE
+  const ls={
+    get:(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;}},
+    set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}},
+  };
+
+  // UTILS
+  const WDAYS=['\u6708','\u706b','\u6c34','\u6728','\u91d1','\u571f','\u65e5'];
+  function fmtDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return`${y}-${m}-${day}`;}
+  function parseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+  function sameDay(a,b){return a.toDateString()===b.toDateString();}
+  function weekIdx(d){return(d.getDay()+6)%7;}
+  function uid(){return'e'+Date.now()+Math.random().toString(36).slice(2,6);}
+  function buildMonthCells(year,month){
+    const first=new Date(year,month,1),startPad=(first.getDay()+6)%7;
+    const daysInMonth=new Date(year,month+1,0).getDate(),cells=[];
+    const prevDays=new Date(year,month,0).getDate();
+    for(let i=startPad-1;i>=0;i--)cells.push({date:new Date(year,month-1,prevDays-i),outside:true});
+    for(let d=1;d<=daysInMonth;d++)cells.push({date:new Date(year,month,d),outside:false});
+    while(cells.length<42){const last=cells[cells.length-1].date;const nxt=new Date(last.getFullYear(),last.getMonth(),last.getDate()+1);cells.push({date:nxt,outside:nxt.getMonth()!==month});}
+    return cells;
+  }
+
+  // SHARED COMPONENTS
+  // &#12479;&#12483;&#12503;&#12391;&#12503;&#12524;&#12473;&#29366;&#24907;&#12395;&#12394;&#12427;&#12459;&#12540;&#12489;&#65288;&#36983;&#31227;&#24460;&#12395;&#12522;&#12475;&#12483;&#12488;&#65289;
+  function PressCard({children, onTap, style={}, className=''}){
+    const ref=React.useRef();
+    const reset=()=>{if(ref.current)ref.current.classList.remove('pressed');};
+    const press=()=>{if(ref.current)ref.current.classList.add('pressed');};
+    const handleClick=()=>{
+      press();
+      // &#36983;&#31227;&#24460;&#12395;&#12522;&#12475;&#12483;&#12488;&#65288;DetailScreen&#12364;&#34920;&#31034;&#12373;&#12428;&#12383;&#12354;&#12392;&#65289;
+      setTimeout(()=>{ reset(); onTap(); },120);
+    };
+    return(
+      <div ref={ref} className={`vb-card ${className}`}
+        style={style}
+        onPointerDown={press}
+        onPointerUp={reset}
+        onPointerLeave={reset}
+        onClick={handleClick}>
+        {children}
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-function EventCard({ev,genres,people,dayBgMap,onSave,onDelete}){
-  const[open,setOpen]=React.useState(false);
-  const[draft,setDraft]=React.useState(null);
-  const[savedMark,setSavedMark]=React.useState(false);
-  const[djName,setDjName]=React.useState('');
-  const[djXid,setDjXid]=React.useState('');
-  const[vjName,setVjName]=React.useState('');
-  const[vjXid,setVjXid]=React.useState('');
-  const startEdit=()=>{
-    setDraft({date:ev.date,title:ev.title,genre:ev.genre,hashtags:[...(ev.hashtags||[])],djs:[...ev.djs],vjs:[...ev.vjs],flyer:ev.flyer||null,dayBg:(dayBgMap[ev.date]!==undefined?dayBgMap[ev.date]:null)});
-    setDjName('');setDjXid('');setVjName('');setVjXid('');setOpen(true);
-  };
-  const cancel=()=>{setOpen(false);setDraft(null);};
-  const saveCard=()=>{onSave(ev.id||ev.date,draft);setSavedMark(true);setTimeout(()=>setSavedMark(false),2000);setOpen(false);setDraft(null);};
-  const addTag=()=>{const t=prompt('# tag');if(t&&t.trim())setDraft(d=>({...d,hashtags:[...d.hashtags,t.trim()]}));};
-  const rmTag=i=>setDraft(d=>({...d,hashtags:d.hashtags.filter((_,j)=>j!==i)}));
-  const d=parseDate(ev.date);
-  const g=genres.find(x=>x.id===ev.genre)||{color:'#666',label:'?'};
-  const curBg=(dayBgMap[ev.date]!==undefined?dayBgMap[ev.date]:null);
-  const iSt={width:'100%',border:BT,borderRadius:8,padding:'10px 12px',fontSize:14,background:'#fff',outline:'none'};
-  const chipSt=(on,col)=>({display:'inline-flex',alignItems:'center',gap:4,border:on?'3px solid #111':'2px solid #111',borderRadius:8,padding:'6px 12px',background:on?col:'#fff',color:on?'#fff':'#111',fontFamily:'"DotGothic16",monospace',fontSize:12,cursor:'pointer',boxShadow:on?SS:'none',whiteSpace:'nowrap'});
-  return(
-    <div style={{background:'#fff',border:BT,borderRadius:14,overflow:'hidden',boxShadow:S}}>
-      <div onClick={open?undefined:startEdit} style={{display:'flex',gap:10,alignItems:'center',padding:14,cursor:open?'default':'pointer',userSelect:'none',WebkitUserSelect:'none'}}>
-        <div style={{width:52,height:52,flexShrink:0,background:curBg||g.color,color:'#fff',border:B,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
-          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9}}>{T.wdays[weekIdx(d)]}</div>
-          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:22,lineHeight:1,textShadow:'1.5px 1.5px 0 #111'}}>{d.getDate()}</div>
-        </div>
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{display:'flex',gap:5,marginBottom:3,flexWrap:'wrap'}}>
-            <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:['#F5E642','#B8F0B0','#D4B0F0'].includes(g.color)?'#111':'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 6px'}}># {g.label}</span>
-            <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,color:'#666'}}>{ev.date}</span>
-          </div>
-          <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{ev.title}</div>
-        </div>
-        {savedMark
-          ?<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'green',flexShrink:0}}>{T.savedMark}</div>
-          :<div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#111',flexShrink:0,transform:open?'rotate(90deg)':'none',transition:'transform .2s'}}>&#8250;</div>
-        }
-      </div>
-      {open&&draft&&(
-        <div style={{borderTop:BT,padding:16,display:'flex',flexDirection:'column',gap:16}}>
-          <div><Label>{T.dateL}</Label><input type="date" value={draft.date} onChange={e=>setDraft(d=>({...d,date:e.target.value}))} style={iSt}/></div>
-          <div><Label>{T.titleL}</Label><input type="text" value={draft.title} onChange={e=>setDraft(d=>({...d,title:e.target.value}))} placeholder={T.titlePh} style={iSt}/></div>
-          <div>
-            <Label>{T.genreL}</Label>
-            <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>
-              {genres.map(g2=>(<button key={g2.id} onClick={()=>setDraft(d=>({...d,genre:g2.id}))} style={chipSt(draft.genre===g2.id,g2.color)}># {g2.label}</button>))}
-            </div>
-          </div>
-          <div>
-            <Label>{T.colorL}</Label>
-            <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>
-              {DAY_COLORS.map(p=>{const on=(draft.dayBg===p.value)||(p.value===null&&draft.dayBg===null);return(
-                <button key={p.id} title={p.label} onClick={()=>setDraft(d=>({...d,dayBg:p.value}))}
-                  style={{width:38,height:38,border:on?'3px solid #111':'2px solid #111',borderRadius:8,padding:0,background:p.value||'repeating-linear-gradient(45deg,#eee 0 4px,#fff 4px 8px)',boxShadow:on?`0 0 0 2px ${C.yellow},2px 2px 0 #111`:SS,position:'relative',transform:on?'translate(-1px,-1px)':'none'}}>
-                  {p.value===null&&<span style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontFamily:'"DotGothic16",monospace',color:'#111'}}>A</span>}
-                </button>
-              );})}
-            </div>
-          </div>
-          <div>
-            <Label>{T.hashL}</Label>
-            <div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:4}}>
-              {draft.hashtags.map((h,i)=>(
-                <div key={i} style={{display:'inline-flex',alignItems:'center',gap:4,background:C.turquoise,color:'#fff',border:B,borderRadius:20,padding:'5px 10px 5px 12px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>
-                  #{h}<button onClick={()=>rmTag(i)} style={{background:'none',border:'none',color:'#fff',fontSize:16,padding:'0 0 0 4px',lineHeight:1,cursor:'pointer'}}>x</button>
-                </div>
-              ))}
-              <button onClick={addTag} style={{border:BT,borderRadius:20,padding:'5px 12px',background:'#fff',fontFamily:'"DotGothic16",monospace',fontSize:11,boxShadow:SS}}>{T.hashAdd}</button>
-            </div>
-          </div>
-          <PerfBlock role="djs" labelText={T.djL} addText={T.djAdd} bgColor={C.yellow} draft={draft} setDraft={setDraft} people={people} nameV={djName} setNameV={setDjName} xidV={djXid} setXidV={setDjXid}/>
-          <PerfBlock role="vjs" labelText={T.vjL} addText={T.vjAdd} bgColor={C.turquoise} draft={draft} setDraft={setDraft} people={people} nameV={vjName} setNameV={setVjName} xidV={vjXid} setXidV={setVjXid}/>
-          <div>
-            <Label>{T.flyerL}</Label>
-            <div style={{marginTop:6,display:'flex',flexDirection:'column',gap:8}}>
-              {draft.flyer&&(
-                <div style={{position:'relative',border:BT,borderRadius:10,overflow:'hidden',maxWidth:180}}>
-                  <img src={draft.flyer} alt="flyer" style={{width:'100%',display:'block'}}/>
-                  <button onClick={()=>setDraft(d=>({...d,flyer:null}))} style={{position:'absolute',top:6,right:6,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'3px 8px',boxShadow:SS}}>{T.del}</button>
-                </div>
-              )}
-              <label style={{display:'inline-flex',alignItems:'center',gap:8,border:BT,borderRadius:10,padding:'12px 16px',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS,cursor:'pointer'}}>
-                {draft.flyer?T.flyerChg:T.flyerAdd}
-                <input type="file" accept="image/*" onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev2=>setDraft(d=>({...d,flyer:ev2.target.result}));r.readAsDataURL(f);}} style={{display:'none'}}/>
-              </label>
-            </div>
-          </div>
-          <div style={{display:'flex',gap:8,paddingTop:4}}>
-            <button onClick={saveCard} style={{flex:2,border:BT,borderRadius:10,padding:'14px 0',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}>{T.saveBt}</button>
-            <button onClick={cancel} style={{flex:1,border:BT,borderRadius:10,padding:'14px 0',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS}}>{T.cancelBt}</button>
-          </div>
-          <button onClick={()=>{if(confirm(ev.title+T.confirmDel))onDelete(ev.id||ev.date);}}
-            style={{width:'100%',border:BT,borderRadius:10,padding:'11px 0',background:'#fff',color:'#999',fontFamily:'"DotGothic16",monospace',fontSize:12,boxShadow:SS}}>
-            {T.eventDel}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
+  function StarBurst({size=80,color='#E63946',spikes=20,children,style={}}){
+    const pts=[];const cx=size/2,cy=size/2,outer=size/2,inner=size/2*0.86;
+    for(let i=0;i<spikes*2;i++){const r=i%2===0?outer:inner;const a=(Math.PI/spikes)*i-Math.PI/2;pts.push(`${cx+r*Math.cos(a)},${cy+r*Math.sin(a)}`);}
+    return(<div style={{position:'relative',width:size,height:size,...style}}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{position:'absolute',inset:0}}>
+        <polygon points={pts.join(' ')} fill={color} stroke="#111" strokeWidth="2.5" strokeLinejoin="round"/>
+      </svg>
+      <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'"Reggae One",system-ui',color:'#fff',textShadow:'2px 2px 0 #111',textAlign:'center',lineHeight:1}}>{children}</div>
+    </div>);
+  }
+  function XIcon({size=18}){return(<svg width={size} height={size} viewBox="0 0 24 24" style={{display:'block'}}><rect x="1.5" y="1.5" width="21" height="21" rx="4.5" fill="#111"/><path d="M7 7l10 10M17 7L7 17" stroke="#fff" strokeWidth="2.4" strokeLinecap="round"/></svg>);}
+  function VbLogo(){return(<div style={{display:'inline-flex',alignItems:'center',gap:10,fontFamily:'"Reggae One",system-ui',userSelect:'none'}}><div style={{fontSize:22,lineHeight:1,background:C.red,color:'#fff',border:B,borderRadius:10,padding:'6px 10px',boxShadow:SS,transform:'rotate(-3deg)',letterSpacing:1}}>VOCA</div><div style={{fontSize:22,lineHeight:1,background:C.turquoise,color:'#fff',border:B,borderRadius:10,padding:'6px 10px',boxShadow:SS,transform:'rotate(3deg)',letterSpacing:1}}>BUKI</div></div>);}
+  function PopBtn({children,onClick,bg=C.yellow,color='#111',size=40,style={}}){
+    const ref=React.useRef();
+    return(<button ref={ref} onClick={onClick} style={{width:size,height:size,background:bg,color,border:BT,borderRadius:'50%',boxShadow:S,display:'flex',alignItems:'center',justifyContent:'center',padding:0,fontFamily:'"Reggae One",system-ui',fontSize:18,...style}}
+      onPointerDown={()=>{if(ref.current){ref.current.style.transform='translate(3px,3px)';ref.current.style.boxShadow='1px 1px 0 #111';}}}
+      onPointerUp={()=>{if(ref.current){ref.current.style.transform='';ref.current.style.boxShadow=S;}}}
+      onPointerLeave={()=>{if(ref.current){ref.current.style.transform='';ref.current.style.boxShadow=S;}}}
+    >{children}</button>);
+  }
+  function Label({children}){return <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#555',marginBottom:3}}>{children}</div>;}
+  function SectionHead({children}){return(<div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,background:C.ink,color:'#fff',border:BT,borderRadius:8,padding:'4px 12px',transform:'rotate(-1deg)',boxShadow:SS,display:'inline-block',marginBottom:10}}>{children}</div>);}
 
-function ClosedDaysBlock({closedDays,setClosedDays}){
-  const[input,setInput]=React.useState('');
-  const add=()=>{
-    if(!input)return;
-    if(!closedDays.includes(input))setClosedDays(prev=>[...prev,input].sort());
-    setInput('');
-  };
-  return(
-    <div style={{background:'#fff',border:BT,borderRadius:10,padding:12,boxShadow:SS}}>
-      <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',marginBottom:8}}>{T.closedNote}</div>
-      <div style={{display:'flex',gap:8,marginBottom:8}}>
-        <input type="date" value={input} onChange={e=>setInput(e.target.value)} style={{flex:1,border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none',minWidth:0}}/>
-        <button onClick={add} style={{border:BT,borderRadius:8,padding:'8px 14px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS,flexShrink:0}}>&#43; {T.closedAdd}</button>
+  // CALENDAR COMPONENTS
+  function ViewSwitcher({view,setView}){
+    return(<div style={{display:'inline-flex',border:BT,borderRadius:999,background:'#fff',boxShadow:SS,padding:3,gap:2}}>
+      {[{id:'month',label:'\u6708'},{id:'week',label:'\u9031'},{id:'list',label:'\u30ea\u30b9\u30c8'}].map(o=>(
+        <button key={o.id} onClick={()=>setView(o.id)} style={{border:'none',background:view===o.id?C.ink:'transparent',color:view===o.id?'#fff':'#111',fontFamily:'"RocknRoll One",system-ui',fontSize:13,padding:'6px 12px',borderRadius:999}}>{o.label}</button>
+      ))}
+    </div>);
+  }
+  function GenreFilter({activeSet,toggleGenre,genres}){
+    const allOn=activeSet.size===0;
+    return(<div style={{display:'flex',gap:8,overflowX:'auto',padding:'0 16px 4px',marginLeft:-16,marginRight:-16}}>
+      <button onClick={()=>toggleGenre('all')} style={{flexShrink:0,border:B,borderRadius:999,padding:'6px 14px',background:allOn?'#111':'#fff',color:allOn?'#fff':'#111',boxShadow:allOn?SS:'none',fontFamily:'"RocknRoll One",system-ui',fontSize:13,transform:allOn?'translate(-1px,-1px)':'none',whiteSpace:'nowrap'}}># ALL</button>
+      {genres.map(g=>{const on=activeSet.has(g.id);return(
+        <button key={g.id} onClick={()=>toggleGenre(g.id)} style={{flexShrink:0,border:B,borderRadius:999,padding:'6px 14px',background:on?g.color:'#fff',color:on?'#fff':'#111',boxShadow:on?SS:'none',fontFamily:'"RocknRoll One",system-ui',fontSize:13,transform:on?'translate(-1px,-1px)':'none',whiteSpace:'nowrap'}}># {g.label}</button>
+      );})}
+    </div>);
+  }
+  function MonthHeader({year,month,onPrev,onNext,onToday}){
+    return(<div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 16px',gap:8}}>
+      <div style={{display:'flex',alignItems:'center',gap:8}}>
+        <PopBtn onClick={onPrev} bg={C.yellow} size={38}>&#8249;</PopBtn>
+        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:28,lineHeight:1,display:'flex',alignItems:'baseline',gap:6}}>
+          <span style={{color:C.red}}>{year}</span><span style={{fontSize:16,color:'#111'}}>&#24180;</span>
+          <span style={{color:C.turquoiseDark,fontSize:38}}>{month+1}</span><span style={{fontSize:16,color:'#111'}}>&#26376;</span>
+        </div>
       </div>
-      {closedDays.length===0
-        ?<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#aaa',textAlign:'center',padding:'8px 0'}}>{T.closedEmpty}</div>
-        :<div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-          {closedDays.map(d=>(<div key={d} style={{display:'inline-flex',alignItems:'center',gap:4,background:'#eee',border:B,borderRadius:20,padding:'4px 8px 4px 10px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>
-            {d}<button onClick={()=>setClosedDays(prev=>prev.filter(x=>x!==d))} style={{background:'none',border:'none',fontSize:14,padding:'0 0 0 4px',lineHeight:1,cursor:'pointer',color:'#666'}}>x</button>
-          </div>))}
-        </div>
-      }
-    </div>
-  );
-}
-
-function LoginScreen({onLogin}){
-  const[pw,setPw]=React.useState('');
-  const[token,setToken]=React.useState(()=>sessionStorage.getItem('vb_token')||'');
-  const[step,setStep]=React.useState(()=>sessionStorage.getItem('vb_token')?'token':'pw');
-  const[err,setErr]=React.useState('');
-  const[busy,setBusy]=React.useState(false);
-  const checkPw=()=>{if(pw===ADMIN_PASSWORD){setStep('token');setErr('');}else{setErr(T.pwErr);setTimeout(()=>setErr(''),1500);}};
-  const checkToken=async()=>{
-    if(!token.trim()){setErr(T.tokenEmpty);return;}
-    setBusy(true);setErr('');
-    try{await ghFetch(token.trim(),GH_PATH);sessionStorage.setItem('vb_token',token.trim());onLogin(token.trim());}
-    catch(e){setErr(T.tokenErr+e.message);setBusy(false);}
-  };
-  const iSt={width:'100%',border:BT,borderRadius:10,padding:'12px 14px',fontSize:15,outline:'none',background:'#fff',marginBottom:4};
-  return(
-    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:20,background:C.paper}}>
-      <div style={{position:'absolute',inset:0,backgroundImage:pat.halftone('rgba(46,197,206,0.15)'),backgroundSize:'8px 8px',pointerEvents:'none'}}/>
-      <div style={{position:'relative',width:'100%',maxWidth:360,background:'#fff',border:BT,borderRadius:20,padding:24,boxShadow:SB}}>
-        <div style={{textAlign:'center',marginBottom:20}}>
-          <div style={{display:'inline-flex',gap:8,alignItems:'center'}}>
-            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:24,background:C.red,color:'#fff',border:B,borderRadius:10,padding:'6px 12px',boxShadow:SS,transform:'rotate(-3deg)'}}>VOCA</div>
-            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:24,background:C.turquoise,color:'#fff',border:B,borderRadius:10,padding:'6px 12px',boxShadow:SS,transform:'rotate(3deg)'}}>BUKI</div>
-          </div>
-          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',marginTop:8}}>{T.adminScreen}</div>
-        </div>
-        {step==='pw'&&(<div>
-          <Label>{T.pwL}</Label>
-          <input type="password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&checkPw()} placeholder={T.pwPh} style={iSt} autoComplete="current-password"/>
-          {err&&<div style={{color:C.red,fontFamily:'"DotGothic16",monospace',fontSize:11,marginBottom:8}}>{err}</div>}
-          <button onClick={checkPw} style={{width:'100%',border:BT,borderRadius:10,padding:'13px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}>{T.pwNext}</button>
-        </div>)}
-        {step==='token'&&(<div>
-          <Label>{T.tokenL}</Label>
-          <input type="password" value={token} onChange={e=>setToken(e.target.value)} onKeyDown={e=>e.key==='Enter'&&checkToken()} placeholder={T.tokenPh} style={iSt} autoComplete="off"/>
-          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',marginBottom:12,lineHeight:1.7}}>{T.tokenNote1}<br/>{T.tokenNote2}</div>
-          {err&&<div style={{color:C.red,fontFamily:'"DotGothic16",monospace',fontSize:11,marginBottom:8}}>{err}</div>}
-          <button onClick={checkToken} disabled={busy} style={{width:'100%',border:BT,borderRadius:10,padding:'13px',background:busy?'#999':C.turquoise,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,marginBottom:8}}>{busy?T.tokenCheck:T.tokenLogin}</button>
-          <button onClick={()=>{setStep('pw');setPw('');sessionStorage.removeItem('vb_token');}} style={{width:'100%',border:BT,borderRadius:10,padding:'10px',background:'#fff',fontFamily:'"DotGothic16",monospace',fontSize:12,boxShadow:SS}}>{T.tokenBack}</button>
-        </div>)}
+      <div style={{display:'flex',gap:8}}>
+        <button onClick={onToday} style={{border:BT,background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:13,padding:'6px 12px',borderRadius:999,boxShadow:SS}}>&#20170;&#26085;</button>
+        <PopBtn onClick={onNext} bg={C.yellow} size={38}>&#8250;</PopBtn>
       </div>
-    </div>
-  );
-}
-
-function AdminApp(){
-  const[token,setToken]=React.useState(()=>sessionStorage.getItem('vb_token')||'');
-  const[loggedIn,setLoggedIn]=React.useState(()=>!!sessionStorage.getItem('vb_token'));
-  const[events,setEvents]=React.useState([]);
-  const[genres,setGenres]=React.useState(GENRES_DEFAULT);
-  const[dayBgMap,setDayBgMap]=React.useState({});
-  const[closedDays,setClosedDays]=React.useState([]);
-  const[people,setPeople]=React.useState(PEOPLE_DEFAULT);
-  const[sha,setSha]=React.useState(null);
-  const[status,setStatus]=React.useState('idle');
-  const[errMsg,setErrMsg]=React.useState('');
-  const[newLabel,setNewLabel]=React.useState('');
-  const[newColor,setNewColor]=React.useState('#E63946');
-  const handleLogin=tk=>{setToken(tk);setLoggedIn(true);};
-  React.useEffect(()=>{
-    if(!loggedIn||!token)return;
-    setStatus('loading');
-    loadGH(token).then(({data,sha})=>{
-      setEvents(data.events||[]);
-      setGenres(data.genres||GENRES_DEFAULT);
-      setDayBgMap(data.dayBgMap||{});
-      setClosedDays(data.closedDays||[]);
-      setPeople({...PEOPLE_DEFAULT,...(data.people||{})});
-      setSha(sha);setStatus('idle');
-    }).catch(e=>{
-      if(e.message.includes('401')||e.message.includes('Bad cred')){sessionStorage.removeItem('vb_token');setLoggedIn(false);}
-      setStatus('error');setErrMsg(e.message);
-    });
-  },[loggedIn,token]);
-  const doSave=async()=>{
-    setStatus('saving');
-    try{
-      await saveGH(token,{events,genres,dayBgMap,closedDays,people},sha);
-      const{sha:ns}=await loadGH(token);
-      setSha(ns);setStatus('saved');setTimeout(()=>setStatus('idle'),2500);
-    }catch(e){setStatus('error');setErrMsg(e.message);}
-  };
-  const handleSave=(evId,draft)=>{
-    setEvents(prev=>prev.map(e=>(e.id||e.date)!==evId?e:{...e,...draft}));
-    setDayBgMap(m=>{const n={...m};if(draft.dayBg===null)delete n[draft.date];else n[draft.date]=draft.dayBg;return n;});
-  };
-  const handleDelete=evId=>setEvents(prev=>prev.filter(e=>(e.id||e.date)!==evId));
-  const addEvent=()=>setEvents(prev=>[...prev,{id:uid(),date:fmtDate(TODAY),title:T.eventNew,genre:genres[0]&&genres[0].id||'vocabuki',hashtags:['vocabuki'],djs:[],vjs:[],flyer:null}]);
-  const addGenre=()=>{const lbl=newLabel.trim();if(!lbl)return;const id=lbl.toLowerCase().replace(/\s+/g,'');setGenres(prev=>[...prev,{id,label:lbl,color:newColor}]);setNewLabel('');};
-  const rmGenre=id=>{if(events.some(e=>e.genre===id)){alert(T.genreInUse);return;}setGenres(prev=>prev.filter(g=>g.id!==id));};
-  const sorted=React.useMemo(()=>[...events].sort((a,b)=>a.date.localeCompare(b.date)),[events]);
-  const logout=()=>{sessionStorage.removeItem('vb_token');setToken('');setLoggedIn(false);};
-  const barBg=status==='loading'||status==='saving'?'#555':status==='saved'?'#3FB55E':status==='error'?C.red:null;
-  const barTx=status==='loading'?T.ghLoading:status==='saving'?T.ghSaving:status==='saved'?T.ghSaved:status==='error'?(T.ghError+errMsg):null;
-  if(!loggedIn)return <LoginScreen onLogin={handleLogin}/>;
-  return(
-    <div style={{maxWidth:520,margin:'0 auto',minHeight:'100vh',background:C.paper}}>
-      <div style={{position:'fixed',top:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:520,zIndex:50,background:C.ink,boxShadow:'0 2px 8px rgba(0,0,0,0.3)'}}>
-        <div style={{padding:'12px 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-          <div style={{display:'flex',alignItems:'center',gap:8}}>
-            <span style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#fff'}}>VOCA</span>
-            <span style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:C.turquoise}}>BUKI</span>
-            <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#aaa'}}>{T.mgmt}</span>
+    </div>);
+  }
+  function WeekdayRow(){
+    return(<div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,padding:'0 14px',marginTop:6}}>
+      {WDAYS.map((w,i)=>{const isSat=i===5,isSun=i===6;return(
+        <div key={w} style={{textAlign:'center',fontFamily:'"DotGothic16",monospace',fontSize:13,padding:'4px 0',color:isSun?C.red:isSat?C.turquoiseDark:'#111',background:isSun?'rgba(230,57,70,0.1)':isSat?'rgba(46,197,206,0.12)':'transparent',border:B,borderRadius:8,fontWeight:700}}>{w}</div>
+      );})}
+    </div>);
+  }
+  function DayCell({cell,event,isToday,isPast,isFavorite,onClick,dayBg,genres,isClosed}){
+    const d=cell.date,wi=weekIdx(d),isSat=wi===5,isSun=wi===6;
+    const genre=event&&(Array.isArray(event.genre)?genres.find(g=>g.id===event.genre[0]):genres.find(g=>g.id===event.genre));
+    const defaultAccent=isSat?C.turquoise:wi===4?C.red:null;
+    const bg=isClosed?'#ccc':event?(dayBg||(genre?genre.color:C.yellow)):(cell.outside?'rgba(255,255,255,0.4)':(defaultAccent||'#fff'));
+    const isBgColored=event||(!!defaultAccent&&!cell.outside);
+    return(<button onClick={onClick} disabled={!event}
+      style={{position:'relative',aspectRatio:'1/1.15',border:B,borderRadius:8,minWidth:0,background:bg,padding:4,cursor:event?'pointer':'default',opacity:(cell.outside||isPast)?0.55:1,filter:isPast?'saturate(0.4)':'none',boxShadow:event&&!isPast?SS:'none',display:'flex',flexDirection:'column',alignItems:'flex-start',overflow:'visible',textAlign:'left',transform:isToday?'scale(1.02)':'none',outline:isToday?`3px solid ${C.ink}`:'none',outlineOffset:isToday?'2px':0}}>
+      {isToday&&<div style={{position:'absolute',top:-10,right:-6,zIndex:10,pointerEvents:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,lineHeight:1,color:'#fff',WebkitTextStroke:'3px #FF3DA5',paintOrder:'stroke fill',transform:'rotate(-8deg)'}}>NOW</div>}
+      {isClosed&&!cell.outside&&<div style={{position:'absolute',top:1,left:0,right:0,textAlign:'center',fontFamily:'"DotGothic16",monospace',fontSize:8,color:'#fff',background:'rgba(80,80,80,0.85)',borderRadius:3,padding:'1px 0',lineHeight:1.2}}>&#20241;</div>}
+      {isFavorite&&<div style={{position:'absolute',top:2,left:2,fontSize:10}}>&#11088;</div>}
+      <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16,lineHeight:1,color:isBgColored?'#fff':(isSun?C.red:isSat?C.turquoiseDark:'#111'),textShadow:isBgColored?'1.5px 1.5px 0 #111':'none',marginTop:1,marginLeft:2}}>{d.getDate()}</div>
+      {event&&(()=>{const full=event.title||'',head=Array.from(full).slice(0,4).join(''),label=Array.from(full).length>4?`${head}\u2026`:head;return(<div style={{marginTop:'auto',width:'100%',fontFamily:'"Reggae One",system-ui',fontSize:10.5,lineHeight:1,color:'#fff',WebkitTextStroke:'2.5px #111',paintOrder:'stroke fill',textAlign:'center',overflow:'hidden',whiteSpace:'nowrap',padding:'2px 2px 3px'}}>{label}</div>);})()}
+    </button>);
+  }
+  function MonthGrid({cells,eventByDate,onPick,favorites,dayBgMap,genres,closedDays}){
+    return(<div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,padding:'6px 14px'}}>
+      {cells.map((c,i)=>{
+        const key=fmtDate(c.date),ev=eventByDate[key],isToday=sameDay(c.date,TODAY);
+        const isPast=c.date<new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
+        const isClosed=closedDays&&closedDays.includes(key);return(<DayCell key={i} cell={c} event={ev} isToday={isToday} isPast={isPast} isFavorite={!!(ev&&favorites[key])} dayBg={ev&&dayBgMap?dayBgMap[key]:undefined} onClick={()=>ev&&onPick(ev)} genres={genres} isClosed={isClosed}/>);
+      })}
+    </div>);
+  }
+  function WeekView({start,eventByDate,onPick,favorites,genres}){
+    const days=Array.from({length:7},(_,i)=>new Date(start.getFullYear(),start.getMonth(),start.getDate()+i));
+    return(<div style={{display:'flex',flexDirection:'column',gap:10,padding:'0 16px'}}>
+      {days.map((d,i)=>{
+        const key=fmtDate(d),ev=eventByDate[key],isToday=sameDay(d,TODAY),wi=weekIdx(d),isSun=wi===6,isSat=wi===5;
+        const genre=ev&&(Array.isArray(ev.genre)?genres.find(g=>g.id===ev.genre[0]):genres.find(g=>g.id===ev.genre));
+        const isPast=d<new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
+        return(<div key={i} onClick={()=>ev&&onPick(ev)} style={{display:'flex',gap:12,alignItems:'stretch',border:BT,borderRadius:14,background:ev?'#fff':'#FFF6E0',boxShadow:ev?S:'none',overflow:'hidden',cursor:ev?'pointer':'default',opacity:isPast?0.55:1,filter:isPast?'saturate(0.4)':'none'}}>
+          <div style={{width:64,flexShrink:0,background:isSun?C.red:isSat?C.turquoise:C.yellow,borderRight:BT,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',color:(isSun||isSat)?'#fff':'#111',padding:'8px 4px'}}>
+            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,fontWeight:700}}>{WDAYS[wi]}</div>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:32,lineHeight:1,textShadow:(isSun||isSat)?'2px 2px 0 #111':'none'}}>{d.getDate()}</div>
+            {isToday&&<div style={{marginTop:4,fontSize:9,fontFamily:'"Reggae One",system-ui',background:C.ink,color:'#fff',padding:'1px 6px',borderRadius:4}}>NOW</div>}
           </div>
-          <div style={{display:'flex',gap:8}}>
-            <button onClick={doSave} disabled={status==='loading'||status==='saving'}
-              style={{background:status==='saved'?'#3FB55E':C.red,color:'#fff',border:BT,borderRadius:10,padding:'9px 16px',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS,opacity:status==='loading'||status==='saving'?0.6:1}}>
-              {status==='saving'?T.saving:status==='saved'?T.saved:T.save}
-            </button>
-            <button onClick={logout} style={{background:'#333',color:'#aaa',border:'2px solid #555',borderRadius:8,padding:'9px 12px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>{T.logout}</button>
-          </div>
-        </div>
-        {barBg&&<div style={{background:barBg,color:'#fff',fontFamily:'"DotGothic16",monospace',fontSize:11,padding:'7px 16px',textAlign:'center'}}>{barTx}</div>}
-      </div>
-      <div style={{height:barBg?88:60}}/>
-      <div style={{padding:'16px 16px 100px',display:'flex',flexDirection:'column',gap:24}}>
-        <div>
-          <SHead>{T.closedMgmt}</SHead>
-          <ClosedDaysBlock closedDays={closedDays} setClosedDays={setClosedDays}/>
-        </div>
-        <div>
-          <SHead>{T.genreMgmt}</SHead>
-          <div style={{display:'flex',flexDirection:'column',gap:8}}>
-            {genres.map(g=>(<div key={g.id} style={{display:'flex',alignItems:'center',gap:10,background:'#fff',border:BT,borderRadius:10,padding:'12px 14px',boxShadow:SS}}>
-              <div style={{width:30,height:30,borderRadius:6,background:g.color,border:B,flexShrink:0}}/>
-              <div style={{flex:1,fontFamily:'"RocknRoll One",system-ui',fontSize:14}}># {g.label}<span style={{color:'#888',fontFamily:'"DotGothic16",monospace',fontSize:10,marginLeft:6}}>{g.id}</span></div>
-              <button onClick={()=>rmGenre(g.id)} style={{background:'#fff',border:B,borderRadius:6,fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#666',padding:'4px 10px',boxShadow:SS}}>{T.del}</button>
-            </div>))}
-            <div style={{background:'#fff',border:BT,borderRadius:10,padding:12,boxShadow:SS}}>
-              <Label>{T.genreNew}</Label>
-              <div style={{display:'flex',gap:8,marginTop:4}}>
-                <input value={newLabel} onChange={e=>setNewLabel(e.target.value)} placeholder={T.genreNamePh} style={{flex:1,border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none'}}/>
-                <input type="color" value={newColor} onChange={e=>setNewColor(e.target.value)} style={{width:48,height:48,border:BT,borderRadius:8,padding:2,cursor:'pointer'}}/>
-                <button onClick={addGenre} style={{border:BT,borderRadius:8,padding:'8px 14px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>{T.genreAdd}</button>
+          <div style={{flex:1,padding:'10px 12px',display:'flex',flexDirection:'column',justifyContent:'center'}}>
+            {ev?(<>
+              <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',marginBottom:4}}>
+                <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:genre.color,color:'#fff',border:'2px solid #111',borderRadius:4,padding:'1px 6px',fontWeight:700}}># {genre.label}</span>
+                {favorites[key]&&<span style={{fontSize:12}}>&#11088;</span>}
               </div>
+              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:16,lineHeight:1.2}}>{ev.title}</div>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',marginTop:4}}>DJ {ev.djs.length} / VJ {ev.vjs.length} &#12539; OPEN 24:00</div>
+            </>):(<div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#999'}}>&#12362;&#20241;&#12415;</div>)}
+          </div>
+        </div>);
+      })}
+    </div>);
+  }
+  function UpcomingList({events,onPick,favorites,genres}){
+    const today=new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
+    const upcoming=events.filter(e=>parseDate(e.date)>=today).slice(0,4);
+    return(<div style={{padding:'14px 16px 24px'}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,background:C.ink,color:'#fff',border:BT,borderRadius:8,padding:'3px 12px',transform:'rotate(-2deg)',boxShadow:SS}}>UP NEXT</div>
+        <div style={{flex:1,height:4,background:pat.stripesB('#111',C.yellow),border:B,borderRadius:4}}/>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        {upcoming.length===0&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',textAlign:'center',padding:20}}>&#20170;&#26376;&#12399;&#12418;&#12358;&#12452;&#12505;&#12531;&#12488;&#12364;&#12354;&#12426;&#12414;&#12379;&#12435;</div>}
+        {upcoming.map(e=>{
+          const d=parseDate(e.date),g=genres.find(x=>x.id===e.genre)||{color:'#666',label:'?'},isToday=sameDay(d,TODAY);
+          return(<PressCard key={e.id||e.date} onTap={()=>onPick(e)} style={{display:'flex',gap:12,alignItems:'center',background:'#fff',border:BT,borderRadius:14,padding:'10px 12px',boxShadow:S,cursor:'pointer'}}>
+            <div style={{width:54,height:54,flexShrink:0,background:g.color,color:'#fff',border:B,borderRadius:10,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',boxShadow:SS}}>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,fontWeight:700}}>{d.getMonth()+1}/{WDAYS[d.getDay()]}</div>
+              <div style={{fontFamily:'"Reggae One",system-ui',fontSize:26,lineHeight:1,textShadow:'2px 2px 0 #111'}}>{d.getDate()}</div>
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:'flex',gap:6,alignItems:'center',marginBottom:2}}>
+                <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}># {g.label}</span>
+                {isToday&&<span style={{fontFamily:'"Reggae One",system-ui',fontSize:9,background:C.ink,color:'#fff',padding:'1px 6px',borderRadius:4}}>TODAY</span>}
+                {favorites[e.date]&&<span style={{fontSize:11}}>&#11088;</span>}
+              </div>
+              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{e.title}</div>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',marginTop:2}}>DJ {e.djs.length}&#32068;&#12539;VJ {e.vjs.length}&#32068;&#12539;24:00&#8594;5:00</div>
+            </div>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#111'}}>&#8250;</div>
+          </PressCard>);
+        })}
+      </div>
+    </div>);
+  }
+  function ListView({events,onPick,favorites,genres}){
+    const today=new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
+    const byMonth={};
+    events.forEach(e=>{const d=parseDate(e.date);const k=`${d.getFullYear()}-${d.getMonth()+1}`;(byMonth[k]??=[]).push(e);});
+    return(<div style={{padding:'6px 16px 20px',display:'flex',flexDirection:'column',gap:14}}>
+      {Object.keys(byMonth).sort().map(mk=>{
+        const[y,m]=mk.split('-').map(Number);
+        return(<div key={mk}>
+          <div style={{display:'inline-flex',alignItems:'baseline',gap:4,fontFamily:'"Reggae One",system-ui',background:C.yellow,border:BT,borderRadius:8,padding:'4px 12px',boxShadow:SS,marginBottom:10,transform:'rotate(-1.5deg)'}}>
+            <span style={{fontSize:14}}>{y}</span><span style={{fontSize:24,color:C.red}}>{m}</span><span style={{fontSize:14}}>&#26376;</span>
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            {byMonth[mk].map(e=>{
+              const d=parseDate(e.date),g=genres.find(x=>x.id===e.genre)||{color:'#666',label:'?'},isPast=d<today,isToday=sameDay(d,TODAY);
+              return(<PressCard key={e.id||e.date} onTap={()=>onPick(e)} style={{display:'flex',gap:12,alignItems:'center',background:'#fff',border:BT,borderRadius:12,padding:'10px 12px',boxShadow:isPast?'none':S,cursor:'pointer',opacity:isPast?0.55:1,filter:isPast?'saturate(0.4)':'none'}}>
+                <div style={{width:44,height:44,flexShrink:0,background:g.color,color:'#fff',border:B,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+                  <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9}}>{WDAYS[d.getDay()]}</div>
+                  <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,lineHeight:1,textShadow:'1.5px 1.5px 0 #111'}}>{d.getDate()}</div>
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:'flex',gap:6,alignItems:'center',marginBottom:2}}>
+                    <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}># {g.label}</span>
+                    {isPast&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:'#999',color:'#fff',borderRadius:4,padding:'0 5px'}}>&#32066;&#20102;</span>}
+                    {isToday&&<span style={{fontFamily:'"Reggae One",system-ui',fontSize:9,background:C.ink,color:'#fff',padding:'1px 6px',borderRadius:4}}>TODAY</span>}
+                    {favorites[e.date]&&<span style={{fontSize:11}}>&#11088;</span>}
+                  </div>
+                  <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2}}>{e.title}</div>
+                </div>
+                <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>&#8250;</div>
+              </PressCard>);
+            })}
+          </div>
+        </div>);
+      })}
+    </div>);
+  }
+
+  // DETAIL SCREEN
+  function PersonRow({id,people}){
+    const p=people[id]||{name:id,x:'@'+id},handle=(p.x||'@'+id).replace('@','');
+    const[imgOk,setImgOk]=React.useState(true);
+    return(<a href={`https://x.com/${handle}`} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:10,background:'#fff',border:B,borderRadius:10,padding:'8px 10px',textDecoration:'none',color:'#111',boxShadow:SS}}>
+      <div style={{position:'relative',width:36,height:36,flexShrink:0,border:'2.5px solid #111',borderRadius:'50%',background:C.yellow,overflow:'hidden',boxShadow:SS}}>
+        {imgOk?(<img src={`https://unavatar.io/x/${handle}`} alt={p.name} onError={()=>setImgOk(false)} style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/>):(<div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',background:'#fff'}}><svg width="20" height="20" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#111" strokeWidth="3.2" strokeLinecap="round"/></svg></div>)}
+      </div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:14,lineHeight:1.1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{p.name}</div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{p.x}</div>
+      </div>
+      <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16}}>&#8599;</div>
+    </a>);
+  }
+  function SecTitle({children,color=C.red}){return(<div style={{display:'inline-flex',alignItems:'center',gap:8,marginBottom:10}}><div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,background:color,color:'#fff',border:BT,borderRadius:8,padding:'3px 12px',boxShadow:SS,transform:'rotate(-2deg)'}}>{children}</div></div>);}
+  function FlyerArea({event,genres}){
+    const g=genres.find(x=>x.id===event.genre)||{color:'#666',label:'?'};
+    if(event.flyer)return(<div style={{aspectRatio:'3/4',border:BT,borderRadius:14,overflow:'hidden',boxShadow:SB}}><img src={event.flyer} alt="flyer" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/></div>);
+    return(<div style={{position:'relative',aspectRatio:'3/4',border:BT,borderRadius:14,overflow:'hidden',boxShadow:SB,background:`${pat.halftone('rgba(17,17,17,0.3)')},${pat.stripes(g.color,C.yellow)}`,backgroundSize:'6px 6px,auto'}}>
+      <div style={{position:'absolute',inset:0,background:'rgba(255,251,236,0.35)'}}/>
+      <div style={{position:'absolute',top:16,left:16,right:16,display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:13,background:C.ink,color:'#fff',border:B,borderRadius:6,padding:'2px 8px',transform:'rotate(-3deg)'}}># {g.label}</div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#fff',border:B,borderRadius:4,padding:'2px 6px'}}>FLYER</div>
+      </div>
+      <div style={{position:'absolute',left:0,right:0,bottom:16,padding:'0 16px',display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
+        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:28,lineHeight:1,color:'#fff',textShadow:'3px 3px 0 #111',textAlign:'center',transform:'rotate(-2deg)',maxWidth:'100%'}}>{event.title}</div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#fff',border:B,borderRadius:4,padding:'2px 10px',color:'#555'}}>[flyer image here]</div>
+      </div>
+      <div style={{position:'absolute',top:'45%',left:-20,width:60,height:60,borderRadius:'50%',background:C.yellow,border:B}}/>
+      <div style={{position:'absolute',top:'30%',right:-24,width:80,height:80,borderRadius:'50%',background:C.turquoise,border:B,opacity:0.9}}/>
+    </div>);
+  }
+  function LoadingScreen({event,genres}){
+    const g=genres.find(x=>x.id===event.genre)||{color:C.red,label:'?'};
+    const dots=['\ud83c\udfb5','\ud83c\udfa7','\ud83c\udfa4'];
+    return(<div style={{position:'fixed',inset:0,zIndex:30,maxWidth:480,margin:'0 auto',background:C.paper,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:24}}>
+      <div style={{position:'absolute',inset:0,pointerEvents:'none',backgroundImage:pat.halftone('rgba(46,197,206,0.18)'),backgroundSize:'8px 8px'}}/>
+      <div style={{position:'absolute',top:-20,left:-20,width:130,height:130,borderRadius:'50%',background:C.yellow,border:BT,opacity:0.7}}/>
+      <div style={{position:'absolute',bottom:-30,right:-20,width:100,height:100,borderRadius:'50%',background:C.turquoise,border:BT,opacity:0.6}}/>
+      <div style={{position:'relative',zIndex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:20}}>
+        <div style={{background:g.color,border:BT,borderRadius:16,padding:'10px 20px',boxShadow:SB,transform:'rotate(-2deg)',fontFamily:'"Reggae One",system-ui',fontSize:13,color:'#fff',maxWidth:260,textAlign:'center'}}>{event.title}</div>
+        <div style={{display:'flex',gap:14,alignItems:'center'}}>
+          {dots.map((d,i)=>(<div key={i} className="vb-loading-dot" style={{fontSize:32,lineHeight:1,animationDelay:`${i*0.12}s`}}>{d}</div>))}
+        </div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',letterSpacing:2}}>LOADING...</div>
+      </div>
+    </div>);
+  }
+
+  function AboutScreen({onClose,people}){
+    return(<div className="vb-detail-enter" style={{position:'fixed',inset:0,zIndex:30,background:C.paper,overflow:'auto',maxWidth:480,margin:'0 auto'}}>
+      <div style={{position:'absolute',inset:0,pointerEvents:'none',opacity:0.4,backgroundImage:pat.halftone('rgba(46,197,206,0.2)'),backgroundSize:'6px 6px'}}/>
+      <div style={{position:'sticky',top:0,zIndex:5,padding:'14px 16px 10px',background:`linear-gradient(to bottom,${C.paper} 75%,transparent)`}}>
+        <button onClick={onClose} style={{display:'flex',alignItems:'center',gap:6,background:'#fff',border:BT,borderRadius:999,padding:'8px 14px 8px 12px',boxShadow:S,fontFamily:'"Reggae One",system-ui',fontSize:14}}><span style={{fontSize:18}}>&#8592;</span>&#25147;&#12427;</button>
+      </div>
+      <div style={{position:'relative',padding:'20px 16px',display:'flex',flexDirection:'column',alignItems:'center',gap:20,textAlign:'center'}}>
+        <div style={{background:C.ink,color:'#fff',border:BT,borderRadius:14,padding:'20px',boxShadow:SB,width:'100%'}}>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:24,letterSpacing:2,marginBottom:6}}>VOCABUKI</div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#aaa',lineHeight:1.8}}>&#12508;&#12459;&#12525;&#23554;&#38272;&#12490;&#12452;&#12488;&#12463;&#12521;&#12502;<br/>&#27468;&#33310;&#20238;&#30010; 2-45-2 Gest32&#12499;&#12523; 5F<br/>OPEN 24:00 &#8212;&#8212; CLOSE 5:00</div>
+        </div>
+        <div style={{background:C.yellow,border:BT,borderRadius:12,padding:'14px 24px',fontFamily:'"Reggae One",system-ui',fontSize:18,boxShadow:S,color:C.ink}}>COMING SOON...</div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#888'}}>&#12371;&#12398;&#12467;&#12540;&#12490;&#12540;&#12399;&#20914;&#20869;&#20908;&#12395;&#20853;&#23455;&#12375;&#12414;&#12377;</div>
+      </div>
+    </div>);
+  }
+
+  function DetailScreen({event,onBack,favorites,toggleFav,people,genres}){
+    if(!event)return null;
+    const d=parseDate(event.date);
+    const eventGenres=(Array.isArray(event.genre)?event.genre:[event.genre||'']).map(gid=>genres.find(x=>x.id===gid)).filter(Boolean);
+    const g=eventGenres[0]||{color:'#666',label:'?'};
+    const isFav=!!favorites[event.date],isPast=d<new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
+    const shareText=encodeURIComponent(`${event.title} / ${event.date} @\u30dc\u30ab\u30d6\u30ad #\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8`);
+    return(<div className="vb-detail-enter" style={{position:'fixed',inset:0,zIndex:30,background:C.paper,overflow:'auto',maxWidth:480,margin:'0 auto'}}>
+      <div style={{position:'absolute',inset:0,pointerEvents:'none',opacity:0.5,backgroundImage:pat.halftone('rgba(230,57,70,0.18)'),backgroundSize:'6px 6px'}}/>
+      <div style={{position:'sticky',top:0,zIndex:5,padding:'14px 16px 10px',background:`linear-gradient(to bottom,${C.paper} 75%,transparent)`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <button onClick={onBack} style={{display:'flex',alignItems:'center',gap:6,background:'#fff',border:BT,borderRadius:999,padding:'8px 14px 8px 12px',boxShadow:S,fontFamily:'"Reggae One",system-ui',fontSize:14}}><span style={{fontSize:18}}>&#8592;</span>&#25147;&#12427;</button>
+        <button onClick={()=>toggleFav(event.date)} style={{width:44,height:44,background:isFav?C.yellow:'#fff',border:BT,borderRadius:'50%',boxShadow:S,padding:0,fontSize:20}}>{isFav?'\u2b50':'\u2606'}</button>
+      </div>
+      <div style={{position:'relative',padding:'4px 16px 32px'}}>
+        <div style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:14}}>
+          <div style={{background:C.red,color:'#fff',border:BT,borderRadius:14,padding:'10px 14px',boxShadow:SB,transform:'rotate(-3deg)',flexShrink:0}}>
+            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,opacity:0.95}}>{d.getFullYear()}&#24180;{d.getMonth()+1}&#26376;</div>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:56,lineHeight:0.95,textShadow:'3px 3px 0 #111'}}>{d.getDate()}</div>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:14,textAlign:'right'}}>({WDAYS[d.getDay()]})</div>
+          </div>
+          <div style={{flex:1,paddingTop:6}}>
+            <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:6}}>
+              {eventGenres.map(gx=>(<span key={gx.id} style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:gx.color,color:['#F5E642','#B8F0B0','#D4B0F0'].includes(gx.color)?'#111':'#fff',border:'2px solid #111',borderRadius:4,padding:'1px 8px',fontWeight:700,marginRight:2}}># {gx.label}</span>))}
+              {isPast&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#666',color:'#fff',border:'2px solid #111',borderRadius:4,padding:'1px 8px'}}>&#32066;&#20102;</span>}
+            </div>
+            <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
+              {(event.hashtags||[]).map(h=>(<div key={h} style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#fff',border:'2px solid #111',borderRadius:4,padding:'2px 6px',color:C.turquoiseDark,fontWeight:700}}>{'\ud83d\udd17'} #{h}</div>))}
             </div>
           </div>
         </div>
-        <div>
-          <SHead>{T.eventMgmt}</SHead>
-          <div style={{display:'flex',flexDirection:'column',gap:10}}>
-            {status==='loading'
-              ?<div style={{textAlign:'center',padding:40,fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#888'}}>{T.loading}</div>
-              :sorted.map(e=>(<EventCard key={e.id||e.date} ev={e} genres={genres} people={people} dayBgMap={dayBgMap} onSave={handleSave} onDelete={handleDelete}/>))
-            }
-            <button onClick={addEvent} style={{border:BT,borderRadius:14,padding:'16px',background:C.yellow,fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginTop:4}}>{T.eventAdd}</button>
-          </div>
+        <div style={{background:'#fff',border:BT,borderRadius:14,padding:'14px 16px',boxShadow:SB,marginBottom:16,position:'relative',overflow:'hidden'}}>
+          <div style={{position:'absolute',top:-6,right:-6,transform:'rotate(12deg)'}}><StarBurst size={52} color={C.yellow} spikes={14}><div style={{fontSize:10,color:'#111',textShadow:'none'}}>LIVE</div></StarBurst></div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',marginBottom:4}}>EVENT TITLE</div>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:28,lineHeight:1.1,color:C.ink,paddingRight:50}}>{event.title}</div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,marginTop:8,color:'#333'}}>OPEN 24:00 / CLOSE 5:00 &#65295; &#27468;&#33310;&#20238;&#30010; Gest32&#12499;&#12523; 5F</div>
         </div>
-        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,textAlign:'center',color:'#888',lineHeight:1.8}}>{T.footerNote}</div>
+        <div style={{marginBottom:18}}><FlyerArea event={event} genres={genres}/></div>
+        <div style={{marginBottom:18}}><SecTitle color={C.red}>&#20986;&#28436;DJ</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{event.djs.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>
+        <div style={{marginBottom:18}}><SecTitle color={C.turquoiseDark}>&#20986;&#28436;VJ</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{event.vjs.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>
+        <div style={{marginBottom:22}}><SecTitle color={C.ink}>&#12508;&#12459;&#12502;&#12461;&#12473;&#12479;&#12483;&#12501;</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{STAFF.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>
+        <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:8}}>
+          {(event.xurl||'https://x.com/vocabuki')&&(<a href={event.xurl||'https://x.com/vocabuki'} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,background:C.ink,color:'#fff',border:BT,borderRadius:12,padding:'14px 16px',textDecoration:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}><XIcon size={22}/>X&#12391;&#12452;&#12505;&#12531;&#12488;&#12434;&#35211;&#12427;</a>)}
+          <button onClick={()=>toggleFav(event.date)} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:isFav?C.yellow:'#fff',color:'#111',border:BT,borderRadius:12,padding:'12px 16px',fontFamily:'"RocknRoll One",system-ui',fontSize:14,boxShadow:SS}}>{isFav?'\u2b50 \u304a\u6c17\u306b\u5165\u308a\u304b\u3089\u5916\u3059':'\u2606 \u304a\u6c17\u306b\u5165\u308a\u306b\u8ffd\u52a0'}</button>
+        </div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,textAlign:'center',color:'#666',marginTop:20,lineHeight:1.5}}>&#24773;&#22577;&#12399;X&#12398; #&#12508;&#12459;&#12502;&#12461;&#12452;&#12505;&#12531;&#12488; &#12424;&#12426;&#33258;&#21205;&#21462;&#24471;&#12375;&#12390;&#12356;&#12414;&#12377;&#12290;<br/>&#26368;&#26032;&#24773;&#22577;&#12399;&#21508;DJ&#12539;VJ&#12539;&#12508;&#12459;&#12502;&#12461;&#20844;&#24335;X&#12434;&#12372;&#30906;&#35469;&#12367;&#12384;&#12373;&#12356;&#12290;</div>
       </div>
-      <div style={{position:'fixed',bottom:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:520,padding:'12px 16px',background:`linear-gradient(to top,${C.paper} 70%,transparent)`,zIndex:40}}>
-        <button onClick={doSave} disabled={status==='loading'||status==='saving'}
-          style={{width:'100%',border:BT,borderRadius:12,padding:'15px',background:status==='saved'?'#3FB55E':C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:SB,opacity:status==='loading'||status==='saving'?0.6:1}}>
-          {status==='saving'?T.ghSaving:status==='saved'?T.ghSaved:T.ghSave}
-        </button>
-      </div>
-    </div>
-  );
-}
+    </div>);
+  }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<AdminApp/>);
-</script>
+  // ADMIN
+
+
+  // &#12452;&#12505;&#12531;&#12488;&#32232;&#38598;&#12459;&#12540;&#12489;&#65288;&#12450;&#12467;&#12540;&#12487;&#12451;&#12458;&#12531;&#65289;
+
+
+  // MAIN APP&#65288;&#38322;&#35239;&#23554;&#29992;&#12539;events.json&#12434;fetch&#12375;&#12390;&#34920;&#31034;&#65289;
+  function App(){
+    const[events,setEvents]=React.useState([]);
+    const[genres,setGenres]=React.useState(GENRES_DEFAULT);
+    const[dayBgMap,setDayBgMap]=React.useState({});
+    const[closedDays,setClosedDays]=React.useState([]);
+    const[loading,setLoading]=React.useState(true);
+    const[fetchErr,setFetchErr]=React.useState(false);
+    const[people,setPeople]=React.useState(PEOPLE_DEFAULT);
+
+    // events.json &#12434;&#21462;&#24471;&#65288;&#12461;&#12515;&#12483;&#12471;&#12517;&#22238;&#36991;&#20184;&#12365;&#65289;
+    React.useEffect(()=>{
+      fetch('./events.json?t='+Date.now())
+        .then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
+        .then(data=>{
+          setEvents(data.events||[]);
+          setGenres(data.genres||GENRES_DEFAULT);
+          setDayBgMap(data.dayBgMap||{});
+          setPeople({...PEOPLE_DEFAULT,...(data.people||{})});
+          setClosedDays(data.closedDays||[]);
+          setLoading(false);
+        })
+        .catch(()=>{
+          // fallback: &#12487;&#12501;&#12457;&#12523;&#12488;&#12487;&#12540;&#12479;&#12391;&#34920;&#31034;
+          setEvents(EVENTS_DEFAULT);
+          setFetchErr(true);
+          setLoading(false);
+        });
+    },[]);
+
+    const[favorites,setFv_]=React.useState(()=>ls.get('vb_favs',{}));
+    const[view,setVw_]=React.useState(()=>ls.get('vb_view','month'));
+    const[cursor,setCu_]=React.useState(()=>{const s=ls.get('vb_cursor',null);return s?new Date(s[0],s[1],1):new Date(TODAY.getFullYear(),TODAY.getMonth(),1);});
+    const[pendingEvent,setPendingEvent]=React.useState(null);
+    const[readyEvent,setReadyEvent]=React.useState(null);
+    const timerRef=React.useRef(null);
+    const[genreSet,setGenreSet]=React.useState(new Set());
+    const lastTap=React.useRef(0);
+    const[showAbout,setShowAbout]=React.useState(false);
+
+    const openEvent=(ev)=>{
+      const shell=document.getElementById('app-shell');
+      if(shell)shell.scrollTop=0;
+      setPendingEvent(ev);setReadyEvent(null);
+      if(timerRef.current)clearTimeout(timerRef.current);
+      timerRef.current=setTimeout(()=>setReadyEvent(ev),400);
+    };
+    const closeEvent=()=>{setReadyEvent(null);setPendingEvent(null);if(timerRef.current)clearTimeout(timerRef.current);};
+    const setFv=v=>{const n=typeof v==='function'?v(favorites):v;setFv_(n);ls.set('vb_favs',n);};
+    const setView=v=>{setVw_(v);ls.set('vb_view',v);};
+    const setCursor=v=>{const n=typeof v==='function'?v(cursor):v;setCu_(n);ls.set('vb_cursor',[n.getFullYear(),n.getMonth()]);};
+    const toggleFav=k=>setFv(f=>{const n={...f};n[k]?delete n[k]:(n[k]=true);return n;});
+    const scrollToTop=()=>{const el=document.getElementById('app-shell');if(el)el.scrollTo({top:0,behavior:'smooth'});};
+
+    const filteredEvents=React.useMemo(()=>genreSet.size===0?events:events.filter(e=>{const gs=Array.isArray(e.genre)?e.genre:[e.genre];return gs.some(g=>genreSet.has(g));}),[events,genreSet]);
+    const eventByDate=React.useMemo(()=>{const m={};filteredEvents.forEach(e=>{m[e.date]=e;});return m;},[filteredEvents]);
+    const cells=React.useMemo(()=>buildMonthCells(cursor.getFullYear(),cursor.getMonth()),[cursor]);
+    const weekStart=React.useMemo(()=>{const base=sameDay(cursor,new Date(TODAY.getFullYear(),TODAY.getMonth(),1))?TODAY:new Date(cursor.getFullYear(),cursor.getMonth(),1);const wi=weekIdx(base);return new Date(base.getFullYear(),base.getMonth(),base.getDate()-wi);},[cursor]);
+
+    const toggleGenre=id=>{
+      if(id==='all'){setGenreSet(new Set());return;}
+      setGenreSet(prev=>{const n=new Set(prev);n.has(id)?n.delete(id):n.add(id);return n;});
+    };
+    const onTodayTap=()=>setCursor(new Date(TODAY.getFullYear(),TODAY.getMonth(),1));
+
+    if(loading)return(
+      <div style={{position:'fixed',inset:0,background:C.paper,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:20}}>
+        <div style={{position:'absolute',inset:0,backgroundImage:pat.halftone('rgba(46,197,206,0.18)'),backgroundSize:'8px 8px'}}/>
+        <div style={{position:'relative',display:'flex',gap:14}}>
+          {['\ud83c\udfb5','\ud83c\udfa7','\ud83c\udfa4'].map((d,i)=>(<div key={i} className="vb-loading-dot" style={{fontSize:32,animationDelay:`${i*0.12}s`}}>{d}</div>))}
+        </div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',letterSpacing:2,position:'relative'}}>LOADING...</div>
+      </div>
+    );
+
+    return(<div style={{position:'relative',width:'100%',minHeight:'100vh',minHeight:'100dvh',background:C.paper,fontFamily:'"M PLUS Rounded 1c",system-ui'}}>
+      <div style={{position:'fixed',inset:0,pointerEvents:'none',backgroundImage:pat.halftone('rgba(46,197,206,0.14)'),backgroundSize:'8px 8px',zIndex:0,maxWidth:480}}/>
+      <div style={{position:'absolute',top:-20,left:-20,width:110,height:110,borderRadius:'50%',background:C.yellow,border:B,opacity:0.85,pointerEvents:'none',zIndex:0}}/>
+      <div style={{position:'absolute',top:80,right:-30,width:80,height:80,borderRadius:'50%',background:C.turquoise,border:B,opacity:0.75,pointerEvents:'none',zIndex:0}}/>
+
+      <div style={{position:'relative',zIndex:1,width:'100%',overflowX:'hidden',paddingBottom:80}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 16px 8px'}}>
+          <VbLogo/>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:C.ink,color:'#fff',border:BT,borderRadius:6,padding:'3px 8px',lineHeight:1.2,textAlign:'center'}}>EVENT<br/>CALENDAR</div>
+        </div>
+        {fetchErr&&<div style={{margin:'0 16px 8px',fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',textAlign:'center'}}>&#8251; &#12458;&#12501;&#12521;&#12452;&#12531;&#12398;&#12383;&#12417;&#20206;&#12487;&#12540;&#12479;&#12434;&#34920;&#31034;&#12375;&#12390;&#12356;&#12414;&#12377;</div>}
+        <div style={{margin:'0 16px 14px',position:'relative',background:C.red,color:'#fff',border:BT,borderRadius:10,padding:'8px 14px',boxShadow:S,display:'flex',alignItems:'center',justifyContent:'space-between',overflow:'hidden'}}>
+          <div style={{position:'absolute',inset:0,opacity:0.25,backgroundImage:pat.stripes('rgba(255,255,255,0.5)','transparent')}}/>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16,position:'relative',letterSpacing:1}}>&#20844;&#38283;&#12452;&#12505;&#12531;&#12488;&#12459;&#12524;&#12531;&#12480;&#12540;</div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:'#fff',color:C.red,border:'2px solid #111',borderRadius:4,padding:'2px 6px',position:'relative',fontWeight:700,whiteSpace:'nowrap'}}># &#12508;&#12459;&#12502;&#12461;&#12452;&#12505;&#12531;&#12488; &#33258;&#21205;&#36899;&#25658;</div>
+        </div>
+
+        {view==='month'&&<MonthHeader year={cursor.getFullYear()} month={cursor.getMonth()} onPrev={()=>setCursor(c=>new Date(c.getFullYear(),c.getMonth()-1,1))} onNext={()=>setCursor(c=>new Date(c.getFullYear(),c.getMonth()+1,1))} onToday={onTodayTap}/>}
+        {view==='week'&&(<div style={{padding:'0 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>{weekStart.getMonth()+1}&#26376; <span style={{fontSize:12,color:'#555'}}>{weekStart.getDate()}&#26085;&#12316;</span></div>
+          <button onClick={onTodayTap} style={{border:BT,background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:13,padding:'6px 12px',borderRadius:999,boxShadow:SS}}>&#20170;&#26085;</button>
+        </div>)}
+        {view==='list'&&(<div style={{padding:'0 16px 8px',display:'flex',alignItems:'center',justifyContent:'space-between'}}><div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>&#12452;&#12505;&#12531;&#12488;&#19968;&#35239;</div><button onClick={()=>setShowAbout(true)} style={{border:BT,borderRadius:8,padding:'6px 10px',background:C.turquoise,color:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:12,boxShadow:SS,whiteSpace:'nowrap'}}>&#12508;&#12459;&#12502;&#12461;&#12395;&#12388;&#12356;&#12390;</button></div>)}
+
+        <div style={{padding:'10px 16px 10px',display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
+          <ViewSwitcher view={view} setView={setView}/>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666'}}>{filteredEvents.length} events</div>
+        </div>
+        <div style={{padding:'0 16px 10px'}}><GenreFilter activeSet={genreSet} toggleGenre={toggleGenre} genres={genres}/></div>
+        {view==='month'&&<WeekdayRow/>}
+        {view==='month'&&(<><MonthGrid cells={cells} eventByDate={eventByDate} onPick={openEvent} favorites={favorites} dayBgMap={dayBgMap} genres={genres} closedDays={closedDays}/><UpcomingList events={filteredEvents} onPick={openEvent} favorites={favorites} genres={genres}/></>)}
+        {view==='week'&&<div style={{paddingTop:10}}><WeekView start={weekStart} eventByDate={eventByDate} onPick={openEvent} favorites={favorites} genres={genres}/></div>}
+        {view==='list'&&<ListView events={filteredEvents} onPick={openEvent} favorites={favorites} genres={genres}/>}
+        <div style={{textAlign:'center',padding:'14px 16px 30px',fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666'}}>&#12508;&#12459;&#12525;&#23554;&#38272;&#12490;&#12452;&#12488;&#12463;&#12521;&#12502; &#12508;&#12459;&#12502;&#12461;<br/>&#27468;&#33310;&#20238;&#30010; 2-45-2 Gest32&#12499;&#12523; 5F / &#27598;&#26085;&#21942;&#26989; 24:00-5:00</div>
+      </div>
+
+      {!pendingEvent&&<div className="vb-fab"><button onClick={scrollToTop} style={{background:C.yellow,color:'#111',border:BT,borderRadius:'50%',width:52,height:52,boxShadow:SB,fontFamily:'"Reggae One",system-ui',fontSize:24,display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>&#8593;</button></div>}
+      {showAbout&&<AboutScreen onClose={()=>setShowAbout(false)} people={people}/>}
+      {pendingEvent&&!readyEvent&&<LoadingScreen event={pendingEvent} genres={genres}/>}
+      {readyEvent&&<DetailScreen event={readyEvent} onBack={closeEvent} favorites={favorites} toggleFav={toggleFav} people={people} genres={genres}/>}
+    </div>);
+  }
+
+  ReactDOM.createRoot(document.getElementById('app')).render(<App/>);
+  </script>
 
 </body>
 </html>
