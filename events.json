@@ -637,7 +637,26 @@
     }
   ],
   "dayBgMap": {},
+  "closedDays": [
+    "2026-05-13"
+  ],
   "people": {
+    "drag_on_3": {
+      "name": "dragon3",
+      "x": "@drag_on_3"
+    },
+    "rockstar_saihan": {
+      "name": "ИASU",
+      "x": "@rockstar_saihan"
+    },
+    "nono4e": {
+      "name": "乃々瀬",
+      "x": "@nono4e"
+    },
+    "aym_pngn": {
+      "name": "あゆむ",
+      "x": "@aym_pngn"
+    },
     "ktkr154": {
       "name": "人間失格",
       "x": "@ktkr154"
@@ -690,17 +709,9 @@
       "name": "あぼがど",
       "x": "@ABOGADoooooooo0"
     },
-    "nono4e": {
-      "name": "乃々瀬",
-      "x": "@nono4e"
-    },
     "SamflySamurai": {
       "name": "薬師丸さむを",
       "x": "@SamflySamurai"
-    },
-    "aym_pngn": {
-      "name": "あゆむ",
-      "x": "@aym_pngn"
     },
     "akkun6019": {
       "name": "あっくん",
@@ -926,14 +937,6 @@
       "name": "ライチ",
       "x": "@rairai_c7"
     },
-    "drag_on_3": {
-      "name": "dragon3",
-      "x": "@drag_on_3"
-    },
-    "rockstar_saihan": {
-      "name": "ИASU",
-      "x": "@rockstar_saihan"
-    },
     "sanada_nagi": {
       "name": "真田なぎ",
       "x": "@sanada_nagi"
@@ -1010,6 +1013,5 @@
       "name": "17chan",
       "x": "@17chan_64"
     }
-  },
-  "closedDays": []
+  }
 }
