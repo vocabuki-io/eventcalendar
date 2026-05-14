@@ -183,7 +183,7 @@
     </div>);
   }
   function XIcon({size=18}){return(<svg width={size} height={size} viewBox="0 0 24 24" style={{display:'block'}}><rect x="1.5" y="1.5" width="21" height="21" rx="4.5" fill="#111"/><path d="M7 7l10 10M17 7L7 17" stroke="#fff" strokeWidth="2.4" strokeLinecap="round"/></svg>);}
-  function VbLogo(){return(<div style={{display:'inline-flex',alignItems:'center',fontFamily:'"Reggae One",system-ui',userSelect:'none'}}><div style={{fontSize:22,lineHeight:1,background:C.red,color:'#fff',border:B,borderRadius:10,padding:'6px 14px',boxShadow:SS,letterSpacing:2}}>&#12508;&#12459;&#12502;&#12461;</div></div>);}
+  function VbLogo(){return(<div style={{display:'inline-flex',alignItems:'center',fontFamily:'"Reggae One",system-ui',userSelect:'none'}}><div style={{fontSize:22,lineHeight:1,background:C.yellow,color:C.ink,border:B,borderRadius:10,padding:'6px 14px',boxShadow:SS,letterSpacing:2}}>&#12508;&#12459;&#12502;&#12461;</div></div>);}
   function PopBtn({children,onClick,bg=C.yellow,color='#111',size=40,style={}}){
     const ref=React.useRef();
     return(<button ref={ref} onClick={onClick} style={{width:size,height:size,background:bg,color,border:BT,borderRadius:'50%',boxShadow:S,display:'flex',alignItems:'center',justifyContent:'center',padding:0,fontFamily:'"Reggae One",system-ui',fontSize:18,...style}}
@@ -244,8 +244,8 @@
       style={{position:'relative',aspectRatio:'1/1.15',border:B,borderRadius:8,minWidth:0,background:bg,padding:4,cursor:event?'pointer':'default',opacity:(cell.outside||isPast)?0.55:1,filter:isPast?'saturate(0.4)':'none',boxShadow:event&&!isPast?SS:'none',display:'flex',flexDirection:'column',alignItems:'flex-start',overflow:'visible',textAlign:'left',transform:isToday?'scale(1.02)':'none',outline:isToday?`3px solid ${C.ink}`:'none',outlineOffset:isToday?'2px':0}}>
       {isToday&&<div style={{position:'absolute',top:-10,right:-6,zIndex:10,pointerEvents:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,lineHeight:1,color:'#fff',WebkitTextStroke:'3px #FF3DA5',paintOrder:'stroke fill',transform:'rotate(-8deg)'}}>NOW</div>}
       {isClosed&&!cell.outside&&<>
-        <div style={{position:'absolute',inset:0,background:'rgba(180,180,180,0.75)',borderRadius:6,zIndex:1}}/>
-        <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',zIndex:2,fontFamily:'"Reggae One",system-ui',fontSize:20,color:C.red,textShadow:'1px 1px 0 #fff,-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff'}}>&#20241;</div>
+        <div style={{position:'absolute',inset:0,background:'rgba(200,200,200,0.80)',borderRadius:6,zIndex:1}}/>
+        <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',zIndex:2,fontFamily:'"Reggae One",system-ui',fontSize:22,color:'#E63946',fontWeight:900}}>&#20241;</div>
       </>}
       {isFavorite&&<div style={{position:'absolute',top:2,left:2,fontSize:10}}>&#11088;</div>}
       <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16,lineHeight:1,color:isBgColored?'#fff':(isSun?C.red:isSat?C.turquoiseDark:'#111'),textShadow:isBgColored?'1.5px 1.5px 0 #111':'none',marginTop:1,marginLeft:2}}>{d.getDate()}</div>
@@ -566,7 +566,7 @@
         <div style={{margin:'0 16px 14px',position:'relative',background:C.red,color:'#fff',border:BT,borderRadius:10,padding:'8px 14px',boxShadow:S,display:'flex',alignItems:'center',justifyContent:'space-between',overflow:'hidden'}}>
           <div style={{position:'absolute',inset:0,opacity:0.25,backgroundImage:pat.stripes('rgba(255,255,255,0.5)','transparent')}}/>
           <div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,position:'relative',letterSpacing:1}}>&#12452;&#12505;&#12531;&#12488;&#12459;&#12524;&#12531;&#12480;&#12540;</div>
-          <a href="https://vocabuki-io.github.io/eventcalendar/about.html" style={{flexShrink:0,border:'2px solid #fff',borderRadius:8,padding:'5px 10px',background:'rgba(255,255,255,0.15)',color:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:11,whiteSpace:'nowrap',textDecoration:'none',position:'relative',backdropFilter:'blur(2px)'}}>&#12508;&#12459;&#12502;&#12461;&#12395;&#12388;&#12356;&#12390;</a>
+          <a href="https://vocabuki-io.github.io/eventcalendar/about.html" style={{flexShrink:0,border:'2px solid #111',borderRadius:8,padding:'5px 10px',background:C.turquoise,color:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:11,whiteSpace:'nowrap',textDecoration:'none',position:'relative',boxShadow:SS}}>&#12508;&#12459;&#12502;&#12461;&#12395;&#12388;&#12356;&#12390;</a>
         </div>
 
         {view==='month'&&<MonthHeader year={cursor.getFullYear()} month={cursor.getMonth()} onPrev={()=>setCursor(c=>new Date(c.getFullYear(),c.getMonth()-1,1))} onNext={()=>setCursor(c=>new Date(c.getFullYear(),c.getMonth()+1,1))} onToday={onTodayTap}/>}
