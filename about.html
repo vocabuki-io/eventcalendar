@@ -182,9 +182,8 @@ function judgeEvent(answers) {
 // ── SHARED COMPONENTS ───────────────────────────────────────────────────────
 function VbLogo() {
   return (
-    <div style={{display:'inline-flex',alignItems:'center',gap:10,fontFamily:'"Reggae One",system-ui',userSelect:'none'}}>
-      <div style={{fontSize:22,lineHeight:1,background:C.red,color:'#fff',border:B,borderRadius:10,padding:'6px 10px',boxShadow:SS,transform:'rotate(-3deg)',letterSpacing:1}}>VOCA</div>
-      <div style={{fontSize:22,lineHeight:1,background:C.turquoise,color:'#fff',border:B,borderRadius:10,padding:'6px 10px',boxShadow:SS,transform:'rotate(3deg)',letterSpacing:1}}>BUKI</div>
+    <div style={{display:'inline-flex',alignItems:'center',fontFamily:'"Reggae One",system-ui',userSelect:'none'}}>
+      <div style={{fontSize:22,lineHeight:1,background:C.yellow,color:'#111',border:B,borderRadius:10,padding:'6px 14px',boxShadow:SS,letterSpacing:2}}>ボカブキ</div>
     </div>
   );
 }
@@ -245,7 +244,7 @@ function AccessSection() {
           ボカロ専門ナイトクラブ
         </div>
         {[
-          ['📍','住所','新宿区百人町 2-45-2 Gest32ビル 5F'],
+          ['📍','住所','新宿区歌舞伎町 2-45-2 gest32ビル 5F 新宿motion(ボカブキ)'],
           ['🚃','JR新大久保駅','徒歩15分'],
           ['🚃','西武新宿駅（西武新宿線）','徒歩2分'],
           ['🕛','営業時間','毎週 OPEN 24:00 ── CLOSE 5:00'],
@@ -332,9 +331,10 @@ function SNSSection() {
     {name:'あゆむ', handle:'aym_pngn', desc:'スタッフ'},
   ];
   const eventAcc = [
-    {name:'shadownight', handle:'shadownight_vb', desc:'イベントアカウント'},
-    {name:'vocabuki girls party', handle:'vocabuki_girls', desc:'イベントアカウント'},
-    {name:'酒ブキ', handle:'sakebuki_vb', desc:'イベントアカウント'},
+    {name:'Shadow Night', handle:'shadow_buki', desc:'イベントアカウント'},
+    {name:'Vocabuki GIRLs Party', handle:'VGP_buki_VOM', desc:'イベントアカウント'},
+    {name:'#酒ブキ', handle:'sake_buki', desc:'イベントアカウント'},
+    {name:'月曜日から飲みマンデイ', handle:'nomimannD', desc:'イベントアカウント'},
   ];
   return (
     <div className="fade-in" style={{display:'flex',flexDirection:'column',gap:20}}>
@@ -572,7 +572,7 @@ function App() {
                 <div style={{position:'relative',fontFamily:'"Reggae One",system-ui',fontSize:26,letterSpacing:3,marginBottom:6}}>VOCABUKI</div>
                 <div style={{position:'relative',fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#aaa',lineHeight:2}}>
                   ボカロ専門ナイトクラブ<br/>
-                  新宿区百人町 Gest32ビル 5F<br/>
+                  新宿区歌舞伎町 2-45-2 gest32ビル 5F<br/>
                   OPEN 24:00 ── CLOSE 5:00
                 </div>
               </div>
@@ -600,7 +600,7 @@ function App() {
               </div>
               <div style={{textAlign:'center',padding:'24px 0 10px',fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',lineHeight:1.8}}>
                 ボカロ専門ナイトクラブ ボカブキ<br/>
-                新宿区百人町 2-45-2 Gest32ビル 5F
+                新宿区歌舞伎町 2-45-2 gest32ビル 5F
               </div>
             </div>
           )}
