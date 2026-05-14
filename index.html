@@ -183,7 +183,7 @@
     </div>);
   }
   function XIcon({size=18}){return(<svg width={size} height={size} viewBox="0 0 24 24" style={{display:'block'}}><rect x="1.5" y="1.5" width="21" height="21" rx="4.5" fill="#111"/><path d="M7 7l10 10M17 7L7 17" stroke="#fff" strokeWidth="2.4" strokeLinecap="round"/></svg>);}
-  function VbLogo(){return(<div style={{display:'inline-flex',alignItems:'center',gap:10,fontFamily:'"Reggae One",system-ui',userSelect:'none'}}><div style={{fontSize:22,lineHeight:1,background:C.red,color:'#fff',border:B,borderRadius:10,padding:'6px 10px',boxShadow:SS,transform:'rotate(-3deg)',letterSpacing:1}}>VOCA</div><div style={{fontSize:22,lineHeight:1,background:C.turquoise,color:'#fff',border:B,borderRadius:10,padding:'6px 10px',boxShadow:SS,transform:'rotate(3deg)',letterSpacing:1}}>BUKI</div></div>);}
+  function VbLogo(){return(<div style={{display:'inline-flex',alignItems:'center',fontFamily:'"Reggae One",system-ui',userSelect:'none'}}><div style={{fontSize:22,lineHeight:1,background:C.red,color:'#fff',border:B,borderRadius:10,padding:'6px 14px',boxShadow:SS,letterSpacing:2}}>&#12508;&#12459;&#12502;&#12461;</div></div>);}
   function PopBtn({children,onClick,bg=C.yellow,color='#111',size=40,style={}}){
     const ref=React.useRef();
     return(<button ref={ref} onClick={onClick} style={{width:size,height:size,background:bg,color,border:BT,borderRadius:'50%',boxShadow:S,display:'flex',alignItems:'center',justifyContent:'center',padding:0,fontFamily:'"Reggae One",system-ui',fontSize:18,...style}}
@@ -243,7 +243,10 @@
     return(<button onClick={onClick} disabled={!event}
       style={{position:'relative',aspectRatio:'1/1.15',border:B,borderRadius:8,minWidth:0,background:bg,padding:4,cursor:event?'pointer':'default',opacity:(cell.outside||isPast)?0.55:1,filter:isPast?'saturate(0.4)':'none',boxShadow:event&&!isPast?SS:'none',display:'flex',flexDirection:'column',alignItems:'flex-start',overflow:'visible',textAlign:'left',transform:isToday?'scale(1.02)':'none',outline:isToday?`3px solid ${C.ink}`:'none',outlineOffset:isToday?'2px':0}}>
       {isToday&&<div style={{position:'absolute',top:-10,right:-6,zIndex:10,pointerEvents:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,lineHeight:1,color:'#fff',WebkitTextStroke:'3px #FF3DA5',paintOrder:'stroke fill',transform:'rotate(-8deg)'}}>NOW</div>}
-      {isClosed&&!cell.outside&&<div style={{position:'absolute',top:1,left:0,right:0,textAlign:'center',fontFamily:'"DotGothic16",monospace',fontSize:8,color:'#fff',background:'rgba(80,80,80,0.85)',borderRadius:3,padding:'1px 0',lineHeight:1.2}}>&#20241;</div>}
+      {isClosed&&!cell.outside&&<>
+        <div style={{position:'absolute',inset:0,background:'rgba(180,180,180,0.75)',borderRadius:6,zIndex:1}}/>
+        <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',zIndex:2,fontFamily:'"Reggae One",system-ui',fontSize:20,color:C.red,textShadow:'1px 1px 0 #fff,-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff'}}>&#20241;</div>
+      </>}
       {isFavorite&&<div style={{position:'absolute',top:2,left:2,fontSize:10}}>&#11088;</div>}
       <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16,lineHeight:1,color:isBgColored?'#fff':(isSun?C.red:isSat?C.turquoiseDark:'#111'),textShadow:isBgColored?'1.5px 1.5px 0 #111':'none',marginTop:1,marginLeft:2}}>{d.getDate()}</div>
       {event&&(()=>{const full=event.title||'',head=Array.from(full).slice(0,4).join(''),label=Array.from(full).length>4?`${head}\u2026`:head;return(<div style={{marginTop:'auto',width:'100%',fontFamily:'"Reggae One",system-ui',fontSize:10.5,lineHeight:1,color:'#fff',WebkitTextStroke:'2.5px #111',paintOrder:'stroke fill',textAlign:'center',overflow:'hidden',whiteSpace:'nowrap',padding:'2px 2px 3px'}}>{label}</div>);})()}
@@ -514,7 +517,6 @@
     const timerRef=React.useRef(null);
     const[genreSet,setGenreSet]=React.useState(new Set());
     const lastTap=React.useRef(0);
-    const[showAbout,setShowAbout]=React.useState(false);
 
     const openEvent=(ev)=>{
       const shell=document.getElementById('app-shell');
@@ -557,15 +559,14 @@
       <div style={{position:'absolute',top:80,right:-30,width:80,height:80,borderRadius:'50%',background:C.turquoise,border:B,opacity:0.75,pointerEvents:'none',zIndex:0}}/>
 
       <div style={{position:'relative',zIndex:1,width:'100%',overflowX:'hidden',paddingBottom:80}}>
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 16px 8px'}}>
+        <div style={{display:'flex',alignItems:'center',padding:'12px 16px 8px'}}>
           <VbLogo/>
-          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:C.ink,color:'#fff',border:BT,borderRadius:6,padding:'3px 8px',lineHeight:1.2,textAlign:'center'}}>EVENT<br/>CALENDAR</div>
         </div>
         {fetchErr&&<div style={{margin:'0 16px 8px',fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',textAlign:'center'}}>&#8251; &#12458;&#12501;&#12521;&#12452;&#12531;&#12398;&#12383;&#12417;&#20206;&#12487;&#12540;&#12479;&#12434;&#34920;&#31034;&#12375;&#12390;&#12356;&#12414;&#12377;</div>}
         <div style={{margin:'0 16px 14px',position:'relative',background:C.red,color:'#fff',border:BT,borderRadius:10,padding:'8px 14px',boxShadow:S,display:'flex',alignItems:'center',justifyContent:'space-between',overflow:'hidden'}}>
           <div style={{position:'absolute',inset:0,opacity:0.25,backgroundImage:pat.stripes('rgba(255,255,255,0.5)','transparent')}}/>
-          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16,position:'relative',letterSpacing:1}}>&#20844;&#38283;&#12452;&#12505;&#12531;&#12488;&#12459;&#12524;&#12531;&#12480;&#12540;</div>
-          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:'#fff',color:C.red,border:'2px solid #111',borderRadius:4,padding:'2px 6px',position:'relative',fontWeight:700,whiteSpace:'nowrap'}}># &#12508;&#12459;&#12502;&#12461;&#12452;&#12505;&#12531;&#12488; &#33258;&#21205;&#36899;&#25658;</div>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,position:'relative',letterSpacing:1}}>&#12452;&#12505;&#12531;&#12488;&#12459;&#12524;&#12531;&#12480;&#12540;</div>
+          <a href="https://vocabuki-io.github.io/eventcalendar/about.html" style={{flexShrink:0,border:'2px solid #fff',borderRadius:8,padding:'5px 10px',background:'rgba(255,255,255,0.15)',color:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:11,whiteSpace:'nowrap',textDecoration:'none',position:'relative',backdropFilter:'blur(2px)'}}>&#12508;&#12459;&#12502;&#12461;&#12395;&#12388;&#12356;&#12390;</a>
         </div>
 
         {view==='month'&&<MonthHeader year={cursor.getFullYear()} month={cursor.getMonth()} onPrev={()=>setCursor(c=>new Date(c.getFullYear(),c.getMonth()-1,1))} onNext={()=>setCursor(c=>new Date(c.getFullYear(),c.getMonth()+1,1))} onToday={onTodayTap}/>}
@@ -573,7 +574,7 @@
           <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>{weekStart.getMonth()+1}&#26376; <span style={{fontSize:12,color:'#555'}}>{weekStart.getDate()}&#26085;&#12316;</span></div>
           <button onClick={onTodayTap} style={{border:BT,background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:13,padding:'6px 12px',borderRadius:999,boxShadow:SS}}>&#20170;&#26085;</button>
         </div>)}
-        {view==='list'&&(<div style={{padding:'0 16px 8px',display:'flex',alignItems:'center',justifyContent:'space-between'}}><div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>&#12452;&#12505;&#12531;&#12488;&#19968;&#35239;</div><button onClick={()=>setShowAbout(true)} style={{border:BT,borderRadius:8,padding:'6px 10px',background:C.turquoise,color:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:12,boxShadow:SS,whiteSpace:'nowrap'}}>&#12508;&#12459;&#12502;&#12461;&#12395;&#12388;&#12356;&#12390;</button></div>)}
+        {view==='list'&&<div style={{padding:'0 16px 8px'}}><div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>&#12452;&#12505;&#12531;&#12488;&#19968;&#35239;</div></div>}
 
         <div style={{padding:'10px 16px 10px',display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
           <ViewSwitcher view={view} setView={setView}/>
@@ -588,7 +589,7 @@
       </div>
 
       {!pendingEvent&&<div className="vb-fab"><button onClick={scrollToTop} style={{background:C.yellow,color:'#111',border:BT,borderRadius:'50%',width:52,height:52,boxShadow:SB,fontFamily:'"Reggae One",system-ui',fontSize:24,display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>&#8593;</button></div>}
-      {showAbout&&<AboutScreen onClose={()=>setShowAbout(false)} people={people}/>}
+
       {pendingEvent&&!readyEvent&&<LoadingScreen event={pendingEvent} genres={genres}/>}
       {readyEvent&&<DetailScreen event={readyEvent} onBack={closeEvent} favorites={favorites} toggleFav={toggleFav} people={people} genres={genres}/>}
     </div>);
