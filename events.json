@@ -598,7 +598,7 @@
     {
       "id": "ev_20260516_iasu_birthday",
       "date": "2026-05-16",
-      "title": "ИASU 生誕？",
+      "title": "ИASU 生誕",
       "genre": "vocabuki",
       "hashtags": [
         "ボカブキイベント"
@@ -608,7 +608,28 @@
       ],
       "vjs": [],
       "flyer": null,
-      "xurl": "https://x.com/rockstar_saihan/status/2040733144362680696"
+      "xurl": "https://x.com/rockstar_saihan/status/2040733144362680696",
+      "dayBg": null
+    },
+    {
+      "id": "e17795327927347d4y",
+      "date": "2026-07-18",
+      "title": "ボカブキのボカを取り戻せ！",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカ戻せ"
+      ],
+      "djs": [
+        "hikachu_829",
+        "nora3dj",
+        "makimaki_UP",
+        "pexi_pepepeiru",
+        "Haya15CRC",
+        "ktkr154"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "dayBg": null
     }
   ],
   "genres": [
@@ -1014,6 +1035,18 @@
     "17chan_64": {
       "name": "17chan",
       "x": "@17chan_64"
+    },
+    "hikachu_829": {
+      "name": "星日かる",
+      "x": "@hikachu_829"
+    },
+    "pexi_pepepeiru": {
+      "name": "ぺくしー",
+      "x": "@pexi_pepepeiru"
+    },
+    "Haya15CRC": {
+      "name": "はやて",
+      "x": "@Haya15CRC"
     }
   }
 }
