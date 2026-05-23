@@ -668,19 +668,33 @@
       "djs": [],
       "vjs": [],
       "flyer": null,
-      "dayBg": "#6A3FD9"
+      "dayBg": null
     },
     {
       "id": "e1779537470866ezpw",
-      "date": "2026-05-23",
-      "title": "新規イベント",
+      "date": "2026-06-01",
+      "title": "月曜日から飲みマンデイ",
+      "genre": "vocabuki",
+      "hashtags": [
+        "飲みマンデイ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "dayBg": null
+    },
+    {
+      "id": "e1779537520626k8py",
+      "date": "2026-06-08",
+      "title": "月曜日から飲みマンデイ",
       "genre": "vocabuki",
       "hashtags": [
         "vocabuki"
       ],
       "djs": [],
       "vjs": [],
-      "flyer": null
+      "flyer": null,
+      "dayBg": "#6A3FD9"
     }
   ],
   "genres": [
@@ -713,7 +727,7 @@
   "dayBgMap": {
     "2026-05-23": "#6A3FD9",
     "2026-05-28": "#E63946",
-    "2026-05-25": "#6A3FD9"
+    "2026-06-08": "#6A3FD9"
   },
   "closedDays": [
     "2026-05-13"
