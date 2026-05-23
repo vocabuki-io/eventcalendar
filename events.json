@@ -630,6 +630,57 @@
       "vjs": [],
       "flyer": null,
       "dayBg": null
+    },
+    {
+      "id": "e17795340583486t3b",
+      "date": "2026-05-23",
+      "title": "ShadowNight",
+      "genre": "vocabuki",
+      "hashtags": [
+        "シャドナ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "dayBg": "#6A3FD9"
+    },
+    {
+      "id": "e1779534096323r155",
+      "date": "2026-05-28",
+      "title": "自信を持つ",
+      "genre": "external",
+      "hashtags": [],
+      "djs": [
+        "CamelotsIsYours"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "dayBg": "#E63946"
+    },
+    {
+      "id": "e1779537433538dtda",
+      "date": "2026-05-25",
+      "title": "月曜日も夕方から飲みマンデイ",
+      "genre": "vocabuki",
+      "hashtags": [
+        "飲みマンデイ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "dayBg": "#6A3FD9"
+    },
+    {
+      "id": "e1779537470866ezpw",
+      "date": "2026-05-23",
+      "title": "新規イベント",
+      "genre": "vocabuki",
+      "hashtags": [
+        "vocabuki"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null
     }
   ],
   "genres": [
@@ -659,7 +710,11 @@
       "color": "#D4B0F0"
     }
   ],
-  "dayBgMap": {},
+  "dayBgMap": {
+    "2026-05-23": "#6A3FD9",
+    "2026-05-28": "#E63946",
+    "2026-05-25": "#6A3FD9"
+  },
   "closedDays": [
     "2026-05-13"
   ],
@@ -1047,6 +1102,10 @@
     "Haya15CRC": {
       "name": "はやて",
       "x": "@Haya15CRC"
+    },
+    "CamelotsIsYours": {
+      "name": "駱駝法師",
+      "x": "@CamelotsIsYours"
     }
   }
 }
