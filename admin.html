@@ -1,5 +1,4 @@
 <!doctype html>
-
 <html lang="ja">
 <head>
   <meta charset="utf-8"/>
@@ -45,13 +44,11 @@ window.T={
   flyerChg:"\ud83d\udcce \u753b\u50cf\u3092\u5909\u66f4",
   saveBt:"\ud83d\udcbe \u4fdd\u5b58",cancelBt:"\u30ad\u30e3\u30f3\u30bb\u30eb",savedMark:"\u2713 \u4fdd\u5b58\u6e08",
   footerNote:"\u7de8\u96c6\u5f8c\u306f\u5fc5\u305a\u4e0a\u306e\u300c\u4fdd\u5b58\u300d\u30dc\u30bf\u30f3\u3092\u62bc\u3057\u3066\u304f\u3060\u3055\u3044\u3002\u4fdd\u5b58\u5f8c1\uff5e2\u5206\u3067GitHub Pages\u306b\u53cd\u6620\u3055\u308c\u307e\u3059\u3002",
-  pwL:"\u30d1\u30b9\u30ef\u30fc\u30c9",pwPh:"\u30d1\u30b9\u30ef\u30fc\u30c9\u3092\u5165\u529b",pwNext:"\u6b21\u3078 \u2192",
+  pwL:"\u30d1\u30b9\u30ef\u30fc\u30c9",pwPh:"\u30d1\u30b9\u30ef\u30fc\u30c9\u3092\u5165\u529b",
   pwErr:"\u30d1\u30b9\u30ef\u30fc\u30c9\u304c\u9055\u3044\u307e\u3059",
-  tokenL:"GitHub Personal Access Token",tokenPh:"ghp_xxxxxxxxxxxx",
-  tokenNote1:"\u203b \u30bf\u30d6\u3092\u9583\u3058\u308b\u307e\u3067\u4fdd\u6301\u3055\u308c\u307e\u3059",
-  tokenNote2:"\u203b GitHub Settings\u2192Developer settings\u2192Fine-grained tokens",
+  tokenPh:"github_pat_xxxxxxxxxxxx",
+  tokenNote:"GitHub Settings \u2192 Developer settings \u2192 Fine-grained tokens",
   tokenLogin:"\u30ed\u30b0\u30a4\u30f3",tokenCheck:"\u78ba\u8a8d\u4e2d...",
-  tokenBack:"\u2190 \u30d1\u30b9\u30ef\u30fc\u30c9\u5165\u529b\u306b\u623b\u308b",
   tokenErr:"\u30c8\u30fc\u30af\u30f3\u30a8\u30e9\u30fc: ",tokenEmpty:"\u30c8\u30fc\u30af\u30f3\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044",
   confirmDel:"\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f",
   genreInUse:"\u3053\u306e\u30b8\u30e3\u30f3\u30eb\u3092\u4f7f\u3063\u3066\u3044\u308b\u30a4\u30d9\u30f3\u30c8\u304c\u3042\u308a\u307e\u3059\u3002",
@@ -65,13 +62,24 @@ window.T={
   closedMgmt:"\u4f11\u696d\u65e5\u7ba1\u7406",
   closedNote:"\u4f11\u696d\u65e5\u3092\u8a2d\u5b9a\u3059\u308b\u3068\u30ab\u30ec\u30f3\u30c0\u30fc\u306b\uff08\u4f11\uff09\u3068\u8868\u793a\u3055\u308c\u307e\u3059",
   closedAdd:"\u8ffd\u52a0",closedEmpty:"\u4f11\u696d\u65e5\u306a\u3057",
+  idL:"ID (GitHub PAT)",
+  dupBtn:"\u8907\u88fd",
+  statusL:"\u516c\u958b\u72b6\u614b",
+  csOn:"CS \u8a2d\u5b9a\u4e2d",
+  csOff:"\u8a73\u7d30\u516c\u958b",
+  csNote:"\u516c\u958b\u5074\u3067\u306f\u300c\u30ab\u30df\u30f3\u30b0\u30b9\u30fc\u30f3\u300d\u8868\u793a",
+  bulkMgmt:"\u4e00\u62ec\u5165\u529b",
+  bulkNote:"JSON\u5f62\u5f0f\u3067\u8907\u6570\u30a4\u30d9\u30f3\u30c8\u3092\u4e00\u62ec\u767b\u9332\uff08CS\u72b6\u614b\uff09",
+  bulkFmt:"date, genre, title, hashtags \u3092\u6307\u5b9a",
+  bulkAdd:"\u4e00\u62ec\u8ffd\u52a0",
+  bulkErr:"JSON\u89e3\u6790\u30a8\u30e9\u30fc: ",
+  bulkOk:"\u4ef6\u8ffd\u52a0",
+  dupeErr:"\u540c\u65e5\u30fb\u540c\u540d\u306e\u30a4\u30d9\u30f3\u30c8\u304c\u3042\u308a\u307e\u3059: ",
 };
 </script>
 
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
-
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
-
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
 
 <script type="text/babel">
@@ -139,6 +147,7 @@ async function saveGH(token,data,sha){
   await ghFetch(token,GH_PATH,'PUT',{message:msg,content,sha});
 }
 
+/* ---- PerfBlock ---- */
 function PerfBlock({role,labelText,addText,bgColor,draft,setDraft,people,nameV,setNameV,xidV,setXidV}){
   const cur=draft[role]||[];
   const getSugg=()=>{
@@ -173,14 +182,10 @@ function PerfBlock({role,labelText,addText,bgColor,draft,setDraft,people,nameV,s
         <div style={{background:'#f0f0f0',border:BT,borderRadius:10,padding:10,display:'flex',flexDirection:'column',gap:8}}>
           <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555'}}>{T.perfNew}</div>
           <div style={{display:'flex',gap:6}}>
-            <input value={nameV} onChange={e=>setNameV(e.target.value)} placeholder={T.namePh}
-              style={{flex:1,border:BT,borderRadius:8,padding:'10px',fontSize:13,outline:'none',minWidth:0}}/>
+            <input value={nameV} onChange={e=>setNameV(e.target.value)} placeholder={T.namePh} style={{flex:1,border:BT,borderRadius:8,padding:'10px',fontSize:13,outline:'none',minWidth:0}}/>
             <div style={{flex:1,display:'flex',alignItems:'center',border:BT,borderRadius:8,background:'#fff',overflow:'hidden',minWidth:0}}>
               <span style={{padding:'0 4px 0 8px',fontFamily:'"DotGothic16",monospace',fontSize:13,color:'#888',flexShrink:0}}>@</span>
-              <input value={xidV} onChange={e=>setXidV(e.target.value.replace(/^@/,''))}
-                onKeyDown={e=>e.key==='Enter'&&addPerf()}
-                placeholder={T.xidPh}
-                style={{flex:1,border:'none',padding:'10px 6px 10px 0',fontSize:13,outline:'none',background:'transparent',minWidth:0}}/>
+              <input value={xidV} onChange={e=>setXidV(e.target.value.replace(/^@/,''))} onKeyDown={e=>e.key==='Enter'&&addPerf()} placeholder={T.xidPh} style={{flex:1,border:'none',padding:'10px 6px 10px 0',fontSize:13,outline:'none',background:'transparent',minWidth:0}}/>
             </div>
           </div>
           <button onClick={addPerf} style={{border:BT,borderRadius:8,padding:'11px',background:bgColor,color:role==='vjs'?'#fff':'#111',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>{addText}</button>
@@ -199,7 +204,8 @@ function PerfBlock({role,labelText,addText,bgColor,draft,setDraft,people,nameV,s
   );
 }
 
-function EventCard({ev,genres,people,dayBgMap,onSave,onDelete}){
+/* ---- EventCard ---- */
+function EventCard({ev,genres,people,dayBgMap,onSave,onDelete,onDuplicate}){
   const[open,setOpen]=React.useState(false);
   const[draft,setDraft]=React.useState(null);
   const[savedMark,setSavedMark]=React.useState(false);
@@ -208,7 +214,7 @@ function EventCard({ev,genres,people,dayBgMap,onSave,onDelete}){
   const[vjName,setVjName]=React.useState('');
   const[vjXid,setVjXid]=React.useState('');
   const startEdit=()=>{
-    setDraft({date:ev.date,title:ev.title,genre:ev.genre,hashtags:[...(ev.hashtags||[])],djs:[...ev.djs],vjs:[...ev.vjs],flyer:ev.flyer||null,dayBg:(dayBgMap[ev.date]!==undefined?dayBgMap[ev.date]:null)});
+    setDraft({date:ev.date,title:ev.title,genre:ev.genre,hashtags:[...(ev.hashtags||[])],djs:[...ev.djs],vjs:[...ev.vjs],flyer:ev.flyer||null,dayBg:(dayBgMap[ev.date]!==undefined?dayBgMap[ev.date]:null),comingSoon:ev.comingSoon||false});
     setDjName('');setDjXid('');setVjName('');setVjXid('');setOpen(true);
   };
   const cancel=()=>{setOpen(false);setDraft(null);};
@@ -218,10 +224,11 @@ function EventCard({ev,genres,people,dayBgMap,onSave,onDelete}){
   const d=parseDate(ev.date);
   const g=genres.find(x=>x.id===ev.genre)||{color:'#666',label:'?'};
   const curBg=(dayBgMap[ev.date]!==undefined?dayBgMap[ev.date]:null);
+  const isCS=ev.comingSoon||false;
   const iSt={width:'100%',border:BT,borderRadius:8,padding:'10px 12px',fontSize:14,background:'#fff',outline:'none'};
   const chipSt=(on,col)=>({display:'inline-flex',alignItems:'center',gap:4,border:on?'3px solid #111':'2px solid #111',borderRadius:8,padding:'6px 12px',background:on?col:'#fff',color:on?'#fff':'#111',fontFamily:'"DotGothic16",monospace',fontSize:12,cursor:'pointer',boxShadow:on?SS:'none',whiteSpace:'nowrap'});
   return(
-    <div style={{background:'#fff',border:BT,borderRadius:14,overflow:'hidden',boxShadow:S}}>
+    <div style={{background:'#fff',border:BT,borderRadius:14,overflow:'hidden',boxShadow:S,opacity:isCS?0.75:1}}>
       <div onClick={open?undefined:startEdit} style={{display:'flex',gap:10,alignItems:'center',padding:14,cursor:open?'default':'pointer',userSelect:'none',WebkitUserSelect:'none'}}>
         <div style={{width:52,height:52,flexShrink:0,background:curBg||g.color,color:'#fff',border:B,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
           <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9}}>{T.wdays[weekIdx(d)]}</div>
@@ -230,6 +237,7 @@ function EventCard({ev,genres,people,dayBgMap,onSave,onDelete}){
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:'flex',gap:5,marginBottom:3,flexWrap:'wrap'}}>
             <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:['#F5E642','#B8F0B0','#D4B0F0'].includes(g.color)?'#111':'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 6px'}}># {g.label}</span>
+            {isCS&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:C.orange,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 6px'}}>CS</span>}
             <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,color:'#666'}}>{ev.date}</span>
           </div>
           <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{ev.title}</div>
@@ -243,6 +251,14 @@ function EventCard({ev,genres,people,dayBgMap,onSave,onDelete}){
         <div style={{borderTop:BT,padding:16,display:'flex',flexDirection:'column',gap:16}}>
           <div><Label>{T.dateL}</Label><input type="date" value={draft.date} onChange={e=>setDraft(d=>({...d,date:e.target.value}))} style={iSt}/></div>
           <div><Label>{T.titleL}</Label><input type="text" value={draft.title} onChange={e=>setDraft(d=>({...d,title:e.target.value}))} placeholder={T.titlePh} style={iSt}/></div>
+          <div>
+            <Label>{T.statusL}</Label>
+            <button onClick={()=>setDraft(d=>({...d,comingSoon:!d.comingSoon}))}
+              style={{width:'100%',border:BT,borderRadius:8,padding:'12px',background:draft.comingSoon?C.orange:'#e8e8e8',color:draft.comingSoon?'#fff':'#555',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>
+              {draft.comingSoon?T.csOn:T.csOff}
+            </button>
+            {draft.comingSoon&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',marginTop:4}}>{T.csNote}</div>}
+          </div>
           <div>
             <Label>{T.genreL}</Label>
             <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>
@@ -292,6 +308,10 @@ function EventCard({ev,genres,people,dayBgMap,onSave,onDelete}){
             <button onClick={saveCard} style={{flex:2,border:BT,borderRadius:10,padding:'14px 0',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}>{T.saveBt}</button>
             <button onClick={cancel} style={{flex:1,border:BT,borderRadius:10,padding:'14px 0',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS}}>{T.cancelBt}</button>
           </div>
+          <button onClick={()=>{onDuplicate(ev);setOpen(false);setDraft(null);}}
+            style={{width:'100%',border:BT,borderRadius:10,padding:'11px 0',background:C.turquoise,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:13,boxShadow:SS}}>
+            {T.dupBtn}
+          </button>
           <button onClick={()=>{if(confirm(ev.title+T.confirmDel))onDelete(ev.id||ev.date);}}
             style={{width:'100%',border:BT,borderRadius:10,padding:'11px 0',background:'#fff',color:'#999',fontFamily:'"DotGothic16",monospace',fontSize:12,boxShadow:SS}}>
             {T.eventDel}
@@ -302,6 +322,7 @@ function EventCard({ev,genres,people,dayBgMap,onSave,onDelete}){
   );
 }
 
+/* ---- ClosedDaysBlock ---- */
 function ClosedDaysBlock({closedDays,setClosedDays}){
   const[input,setInput]=React.useState('');
   const add=()=>{
@@ -328,18 +349,60 @@ function ClosedDaysBlock({closedDays,setClosedDays}){
   );
 }
 
+/* ---- BulkInputBlock ---- */
+function BulkInputBlock({genres,onAdd}){
+  const[text,setText]=React.useState('');
+  const[msg,setMsg]=React.useState('');
+  const sample='[\n  {"date":"2026-07-01","genre":"vocabuki","title":"...","hashtags":["vocabuki"]},\n  {"date":"2026-07-02","genre":"anime","title":"...","hashtags":["anime"]}\n]';
+  const doAdd=()=>{
+    try{
+      const arr=JSON.parse(text);
+      if(!Array.isArray(arr))throw new Error('Array expected');
+      const validGenres=new Set(genres.map(g=>g.id));
+      const newEvs=arr.map(item=>{
+        if(!item.date||!item.title)throw new Error('date and title required');
+        return{id:uid(),date:item.date,title:item.title,genre:validGenres.has(item.genre)?item.genre:genres[0].id,hashtags:Array.isArray(item.hashtags)?item.hashtags:[],djs:[],vjs:[],flyer:null,comingSoon:true};
+      });
+      onAdd(newEvs);
+      setText('');
+      setMsg(newEvs.length+T.bulkOk);
+      setTimeout(()=>setMsg(''),2500);
+    }catch(e){
+      setMsg(T.bulkErr+e.message);
+      setTimeout(()=>setMsg(''),4000);
+    }
+  };
+  return(
+    <div style={{background:'#fff',border:BT,borderRadius:10,padding:12,boxShadow:SS}}>
+      <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',marginBottom:4}}>{T.bulkNote}</div>
+      <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',marginBottom:8}}>{T.bulkFmt}</div>
+      <textarea value={text} onChange={e=>setText(e.target.value)} placeholder={sample}
+        style={{width:'100%',minHeight:120,border:BT,borderRadius:8,padding:10,fontSize:11,fontFamily:'monospace',outline:'none',resize:'vertical',background:'#fafafa'}}/>
+      <button onClick={doAdd} disabled={!text.trim()}
+        style={{width:'100%',marginTop:8,border:BT,borderRadius:8,padding:'12px',background:text.trim()?C.turquoise:'#ccc',color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>
+        {T.bulkAdd}
+      </button>
+      {msg&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:msg.startsWith('JSON')?C.red:'green',marginTop:6,textAlign:'center'}}>{msg}</div>}
+    </div>
+  );
+}
+
+/* ---- LoginScreen ---- */
 function LoginScreen({onLogin}){
+  const[id,setId]=React.useState(()=>sessionStorage.getItem('vb_token')||'');
   const[pw,setPw]=React.useState('');
-  const[token,setToken]=React.useState(()=>sessionStorage.getItem('vb_token')||'');
-  const[step,setStep]=React.useState(()=>sessionStorage.getItem('vb_token')?'token':'pw');
   const[err,setErr]=React.useState('');
   const[busy,setBusy]=React.useState(false);
-  const checkPw=()=>{if(pw===ADMIN_PASSWORD){setStep('token');setErr('');}else{setErr(T.pwErr);setTimeout(()=>setErr(''),1500);}};
-  const checkToken=async()=>{
-    if(!token.trim()){setErr(T.tokenEmpty);return;}
+  const handleSubmit=async(e)=>{
+    e.preventDefault();
+    if(pw!==ADMIN_PASSWORD){setErr(T.pwErr);setTimeout(()=>setErr(''),2000);return;}
+    if(!id.trim()){setErr(T.tokenEmpty);return;}
     setBusy(true);setErr('');
-    try{await ghFetch(token.trim(),GH_PATH);sessionStorage.setItem('vb_token',token.trim());onLogin(token.trim());}
-    catch(e){setErr(T.tokenErr+e.message);setBusy(false);}
+    try{
+      await ghFetch(id.trim(),GH_PATH);
+      sessionStorage.setItem('vb_token',id.trim());
+      onLogin(id.trim());
+    }catch(ex){setErr(T.tokenErr+ex.message);setBusy(false);}
   };
   const iSt={width:'100%',border:BT,borderRadius:10,padding:'12px 14px',fontSize:15,outline:'none',background:'#fff',marginBottom:4};
   return(
@@ -353,25 +416,24 @@ function LoginScreen({onLogin}){
           </div>
           <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',marginTop:8}}>{T.adminScreen}</div>
         </div>
-        {step==='pw'&&(<div>
+        <form onSubmit={handleSubmit} autoComplete="on">
+          <Label>{T.idL}</Label>
+          <input type="text" name="username" value={id} onChange={e=>setId(e.target.value)} placeholder={T.tokenPh} autoComplete="username" style={iSt}/>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',marginBottom:12,lineHeight:1.7}}>{T.tokenNote}</div>
           <Label>{T.pwL}</Label>
-          <input type="password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&checkPw()} placeholder={T.pwPh} style={iSt} autoComplete="current-password"/>
-          {err&&<div style={{color:C.red,fontFamily:'"DotGothic16",monospace',fontSize:11,marginBottom:8}}>{err}</div>}
-          <button onClick={checkPw} style={{width:'100%',border:BT,borderRadius:10,padding:'13px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}>{T.pwNext}</button>
-        </div>)}
-        {step==='token'&&(<div>
-          <Label>{T.tokenL}</Label>
-          <input type="password" value={token} onChange={e=>setToken(e.target.value)} onKeyDown={e=>e.key==='Enter'&&checkToken()} placeholder={T.tokenPh} style={iSt} autoComplete="off"/>
-          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',marginBottom:12,lineHeight:1.7}}>{T.tokenNote1}<br/>{T.tokenNote2}</div>
-          {err&&<div style={{color:C.red,fontFamily:'"DotGothic16",monospace',fontSize:11,marginBottom:8}}>{err}</div>}
-          <button onClick={checkToken} disabled={busy} style={{width:'100%',border:BT,borderRadius:10,padding:'13px',background:busy?'#999':C.turquoise,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,marginBottom:8}}>{busy?T.tokenCheck:T.tokenLogin}</button>
-          <button onClick={()=>{setStep('pw');setPw('');sessionStorage.removeItem('vb_token');}} style={{width:'100%',border:BT,borderRadius:10,padding:'10px',background:'#fff',fontFamily:'"DotGothic16",monospace',fontSize:12,boxShadow:SS}}>{T.tokenBack}</button>
-        </div>)}
+          <input type="password" name="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder={T.pwPh} autoComplete="current-password" style={iSt}/>
+          {err&&<div style={{color:C.red,fontFamily:'"DotGothic16",monospace',fontSize:11,marginBottom:4,marginTop:4}}>{err}</div>}
+          <button type="submit" disabled={busy}
+            style={{width:'100%',border:BT,borderRadius:10,padding:'13px',background:busy?'#999':C.turquoise,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,marginTop:8}}>
+            {busy?T.tokenCheck:T.tokenLogin}
+          </button>
+        </form>
       </div>
     </div>
   );
 }
 
+/* ---- AdminApp ---- */
 function AdminApp(){
   const[token,setToken]=React.useState(()=>sessionStorage.getItem('vb_token')||'');
   const[loggedIn,setLoggedIn]=React.useState(()=>!!sessionStorage.getItem('vb_token'));
@@ -380,6 +442,7 @@ function AdminApp(){
   const[dayBgMap,setDayBgMap]=React.useState({});
   const[closedDays,setClosedDays]=React.useState([]);
   const[people,setPeople]=React.useState(PEOPLE_DEFAULT);
+  const[extraData,setExtraData]=React.useState({});
   const[sha,setSha]=React.useState(null);
   const[status,setStatus]=React.useState('idle');
   const[errMsg,setErrMsg]=React.useState('');
@@ -390,11 +453,13 @@ function AdminApp(){
     if(!loggedIn||!token)return;
     setStatus('loading');
     loadGH(token).then(({data,sha})=>{
-      setEvents(data.events||[]);
-      setGenres(data.genres||GENRES_DEFAULT);
-      setDayBgMap(data.dayBgMap||{});
-      setClosedDays(data.closedDays||[]);
-      setPeople({...PEOPLE_DEFAULT,...(data.people||{})});
+      const{events:ev,genres:g,dayBgMap:dbm,closedDays:cd,people:p,...rest}=data;
+      setEvents(ev||[]);
+      setGenres(g||GENRES_DEFAULT);
+      setDayBgMap(dbm||{});
+      setClosedDays(cd||[]);
+      setPeople({...PEOPLE_DEFAULT,...(p||{})});
+      setExtraData(rest);
       setSha(sha);setStatus('idle');
     }).catch(e=>{
       if(e.message.includes('401')||e.message.includes('Bad cred')){sessionStorage.removeItem('vb_token');setLoggedIn(false);}
@@ -402,9 +467,17 @@ function AdminApp(){
     });
   },[loggedIn,token]);
   const doSave=async()=>{
+    const seen=new Set();
+    const dupes=[];
+    for(const ev of events){
+      const key=ev.date+'|'+ev.title;
+      if(seen.has(key))dupes.push(ev.title+' ('+ev.date+')');
+      seen.add(key);
+    }
+    if(dupes.length>0){setStatus('error');setErrMsg(T.dupeErr+dupes.join(', '));return;}
     setStatus('saving');
     try{
-      await saveGH(token,{events,genres,dayBgMap,closedDays,people},sha);
+      await saveGH(token,{...extraData,events,genres,dayBgMap,closedDays,people},sha);
       const{sha:ns}=await loadGH(token);
       setSha(ns);setStatus('saved');setTimeout(()=>setStatus('idle'),2500);
     }catch(e){setStatus('error');setErrMsg(e.message);}
@@ -414,7 +487,9 @@ function AdminApp(){
     setDayBgMap(m=>{const n={...m};if(draft.dayBg===null)delete n[draft.date];else n[draft.date]=draft.dayBg;return n;});
   };
   const handleDelete=evId=>setEvents(prev=>prev.filter(e=>(e.id||e.date)!==evId));
-  const addEvent=()=>setEvents(prev=>[...prev,{id:uid(),date:fmtDate(TODAY),title:T.eventNew,genre:genres[0]&&genres[0].id||'vocabuki',hashtags:['vocabuki'],djs:[],vjs:[],flyer:null}]);
+  const handleDuplicate=ev=>setEvents(prev=>[...prev,{...ev,id:uid()}]);
+  const handleBulkAdd=newEvs=>setEvents(prev=>[...prev,...newEvs]);
+  const addEvent=()=>setEvents(prev=>[...prev,{id:uid(),date:fmtDate(TODAY),title:T.eventNew,genre:genres[0]&&genres[0].id||'vocabuki',hashtags:['vocabuki'],djs:[],vjs:[],flyer:null,comingSoon:false}]);
   const addGenre=()=>{const lbl=newLabel.trim();if(!lbl)return;const id=lbl.toLowerCase().replace(/\s+/g,'');setGenres(prev=>[...prev,{id,label:lbl,color:newColor}]);setNewLabel('');};
   const rmGenre=id=>{if(events.some(e=>e.genre===id)){alert(T.genreInUse);return;}setGenres(prev=>prev.filter(g=>g.id!==id));};
   const sorted=React.useMemo(()=>[...events].sort((a,b)=>a.date.localeCompare(b.date)),[events]);
@@ -470,10 +545,14 @@ function AdminApp(){
           <div style={{display:'flex',flexDirection:'column',gap:10}}>
             {status==='loading'
               ?<div style={{textAlign:'center',padding:40,fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#888'}}>{T.loading}</div>
-              :sorted.map(e=>(<EventCard key={e.id||e.date} ev={e} genres={genres} people={people} dayBgMap={dayBgMap} onSave={handleSave} onDelete={handleDelete}/>))
+              :sorted.map(e=>(<EventCard key={e.id||e.date} ev={e} genres={genres} people={people} dayBgMap={dayBgMap} onSave={handleSave} onDelete={handleDelete} onDuplicate={handleDuplicate}/>))
             }
             <button onClick={addEvent} style={{border:BT,borderRadius:14,padding:'16px',background:C.yellow,fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginTop:4}}>{T.eventAdd}</button>
           </div>
+        </div>
+        <div>
+          <SHead>{T.bulkMgmt}</SHead>
+          <BulkInputBlock genres={genres} onAdd={handleBulkAdd}/>
         </div>
         <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,textAlign:'center',color:'#888',lineHeight:1.8}}>{T.footerNote}</div>
       </div>
