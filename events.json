@@ -722,6 +722,16 @@
       "id": "vtuber",
       "label": "Vtuber",
       "color": "#D4B0F0"
+    },
+    {
+      "id": "歌ってみた",
+      "label": "歌ってみた",
+      "color": "#dbd2e6"
+    },
+    {
+      "id": "ゲーム",
+      "label": "ゲーム",
+      "color": "#42e9ff"
     }
   ],
   "dayBgMap": {
