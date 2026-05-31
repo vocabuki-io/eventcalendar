@@ -895,14 +895,15 @@
       "id": "e17802630826629kmu",
       "date": "2026-06-07",
       "title": "иASU担当",
-      "genre": "vocaloid",
+      "genre": "vocabuki",
       "hashtags": [
         "ボカブキ"
       ],
       "djs": [],
       "vjs": [],
       "flyer": null,
-      "comingSoon": true
+      "comingSoon": true,
+      "dayBg": null
     },
     {
       "id": "e17802630826625yv0",
