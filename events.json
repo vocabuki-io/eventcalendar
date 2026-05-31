@@ -671,7 +671,7 @@
       "dayBg": null
     },
     {
-      "id": "e1779537470866ezpw",
+      "id": "e1780263082662bb2x",
       "date": "2026-06-01",
       "title": "月曜日から飲みマンデイ",
       "genre": "vocabuki",
@@ -681,20 +681,332 @@
       "djs": [],
       "vjs": [],
       "flyer": null,
-      "dayBg": null
+      "comingSoon": true
     },
     {
-      "id": "e1779537520626k8py",
+      "id": "e17802630826627y9x",
       "date": "2026-06-08",
       "title": "月曜日から飲みマンデイ",
       "genre": "vocabuki",
       "hashtags": [
-        "vocabuki"
+        "飲みマンデイ"
       ],
       "djs": [],
       "vjs": [],
       "flyer": null,
-      "dayBg": "#6A3FD9"
+      "comingSoon": true
+    },
+    {
+      "id": "e17802630826629onh",
+      "date": "2026-06-15",
+      "title": "月曜日から飲みマンデイ",
+      "genre": "vocabuki",
+      "hashtags": [
+        "飲みマンデイ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e17802630826620oe7",
+      "date": "2026-06-22",
+      "title": "月曜日から飲みマンデイ",
+      "genre": "vocabuki",
+      "hashtags": [
+        "飲みマンデイ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e1780263082662hww7",
+      "date": "2026-06-29",
+      "title": "月曜日から飲みマンデイ",
+      "genre": "vocabuki",
+      "hashtags": [
+        "飲みマンデイ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e1780263082662kuq9",
+      "date": "2026-06-02",
+      "title": "練チューズデイ",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e17802630826627tf4",
+      "date": "2026-06-09",
+      "title": "練チューズデイ",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e17802630826621sbl",
+      "date": "2026-06-16",
+      "title": "練チューズデイ",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e1780263082662cbby",
+      "date": "2026-06-23",
+      "title": "練チューズデイ",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e1780263082662zxpt",
+      "date": "2026-06-30",
+      "title": "練チューズデイ",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e1780263082662zgzi",
+      "date": "2026-06-03",
+      "title": "まよなかごはんやさん",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e1780263082662ttvc",
+      "date": "2026-06-17",
+      "title": "まよなかごはんやさん",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e1780263082662k374",
+      "date": "2026-06-24",
+      "title": "まよなかごはんやさん",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e1780263082662dfsb",
+      "date": "2026-06-04",
+      "title": "あゆむ担当日",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e178026308266224ju",
+      "date": "2026-06-11",
+      "title": "あゆむ担当日",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e1780263082662t5wl",
+      "date": "2026-06-18",
+      "title": "あゆむ担当日",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e1780263082662cbh1",
+      "date": "2026-06-25",
+      "title": "あゆむ担当日",
+      "genre": "vocabuki",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e17802630826629kmu",
+      "date": "2026-06-07",
+      "title": "иASU担当",
+      "genre": "vocaloid",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e17802630826625yv0",
+      "date": "2026-06-14",
+      "title": "あゆむ担当",
+      "genre": "vocaloid",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e1780263082662p2px",
+      "date": "2026-06-21",
+      "title": "иASU担当",
+      "genre": "vocaloid",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e1780263082662p0tq",
+      "date": "2026-06-28",
+      "title": "иASU担当",
+      "genre": "vocaloid",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e178026308266297gv",
+      "date": "2026-06-05",
+      "title": "VOCARIOT",
+      "genre": "external",
+      "hashtags": [
+        "VOCARIOT"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e1780263082662pn4p",
+      "date": "2026-06-06",
+      "title": "歌ってみたで、回してみた。",
+      "genre": "歌ってみた",
+      "hashtags": [
+        "うたまた"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e1780263082662qpna",
+      "date": "2026-06-12",
+      "title": "ぼかぶき漢祭り",
+      "genre": "vocaloid",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e1780263082662vvuh",
+      "date": "2026-06-13",
+      "title": "VOCABUKI Girls Party",
+      "genre": "vocaloid",
+      "hashtags": [
+        "ボカブキ"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
+    },
+    {
+      "id": "e1780263082662shi5",
+      "date": "2026-06-19",
+      "title": "ボカゲーム",
+      "genre": "ゲーム",
+      "hashtags": [
+        "ボカゲーム"
+      ],
+      "djs": [],
+      "vjs": [],
+      "flyer": null,
+      "comingSoon": true
     }
   ],
   "genres": [
