@@ -79,6 +79,9 @@ window.T={
   watchAdd:"\u8ffd\u52a0",
   watchEmpty:"\u76e3\u8996\u30a2\u30ab\u30a6\u30f3\u30c8\u306a\u3057",
   watchCheck:"X\u3067\u78ba\u8a8d",
+  watchInfo1:"\u24d8 \u3053\u306e\u30ea\u30b9\u30c8\u306f events.json \u306e watchAccounts \u306b\u4fdd\u5b58\u3055\u308c\u307e\u3059\u3002",
+  watchInfo2:"scraper/scrape.py \u306f\u8d77\u52d5\u6642\u306b events.json \u304b\u3089\u30ea\u30b9\u30c8\u3092\u8aad\u307f\u8fbc\u307f\u307e\u3059\u3002",
+  watchInfo3:"\u30d1\u30b9\u30ef\u30fc\u30c9\u30fb\u30c8\u30fc\u30af\u30f3\u306f scraper/config.json \u306b\u306e\u307f\u8a18\u8f09\u3057\u3066\u304f\u3060\u3055\u3044\u3002",
 };
 </script>
 
@@ -154,10 +157,10 @@ async function saveGH(token,data,sha){
   await ghFetch(token,GH_PATH,'PUT',{message:msg,content,sha});
 }
 
-function PerfBlock({role,labelText,addText,bgColor,draft,setDraft,people,nameV,setNameV,xidV,setXidV}){
+function PerfBlock({role,labelText,addText,bgColor,draft,setDraft,people,nameV,setNameV,xidV,setXidV,onAddPerson}){
   const cur=draft[role]||[];
   const getSugg=()=>{const q=(nameV+xidV).toLowerCase().trim();if(!q)return[];return Object.keys(people).filter(k=>!cur.includes(k)&&(k.toLowerCase().includes(q)||people[k].name.toLowerCase().includes(q)||people[k].x.toLowerCase().includes(q))).slice(0,4);};
-  const addPerf=()=>{const name=nameV.trim(),xid=xidV.trim().replace(/^@/,'');if(!xid&&!name)return;const key=xid||(name.toLowerCase().replace(/\s+/g,'_'));if(!people[key])people[key]={name:name||key,x:xid?('@'+xid):''};setDraft(d=>({...d,[role]:d[role].includes(key)?d[role]:[...d[role],key]}));setNameV('');setXidV('');};
+  const addPerf=()=>{const name=nameV.trim(),xid=xidV.trim().replace(/^@/,'');if(!xid&&!name)return;const key=xid||(name.toLowerCase().replace(/\s+/g,'_'));if(!people[key])onAddPerson(key,{name:name||key,x:xid?('@'+xid):''});setDraft(d=>({...d,[role]:d[role].includes(key)?d[role]:[...d[role],key]}));setNameV('');setXidV('');};
   const pickSugg=k=>{setDraft(d=>({...d,[role]:d[role].includes(k)?d[role]:[...d[role],k]}));setNameV('');setXidV('');};
   const rmPerf=i=>setDraft(d=>({...d,[role]:d[role].filter((_,j)=>j!==i)}));
   const sugg=getSugg();
@@ -193,7 +196,7 @@ function PerfBlock({role,labelText,addText,bgColor,draft,setDraft,people,nameV,s
   );
 }
 
-function EventCard({ev,genres,people,dayBgMap,onSave,onDelete,onDuplicate}){
+function EventCard({ev,genres,people,dayBgMap,onSave,onDelete,onDuplicate,onAddPerson}){
   const[open,setOpen]=React.useState(false);
   const[draft,setDraft]=React.useState(null);
   const[savedMark,setSavedMark]=React.useState(false);
@@ -238,8 +241,8 @@ function EventCard({ev,genres,people,dayBgMap,onSave,onDelete,onDuplicate}){
           <div><Label>{T.genreL}</Label><div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>{genres.map(g2=>(<button key={g2.id} onClick={()=>setDraft(d=>({...d,genre:g2.id}))} style={chipSt(draft.genre===g2.id,g2.color)}># {g2.label}</button>))}</div></div>
           <div><Label>{T.colorL}</Label><div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>{DAY_COLORS.map(p=>{const on=(draft.dayBg===p.value)||(p.value===null&&draft.dayBg===null);return(<button key={p.id} title={p.label} onClick={()=>setDraft(d=>({...d,dayBg:p.value}))} style={{width:38,height:38,border:on?'3px solid #111':'2px solid #111',borderRadius:8,padding:0,background:p.value||'repeating-linear-gradient(45deg,#eee 0 4px,#fff 4px 8px)',boxShadow:on?`0 0 0 2px ${C.yellow},2px 2px 0 #111`:SS,position:'relative',transform:on?'translate(-1px,-1px)':'none'}}>{p.value===null&&<span style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontFamily:'"DotGothic16",monospace',color:'#111'}}>A</span>}</button>);})}</div></div>
           <div><Label>{T.hashL}</Label><div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:4}}>{draft.hashtags.map((h,i)=>(<div key={i} style={{display:'inline-flex',alignItems:'center',gap:4,background:C.turquoise,color:'#fff',border:B,borderRadius:20,padding:'5px 10px 5px 12px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>#{h}<button onClick={()=>rmTag(i)} style={{background:'none',border:'none',color:'#fff',fontSize:16,padding:'0 0 0 4px',lineHeight:1,cursor:'pointer'}}>x</button></div>))}<button onClick={addTag} style={{border:BT,borderRadius:20,padding:'5px 12px',background:'#fff',fontFamily:'"DotGothic16",monospace',fontSize:11,boxShadow:SS}}>{T.hashAdd}</button></div></div>
-          <PerfBlock role="djs" labelText={T.djL} addText={T.djAdd} bgColor={C.yellow} draft={draft} setDraft={setDraft} people={people} nameV={djName} setNameV={setDjName} xidV={djXid} setXidV={setDjXid}/>
-          <PerfBlock role="vjs" labelText={T.vjL} addText={T.vjAdd} bgColor={C.turquoise} draft={draft} setDraft={setDraft} people={people} nameV={vjName} setNameV={setVjName} xidV={vjXid} setXidV={setVjXid}/>
+          <PerfBlock role="djs" labelText={T.djL} addText={T.djAdd} bgColor={C.yellow} draft={draft} setDraft={setDraft} people={people} nameV={djName} setNameV={setDjName} xidV={djXid} setXidV={setDjXid} onAddPerson={onAddPerson}/>
+          <PerfBlock role="vjs" labelText={T.vjL} addText={T.vjAdd} bgColor={C.turquoise} draft={draft} setDraft={setDraft} people={people} nameV={vjName} setNameV={setVjName} xidV={vjXid} setXidV={setVjXid} onAddPerson={onAddPerson}/>
           <div><Label>{T.flyerL}</Label><div style={{marginTop:6,display:'flex',flexDirection:'column',gap:8}}>{draft.flyer&&(<div style={{position:'relative',border:BT,borderRadius:10,overflow:'hidden',maxWidth:180}}><img src={draft.flyer} alt="flyer" style={{width:'100%',display:'block'}}/><button onClick={()=>setDraft(d=>({...d,flyer:null}))} style={{position:'absolute',top:6,right:6,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'3px 8px',boxShadow:SS}}>{T.del}</button></div>)}<label style={{display:'inline-flex',alignItems:'center',gap:8,border:BT,borderRadius:10,padding:'12px 16px',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS,cursor:'pointer'}}>{draft.flyer?T.flyerChg:T.flyerAdd}<input type="file" accept="image/*" onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev2=>setDraft(d=>({...d,flyer:ev2.target.result}));r.readAsDataURL(f);}} style={{display:'none'}}/></label></div></div>
           <div style={{display:'flex',gap:8,paddingTop:4}}>
             <button onClick={saveCard} style={{flex:2,border:BT,borderRadius:10,padding:'14px 0',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}>{T.saveBt}</button>
@@ -292,9 +295,7 @@ function WatchAccountsBlock({watchAccounts,setWatchAccounts}){
             <button onClick={()=>setWatchAccounts(prev=>prev.filter(x=>x!==ac))} style={{background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:11,padding:'3px 8px',boxShadow:SS,flexShrink:0}}>{T.del}</button>
           </div>))}
           <div style={{padding:'8px 10px',background:'#f0f4ff',border:'2px solid #b8c8f0',borderRadius:8,fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#446',lineHeight:1.7}}>
-            &#9432; &#12371;&#12398;&#30058;&#21218;&#12399; events.json &#12398; watchAccounts &#12395;&#20445;&#23384;&#12373;&#12428;&#12414;&#12377;&#12290;<br/>
-            scraper/scrape.py &#12399;&#35443;&#21205;&#26178;&#12395; events.json &#12363;&#12425;&#30446;&#21033;&#12434;&#35501;&#12415;&#36796;&#12415;&#12414;&#12377;&#12290;<br/>
-            &#12497;&#12473;&#12527;&#12540;&#12489;&#12539;&#12488;&#12540;&#12463;&#12531;&#12399; scraper/config.json &#12395;&#12398;&#12415;&#35352;&#36011;&#12375;&#12390;&#12367;&#12384;&#12373;&#12356;&#12290;
+            {T.watchInfo1}<br/>{T.watchInfo2}<br/>{T.watchInfo3}
           </div>
         </div>
       }
@@ -365,6 +366,7 @@ function AdminApp(){
   const[ws,setWs]=React.useState(()=>getWeekStart(TODAY));
   const jumpRef=React.useRef(null);
   const handleLogin=tk=>{setToken(tk);setLoggedIn(true);};
+  const addPerson=(key,person)=>setPeople(prev=>prev[key]?prev:{...prev,[key]:person});
   React.useEffect(()=>{
     if(!loggedIn||!token)return;
     setStatus('loading');
@@ -421,17 +423,29 @@ function AdminApp(){
       </div>
       <div style={{height:barBg?88:60}}/>
       <div style={{padding:'16px 16px 100px',display:'flex',flexDirection:'column',gap:24}}>
-
         <div>
-          <SHead>{T.closedMgmt}</SHead>
-          <ClosedDaysBlock closedDays={closedDays} setClosedDays={setClosedDays}/>
+          <SHead>{T.eventMgmt}</SHead>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:4}}>
+            <button onClick={prevWeek} style={navBtn}>&#65308;</button>
+            <div style={{position:'relative'}}>
+              <div style={{border:BT,borderRadius:10,padding:'8px 18px',background:isThisWeek?C.yellow:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:SS,textAlign:'center',cursor:'pointer',whiteSpace:'nowrap'}}>{weekLabel(ws)}</div>
+              <input ref={jumpRef} type="date" value={wsStr} onChange={e=>{jumpToDate(e.target.value);}} style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',opacity:0,cursor:'pointer'}}/>
+            </div>
+            <button onClick={nextWeek} style={navBtn}>&#65310;</button>
+          </div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#888',textAlign:'center',marginBottom:12}}>{weekRange(ws)}</div>
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            {status==='loading'
+              ?<div style={{textAlign:'center',padding:40,fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#888'}}>{T.loading}</div>
+              :weekEvts.length===0
+                ?<div style={{textAlign:'center',padding:30,fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#aaa'}}>{T.weekEmpty}</div>
+                :weekEvts.map(e=>(<EventCard key={e.id||e.date} ev={e} genres={genres} people={people} dayBgMap={dayBgMap} onSave={handleSave} onDelete={handleDelete} onDuplicate={handleDuplicate} onAddPerson={addPerson}/>))
+            }
+            <button onClick={addEvent} style={{border:BT,borderRadius:14,padding:'16px',background:C.yellow,fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginTop:4}}>{T.eventAdd}</button>
+          </div>
         </div>
-
-        <div>
-          <SHead>{T.watchMgmt}</SHead>
-          <WatchAccountsBlock watchAccounts={watchAccounts} setWatchAccounts={setWatchAccounts}/>
-        </div>
-
+        <div><SHead>{T.closedMgmt}</SHead><ClosedDaysBlock closedDays={closedDays} setClosedDays={setClosedDays}/></div>
+        <div><SHead>{T.bulkMgmt}</SHead><BulkInputBlock genres={genres} onAdd={handleBulkAdd}/></div>
         <div>
           <SHead>{T.genreMgmt}</SHead>
           <div style={{display:'flex',flexDirection:'column',gap:8}}>
@@ -450,34 +464,7 @@ function AdminApp(){
             </div>
           </div>
         </div>
-
-        <div>
-          <SHead>{T.eventMgmt}</SHead>
-          <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:4}}>
-            <button onClick={prevWeek} style={navBtn}>&#65308;</button>
-            <div style={{position:'relative'}}>
-              <div style={{border:BT,borderRadius:10,padding:'8px 18px',background:isThisWeek?C.yellow:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:SS,textAlign:'center',cursor:'pointer',whiteSpace:'nowrap'}}>{weekLabel(ws)}</div>
-              <input ref={jumpRef} type="date" value={wsStr} onChange={e=>{jumpToDate(e.target.value);}} style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',opacity:0,cursor:'pointer'}}/>
-            </div>
-            <button onClick={nextWeek} style={navBtn}>&#65310;</button>
-          </div>
-          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#888',textAlign:'center',marginBottom:12}}>{weekRange(ws)}</div>
-          <div style={{display:'flex',flexDirection:'column',gap:10}}>
-            {status==='loading'
-              ?<div style={{textAlign:'center',padding:40,fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#888'}}>{T.loading}</div>
-              :weekEvts.length===0
-                ?<div style={{textAlign:'center',padding:30,fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#aaa'}}>{T.weekEmpty}</div>
-                :weekEvts.map(e=>(<EventCard key={e.id||e.date} ev={e} genres={genres} people={people} dayBgMap={dayBgMap} onSave={handleSave} onDelete={handleDelete} onDuplicate={handleDuplicate}/>))
-            }
-            <button onClick={addEvent} style={{border:BT,borderRadius:14,padding:'16px',background:C.yellow,fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginTop:4}}>{T.eventAdd}</button>
-          </div>
-        </div>
-
-        <div>
-          <SHead>{T.bulkMgmt}</SHead>
-          <BulkInputBlock genres={genres} onAdd={handleBulkAdd}/>
-        </div>
-
+        <div><SHead>{T.watchMgmt}</SHead><WatchAccountsBlock watchAccounts={watchAccounts} setWatchAccounts={setWatchAccounts}/></div>
         <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,textAlign:'center',color:'#888',lineHeight:1.8}}>{T.footerNote}</div>
       </div>
       <div style={{position:'fixed',bottom:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:520,padding:'12px 16px',background:`linear-gradient(to top,${C.paper} 70%,transparent)`,zIndex:40}}>
