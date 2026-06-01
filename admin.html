@@ -74,6 +74,11 @@ window.T={
   bulkErr:"JSON\u89e3\u6790\u30a8\u30e9\u30fc: ",bulkOk:"\u4ef6\u8ffd\u52a0",
   dupeErr:"\u540c\u65e5\u30fb\u540c\u540d\u306e\u30a4\u30d9\u30f3\u30c8\u304c\u3042\u308a\u307e\u3059: ",
   weekEmpty:"\u3053\u306e\u9031\u306e\u30a4\u30d9\u30f3\u30c8\u306f\u3042\u308a\u307e\u305b\u3093",
+  watchMgmt:"\u30b9\u30af\u30ec\u30a4\u30d1\u30fc\u76e3\u8996\u30a2\u30ab\u30a6\u30f3\u30c8",
+  watchNote:"#\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8 \u6295\u7a3f\u3092\u81ea\u52d5\u53d6\u5f97\u3059\u308b\u30a2\u30ab\u30a6\u30f3\u30c8\u3092\u767b\u9332\u3057\u307e\u3059\u3002events.json \u306b\u4fdd\u5b58\u3055\u308c scraper \u304c\u53c2\u7167\u3057\u307e\u3059\u3002",
+  watchAdd:"\u8ffd\u52a0",
+  watchEmpty:"\u76e3\u8996\u30a2\u30ab\u30a6\u30f3\u30c8\u306a\u3057",
+  watchCheck:"X\u3067\u78ba\u8a8d",
 };
 </script>
 
@@ -149,7 +154,6 @@ async function saveGH(token,data,sha){
   await ghFetch(token,GH_PATH,'PUT',{message:msg,content,sha});
 }
 
-/* ---- PerfBlock ---- */
 function PerfBlock({role,labelText,addText,bgColor,draft,setDraft,people,nameV,setNameV,xidV,setXidV}){
   const cur=draft[role]||[];
   const getSugg=()=>{const q=(nameV+xidV).toLowerCase().trim();if(!q)return[];return Object.keys(people).filter(k=>!cur.includes(k)&&(k.toLowerCase().includes(q)||people[k].name.toLowerCase().includes(q)||people[k].x.toLowerCase().includes(q))).slice(0,4);};
@@ -189,7 +193,6 @@ function PerfBlock({role,labelText,addText,bgColor,draft,setDraft,people,nameV,s
   );
 }
 
-/* ---- EventCard ---- */
 function EventCard({ev,genres,people,dayBgMap,onSave,onDelete,onDuplicate}){
   const[open,setOpen]=React.useState(false);
   const[draft,setDraft]=React.useState(null);
@@ -250,7 +253,6 @@ function EventCard({ev,genres,people,dayBgMap,onSave,onDelete,onDuplicate}){
   );
 }
 
-/* ---- ClosedDaysBlock ---- */
 function ClosedDaysBlock({closedDays,setClosedDays}){
   const[input,setInput]=React.useState('');
   const add=()=>{if(!input)return;if(!closedDays.includes(input))setClosedDays(prev=>[...prev,input].sort());setInput('');};
@@ -268,7 +270,38 @@ function ClosedDaysBlock({closedDays,setClosedDays}){
   );
 }
 
-/* ---- BulkInputBlock ---- */
+function WatchAccountsBlock({watchAccounts,setWatchAccounts}){
+  const[input,setInput]=React.useState('');
+  const add=()=>{const v=input.replace(/^@/,'').trim();if(!v)return;if(!watchAccounts.includes(v))setWatchAccounts(prev=>[...prev,v]);setInput('');};
+  return(
+    <div style={{background:'#fff',border:BT,borderRadius:10,padding:12,boxShadow:SS}}>
+      <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',marginBottom:8}}>{T.watchNote}</div>
+      <div style={{display:'flex',gap:8,marginBottom:8}}>
+        <div style={{flex:1,display:'flex',alignItems:'center',border:BT,borderRadius:8,background:'#fff',overflow:'hidden'}}>
+          <span style={{padding:'0 4px 0 10px',fontFamily:'"DotGothic16",monospace',fontSize:13,color:'#888',flexShrink:0}}>@</span>
+          <input value={input} onChange={e=>setInput(e.target.value.replace(/^@/,''))} onKeyDown={e=>e.key==='Enter'&&add()} placeholder="xid" style={{flex:1,border:'none',padding:'10px 8px 10px 0',fontSize:13,outline:'none'}}/>
+        </div>
+        <button onClick={add} style={{border:BT,borderRadius:8,padding:'8px 14px',background:C.turquoise,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS,flexShrink:0}}>&#43; {T.watchAdd}</button>
+      </div>
+      {watchAccounts.length===0
+        ?<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#aaa',textAlign:'center',padding:'8px 0'}}>{T.watchEmpty}</div>
+        :<div style={{display:'flex',flexDirection:'column',gap:6}}>
+          {watchAccounts.map(ac=>(<div key={ac} style={{display:'flex',alignItems:'center',gap:10,background:'#f8f8f8',border:B,borderRadius:8,padding:'8px 12px'}}>
+            <div style={{flex:1,fontFamily:'"RocknRoll One",system-ui',fontSize:14}}>@{ac}</div>
+            <a href={'https://x.com/'+ac} target="_blank" rel="noreferrer" style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:C.turquoise,textDecoration:'none',flexShrink:0}}>{T.watchCheck} &#8599;</a>
+            <button onClick={()=>setWatchAccounts(prev=>prev.filter(x=>x!==ac))} style={{background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:11,padding:'3px 8px',boxShadow:SS,flexShrink:0}}>{T.del}</button>
+          </div>))}
+          <div style={{padding:'8px 10px',background:'#f0f4ff',border:'2px solid #b8c8f0',borderRadius:8,fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#446',lineHeight:1.7}}>
+            &#9432; &#12371;&#12398;&#30058;&#21218;&#12399; events.json &#12398; watchAccounts &#12395;&#20445;&#23384;&#12373;&#12428;&#12414;&#12377;&#12290;<br/>
+            scraper/scrape.py &#12399;&#35443;&#21205;&#26178;&#12395; events.json &#12363;&#12425;&#30446;&#21033;&#12434;&#35501;&#12415;&#36796;&#12415;&#12414;&#12377;&#12290;<br/>
+            &#12497;&#12473;&#12527;&#12540;&#12489;&#12539;&#12488;&#12540;&#12463;&#12531;&#12399; scraper/config.json &#12395;&#12398;&#12415;&#35352;&#36011;&#12375;&#12390;&#12367;&#12384;&#12373;&#12356;&#12290;
+          </div>
+        </div>
+      }
+    </div>
+  );
+}
+
 function BulkInputBlock({genres,onAdd}){
   const[text,setText]=React.useState('');const[msg,setMsg]=React.useState('');
   const sample='[\n  {"date":"2026-07-01","genre":"vocabuki","title":"...","hashtags":["vocabuki"]},\n  {"date":"2026-07-02","genre":"anime","title":"...","hashtags":["anime"]}\n]';
@@ -284,7 +317,6 @@ function BulkInputBlock({genres,onAdd}){
   );
 }
 
-/* ---- LoginScreen ---- */
 function LoginScreen({onLogin}){
   const[id,setId]=React.useState(()=>sessionStorage.getItem('vb_token')||'');
   const[pw,setPw]=React.useState('');const[err,setErr]=React.useState('');const[busy,setBusy]=React.useState(false);
@@ -315,7 +347,6 @@ function LoginScreen({onLogin}){
   );
 }
 
-/* ---- AdminApp ---- */
 function AdminApp(){
   const[token,setToken]=React.useState(()=>sessionStorage.getItem('vb_token')||'');
   const[loggedIn,setLoggedIn]=React.useState(()=>!!sessionStorage.getItem('vb_token'));
@@ -323,6 +354,7 @@ function AdminApp(){
   const[genres,setGenres]=React.useState(GENRES_DEFAULT);
   const[dayBgMap,setDayBgMap]=React.useState({});
   const[closedDays,setClosedDays]=React.useState([]);
+  const[watchAccounts,setWatchAccounts]=React.useState(['vocabuki']);
   const[people,setPeople]=React.useState(PEOPLE_DEFAULT);
   const[extraData,setExtraData]=React.useState({});
   const[sha,setSha]=React.useState(null);
@@ -337,8 +369,8 @@ function AdminApp(){
     if(!loggedIn||!token)return;
     setStatus('loading');
     loadGH(token).then(({data,sha})=>{
-      const{events:ev,genres:g,dayBgMap:dbm,closedDays:cd,people:p,...rest}=data;
-      setEvents(ev||[]);setGenres(g||GENRES_DEFAULT);setDayBgMap(dbm||{});setClosedDays(cd||[]);setPeople({...PEOPLE_DEFAULT,...(p||{})});setExtraData(rest);setSha(sha);setStatus('idle');
+      const{events:ev,genres:g,dayBgMap:dbm,closedDays:cd,watchAccounts:wa,people:p,...rest}=data;
+      setEvents(ev||[]);setGenres(g||GENRES_DEFAULT);setDayBgMap(dbm||{});setClosedDays(cd||[]);setWatchAccounts(wa||['vocabuki']);setPeople({...PEOPLE_DEFAULT,...(p||{})});setExtraData(rest);setSha(sha);setStatus('idle');
     }).catch(e=>{
       if(e.message.includes('401')||e.message.includes('Bad cred')){sessionStorage.removeItem('vb_token');setLoggedIn(false);}
       setStatus('error');setErrMsg(e.message);
@@ -349,7 +381,7 @@ function AdminApp(){
     for(const ev of events){const key=ev.date+'|'+ev.title;if(seen.has(key))dupes.push(ev.title+' ('+ev.date+')');seen.add(key);}
     if(dupes.length>0){setStatus('error');setErrMsg(T.dupeErr+dupes.join(', '));return;}
     setStatus('saving');
-    try{await saveGH(token,{...extraData,events,genres,dayBgMap,closedDays,people},sha);const{sha:ns}=await loadGH(token);setSha(ns);setStatus('saved');setTimeout(()=>setStatus('idle'),2500);}catch(e){setStatus('error');setErrMsg(e.message);}
+    try{await saveGH(token,{...extraData,events,genres,dayBgMap,closedDays,watchAccounts,people},sha);const{sha:ns}=await loadGH(token);setSha(ns);setStatus('saved');setTimeout(()=>setStatus('idle'),2500);}catch(e){setStatus('error');setErrMsg(e.message);}
   };
   const handleSave=(evId,draft)=>{setEvents(prev=>prev.map(e=>(e.id||e.date)!==evId?e:{...e,...draft}));setDayBgMap(m=>{const n={...m};if(draft.dayBg===null)delete n[draft.date];else n[draft.date]=draft.dayBg;return n;});};
   const handleDelete=evId=>setEvents(prev=>prev.filter(e=>(e.id||e.date)!==evId));
@@ -390,13 +422,16 @@ function AdminApp(){
       <div style={{height:barBg?88:60}}/>
       <div style={{padding:'16px 16px 100px',display:'flex',flexDirection:'column',gap:24}}>
 
-        {/* ---- Closed Days ---- */}
         <div>
           <SHead>{T.closedMgmt}</SHead>
           <ClosedDaysBlock closedDays={closedDays} setClosedDays={setClosedDays}/>
         </div>
 
-        {/* ---- Genres ---- */}
+        <div>
+          <SHead>{T.watchMgmt}</SHead>
+          <WatchAccountsBlock watchAccounts={watchAccounts} setWatchAccounts={setWatchAccounts}/>
+        </div>
+
         <div>
           <SHead>{T.genreMgmt}</SHead>
           <div style={{display:'flex',flexDirection:'column',gap:8}}>
@@ -416,26 +451,17 @@ function AdminApp(){
           </div>
         </div>
 
-        {/* ---- Events (Weekly View) ---- */}
         <div>
           <SHead>{T.eventMgmt}</SHead>
-
-          {/* Week Navigator */}
           <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:4}}>
             <button onClick={prevWeek} style={navBtn}>&#65308;</button>
             <div style={{position:'relative'}}>
-              <div style={{border:BT,borderRadius:10,padding:'8px 18px',background:isThisWeek?C.yellow:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:SS,textAlign:'center',cursor:'pointer',whiteSpace:'nowrap'}}>
-                {weekLabel(ws)}
-              </div>
-              <input ref={jumpRef} type="date" value={wsStr}
-                onChange={e=>{jumpToDate(e.target.value);}}
-                style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',opacity:0,cursor:'pointer'}}/>
+              <div style={{border:BT,borderRadius:10,padding:'8px 18px',background:isThisWeek?C.yellow:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:SS,textAlign:'center',cursor:'pointer',whiteSpace:'nowrap'}}>{weekLabel(ws)}</div>
+              <input ref={jumpRef} type="date" value={wsStr} onChange={e=>{jumpToDate(e.target.value);}} style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',opacity:0,cursor:'pointer'}}/>
             </div>
             <button onClick={nextWeek} style={navBtn}>&#65310;</button>
           </div>
           <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#888',textAlign:'center',marginBottom:12}}>{weekRange(ws)}</div>
-
-          {/* Event Cards */}
           <div style={{display:'flex',flexDirection:'column',gap:10}}>
             {status==='loading'
               ?<div style={{textAlign:'center',padding:40,fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#888'}}>{T.loading}</div>
@@ -447,7 +473,6 @@ function AdminApp(){
           </div>
         </div>
 
-        {/* ---- Bulk Input ---- */}
         <div>
           <SHead>{T.bulkMgmt}</SHead>
           <BulkInputBlock genres={genres} onAdd={handleBulkAdd}/>
