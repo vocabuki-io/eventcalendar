@@ -25,8 +25,12 @@
     .vb-detail-enter { animation: vbFadeIn 0.22s ease-out both; }
     .vb-card { transition: transform 0.08s, box-shadow 0.08s; }
     .vb-card.pressed { transform: translate(3px,3px) !important; box-shadow: 1px 1px 0 #111 !important; }
-    .vb-fab { position:sticky; bottom:18px; float:right; right:16px; margin-right:16px; z-index:20; pointer-events:auto; }
-    @media (hover:hover) and (pointer:fine) { #app-shell::-webkit-scrollbar { width:4px; } #app-shell::-webkit-scrollbar-track { background:transparent; } #app-shell::-webkit-scrollbar-thumb { background:rgba(17,17,17,0.2); border-radius:2px; } }
+    .vb-fab { position: sticky; bottom: 18px; float: right; right: 16px; margin-right: 16px; z-index: 20; pointer-events: auto; }
+    @media (hover: hover) and (pointer: fine) {
+      #app-shell::-webkit-scrollbar { width: 4px; }
+      #app-shell::-webkit-scrollbar-track { background: transparent; }
+      #app-shell::-webkit-scrollbar-thumb { background: rgba(17,17,17,0.2); border-radius: 2px; }
+    }
   </style>
 </head>
 <body>
@@ -51,29 +55,29 @@
     {id:'vtuber',label:'Vtuber',color:'#D4B0F0'},
   ];
   const PEOPLE_DEFAULT={
-    dragon3:{name:'dragon3',x:'@drag_on_3'},inasu:{name:'\u0418ASU',x:'@rockstar_saihan'},
-    nonose:{name:'\u4e43\u3005\u702c',x:'@nono4e'},ayumu:{name:'\u3042\u3086\u3080',x:'@aym_pngn'},
-    kaito:{name:'KAITO-P',x:'@kaito_p_dj'},mikumiku:{name:'\u307f\u304f\u307f\u304f',x:'@mikumiku_dj'},
-    rin_len:{name:'\u30ea\u30f3\u30ec\u30f3\u5c4b',x:'@rinlen_ya'},negiboshi:{name:'\u30cd\u30ae\u661f',x:'@negiboshi_dj'},
-    sakura_b:{name:'\u3055\u304f\u3089B',x:'@sakura_b_dj'},gumiota:{name:'\u30b0\u30df\u30f2\u30bf',x:'@gumiota_dj'},
-    luka_luka:{name:'\u30eb\u30ab\u30eb\u30ab\u59c9\u3055\u3093',x:'@lukaluka_n'},eight_en:{name:'\u30a8\u30a4\u30c8\u5712',x:'@eighten_dj'},
-    futaba:{name:'\u3075\u305f\u3070',x:'@futaba_dj'},yomogi:{name:'\u3088\u3082\u304e',x:'@yomogi_beats'},
-    beeeer:{name:'BEEEER',x:'@beeeer_dj'},kirin_kun:{name:'\u30ad\u30ea\u30f3\u304f\u3093',x:'@kirin_kun_dj'},
-    vj_noise:{name:'NOIZU',x:'@noizu_vj'},vj_pop:{name:'\u30dd\u30c3\u30d7\u304f\u3093',x:'@popkun_vj'},
-    vj_dot:{name:'DOT8',x:'@dot8_vj'},vj_kiri:{name:'\u304d\u308a\u308a',x:'@kiriri_vj'},
-    vj_neko:{name:'\u30cd\u30b3\u76ee\u7dda',x:'@nekomesen_vj'},vj_onigiri:{name:'\u30aa\u30cb\u30ae\u30ea',x:'@onigiri_vj'},
+    drag_on_3:{name:'dragon3',x:'@drag_on_3'},rockstar_saihan:{name:'\u0418ASU',x:'@rockstar_saihan'},
+    nono4e:{name:'\u4e43\u3005\u702c',x:'@nono4e'},aym_pngn:{name:'\u3042\u3086\u3080',x:'@aym_pngn'},
   };
-  const STAFF=['dragon3','inasu','nonose','ayumu'];
-  const EVENTS_DEFAULT=[
-    {id:'e1',date:'2026-05-01',title:'\u30b5\u30f3\u30d7\u30eb\u30a4\u30d9\u30f3\u30c8',tags:['vocabuki'],djs:['dragon3'],vjs:[],flyer:null,comingSoon:false,xurl:null},
-  ];
+  const STAFF=['drag_on_3','rockstar_saihan','nono4e','aym_pngn'];
+  const EVENTS_DEFAULT=[];
+
   const ls={
     get:(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;}},
     set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}},
   };
+
   const WDAYS=['\u6708','\u706b','\u6c34','\u6728','\u91d1','\u571f','\u65e5'];
+  // tags\u914d\u5217\u304b\u3089\u30de\u30b9\u30bf\u60c5\u5831\u3092\u89e3\u6c7a
+  function resolveTags(tagIds,tagsMaster){
+    return (tagIds||[]).map(id=>{const m=tagsMaster.find(t=>t.id===id);return m||{id,label:id,color:null};});
+  }
+  // \u4e3b\u5f79\u306e\u8272\uff08\u30de\u30b9\u30bf\u306b\u8272\u5b9a\u7fa9\u304c\u3042\u308b\u6700\u521d\u306e\u30bf\u30b0\uff09
+  function primaryTag(tagIds,tagsMaster){
+    for(const id of (tagIds||[])){const m=tagsMaster.find(t=>t.id===id);if(m&&m.color)return m;}
+    return {id:'?',label:(tagIds&&tagIds[0])||'?',color:'#666'};
+  }
+  function fmtDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return`${y}-${m}-${day}`;}
   function parseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
-  function fmtDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dy=String(d.getDate()).padStart(2,'0');return`${y}-${m}-${dy}`;}
   function sameDay(a,b){return a.toDateString()===b.toDateString();}
   function weekIdx(d){return(d.getDay()+6)%7;}
   function buildMonthCells(year,month){
@@ -84,11 +88,6 @@
     for(let d=1;d<=daysInMonth;d++)cells.push({date:new Date(year,month,d),outside:false});
     while(cells.length<42){const last=cells[cells.length-1].date;const nxt=new Date(last.getFullYear(),last.getMonth(),last.getDate()+1);cells.push({date:nxt,outside:nxt.getMonth()!==month});}
     return cells;
-  }
-  function getEventColor(ev,tags){
-    const tid=(ev.tags&&ev.tags[0])||'vocabuki';
-    const t=tags.find(x=>x.id===tid);
-    return t?t.color:'#F5E642';
   }
 
   function PressCard({children,onTap,style={},className=''}){
@@ -118,6 +117,7 @@
       onPointerLeave={()=>{if(ref.current){ref.current.style.transform='';ref.current.style.boxShadow=S;}}}
     >{children}</button>);
   }
+
   function ViewSwitcher({view,setView}){
     return(<div style={{display:'inline-flex',border:BT,borderRadius:999,background:'#fff',boxShadow:SS,padding:3,gap:2}}>
       {[{id:'month',label:'\u6708'},{id:'week',label:'\u9031'},{id:'list',label:'\u30ea\u30b9\u30c8'}].map(o=>(
@@ -125,12 +125,14 @@
       ))}
     </div>);
   }
+  // \u8272\u3092\u6301\u3064\u30bf\u30b0\u306e\u307f\u30d5\u30a3\u30eb\u30bf\u30fc\u306b\u8868\u793a
   function TagFilter({activeSet,toggleTag,tags}){
     const allOn=activeSet.size===0;
+    const colored=tags.filter(t=>t.color);
     return(<div style={{display:'flex',gap:8,overflowX:'auto',padding:'0 16px 4px',marginLeft:-16,marginRight:-16}}>
       <button onClick={()=>toggleTag('all')} style={{flexShrink:0,border:B,borderRadius:999,padding:'6px 14px',background:allOn?'#111':'#fff',color:allOn?'#fff':'#111',boxShadow:allOn?SS:'none',fontFamily:'"RocknRoll One",system-ui',fontSize:13,transform:allOn?'translate(-1px,-1px)':'none',whiteSpace:'nowrap'}}># ALL</button>
-      {tags.map(t=>{const on=activeSet.has(t.id);const lightBg=['#F5E642','#B8F0B0','#D4B0F0'].includes(t.color);return(
-        <button key={t.id} onClick={()=>toggleTag(t.id)} style={{flexShrink:0,border:B,borderRadius:999,padding:'6px 14px',background:on?t.color:'#fff',color:on?(lightBg?'#111':'#fff'):'#111',boxShadow:on?SS:'none',fontFamily:'"RocknRoll One",system-ui',fontSize:13,transform:on?'translate(-1px,-1px)':'none',whiteSpace:'nowrap'}}># {t.label}</button>
+      {colored.map(t=>{const on=activeSet.has(t.id);return(
+        <button key={t.id} onClick={()=>toggleTag(t.id)} style={{flexShrink:0,border:B,borderRadius:999,padding:'6px 14px',background:on?t.color:'#fff',color:on?(['#F5E642','#B8F0B0','#D4B0F0'].includes(t.color)?'#111':'#fff'):'#111',boxShadow:on?SS:'none',fontFamily:'"RocknRoll One",system-ui',fontSize:13,transform:on?'translate(-1px,-1px)':'none',whiteSpace:'nowrap'}}># {t.label}</button>
       );})}
     </div>);
   }
@@ -156,16 +158,16 @@
       );})}
     </div>);
   }
+
   function DayCell({cell,event,isToday,isPast,isFavorite,onClick,dayBg,tags,isClosed}){
     const isCS=event&&(event.comingSoon||false);
-    const color=event?getEventColor(event,tags):null;
+    const g=event?primaryTag(event.tags,tags):null;
     const defaultAccent=isToday?C.yellow:null;
-    const bg=isClosed?null:event?(dayBg||color||C.yellow):(cell.outside?'rgba(255,255,255,0.4)':(defaultAccent||'#fff'));
-    const lightBg=bg&&['#F5E642','#B8F0B0','#D4B0F0','#FFD23F'].some(c=>bg===c);
+    const bg=isClosed?null:event?(dayBg||(g?g.color:C.yellow)):(cell.outside?'rgba(255,255,255,0.4)':(defaultAccent||'#fff'));
     return(
-      <div onClick={()=>!isClosed&&onClick()} style={{position:'relative',aspectRatio:'1/1.15',border:B,borderRadius:8,minWidth:0,background:bg,padding:4,cursor:(event&&!isClosed)?'pointer':'default',opacity:(cell.outside||isPast)?0.55:1,filter:isPast?'saturate(0.4)':'none',boxShadow:(event&&!isPast)?SS:'none',display:'flex',flexDirection:'column',alignItems:'flex-start',overflow:'visible',textAlign:'left',transform:isToday?'scale(1.02)':'none',outline:isToday?`3px solid ${C.ink}`:'none',outlineOffset:isToday?'2px':0}}>
-        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,fontWeight:700,lineHeight:1,color:event?(lightBg?'#111':'#fff'):'#777',textShadow:event&&!lightBg?'1px 1px 0 #111':'none',zIndex:3,position:'relative'}}>{cell.date.getDate()}</div>
-        {event&&!cell.outside&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:8,lineHeight:1.2,color:lightBg?'#333':'#fff',textShadow:lightBg?'none':'1px 1px 0 rgba(0,0,0,0.5)',overflow:'hidden',maxHeight:28,zIndex:3,position:'relative',marginTop:1,width:'100%'}}>{isCS?'CS':event.title.slice(0,4)}</div>}
+      <div onClick={()=>!isClosed&&event&&onClick()} style={{position:'relative',aspectRatio:'1/1.15',border:B,borderRadius:8,minWidth:0,background:bg,padding:4,cursor:(event&&!isClosed)?'pointer':'default',opacity:(cell.outside||isPast)?0.55:1,filter:isPast?'saturate(0.4)':'none',boxShadow:(event&&!isPast)?SS:'none',display:'flex',flexDirection:'column',alignItems:'flex-start',overflow:'visible',textAlign:'left',transform:isToday?'scale(1.02)':'none',outline:isToday?`3px solid ${C.ink}`:'none',outlineOffset:isToday?'2px':0}}>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,fontWeight:700,lineHeight:1,color:event?'#fff':'#777',textShadow:event?'1px 1px 0 #111':'none',zIndex:3,position:'relative'}}>{cell.date.getDate()}</div>
+        {event&&!cell.outside&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:8,lineHeight:1.2,color:'#fff',textShadow:'1px 1px 0 rgba(0,0,0,0.5)',overflow:'hidden',maxHeight:28,zIndex:3,position:'relative',marginTop:1,width:'100%'}}>{isCS?'CS':event.title.slice(0,4)}</div>}
         {isCS&&!cell.outside&&!isClosed&&<div style={{position:'absolute',top:2,right:2,background:C.orange,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:7,borderRadius:3,padding:'1px 3px',border:'1.5px solid #111',zIndex:4,lineHeight:1}}>CS</div>}
         {isToday&&<div style={{position:'absolute',top:-10,right:-6,zIndex:10,pointerEvents:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,lineHeight:1,color:'#fff',WebkitTextStroke:'3px #FF3DA5',paintOrder:'stroke fill',transform:'rotate(-8deg)'}}>NOW</div>}
         {isClosed&&!cell.outside&&<>
@@ -176,6 +178,7 @@
       </div>
     );
   }
+
   function MonthGrid({cells,eventByDate,onPick,favorites,dayBgMap,tags,closedDays}){
     return(<div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,padding:'6px 14px 14px'}}>
       {cells.map((c,i)=>{
@@ -187,6 +190,7 @@
       })}
     </div>);
   }
+
   function WeekView({start,eventByDate,onPick,favorites,tags}){
     const days=Array.from({length:7},(_,i)=>{const d=new Date(start);d.setDate(d.getDate()+i);return d;});
     return(<div style={{display:'flex',flexDirection:'column',gap:8,padding:'0 14px 14px'}}>
@@ -194,17 +198,16 @@
         const key=fmtDate(d);const ev=eventByDate[key];
         const isPast=d<new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
         const isCS=ev&&(ev.comingSoon||false);
-        const color=ev?getEventColor(ev,tags):null;
-        const t1=ev&&tags.find(x=>x.id===(ev.tags&&ev.tags[0]));
+        const g=ev?primaryTag(ev.tags,tags):null;
         return(<div key={i} onClick={()=>ev&&onPick(ev)} style={{display:'flex',gap:12,alignItems:'stretch',border:BT,borderRadius:14,background:ev?'#fff':'#FFF6E0',boxShadow:ev?S:'none',overflow:'hidden',cursor:ev?'pointer':'default',opacity:isPast?0.55:1,filter:isPast?'saturate(0.4)':'none'}}>
-          <div style={{width:52,flexShrink:0,background:ev?(color||C.yellow):'#f0f0f0',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2,padding:'10px 4px'}}>
+          <div style={{width:52,flexShrink:0,background:ev?(g?g.color:C.yellow):'#f0f0f0',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2,padding:'10px 4px'}}>
             <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:ev?'#fff':'#999'}}>{WDAYS[d.getDay()]}</div>
             <div style={{fontFamily:'"Reggae One",system-ui',fontSize:26,lineHeight:1,color:ev?'#fff':'#bbb',textShadow:ev?'2px 2px 0 #111':'none'}}>{d.getDate()}</div>
           </div>
           <div style={{flex:1,padding:'10px 12px 10px 0',display:'flex',flexDirection:'column',justifyContent:'center',minWidth:0}}>
             {ev?(<>
               <div style={{display:'flex',gap:5,marginBottom:4,flexWrap:'wrap'}}>
-                {(ev.tags||[]).slice(0,2).map(tid=>{const tg=tags.find(x=>x.id===tid);const lb=['#F5E642','#B8F0B0','#D4B0F0'].includes(tg&&tg.color);return tg?(<span key={tid} style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:tg.color,color:lb?'#111':'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}># {tg.label}</span>):null;})}
+                <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g?g.color:'#666',color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}># {g?g.label:'?'}</span>
                 {isCS&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:C.orange,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}>CS</span>}
               </div>
               <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:16,lineHeight:1.2,opacity:isCS?0.6:1}}>{isCS?'COMING SOON':ev.title}</div>
@@ -215,6 +218,7 @@
       })}
     </div>);
   }
+
   function UpcomingList({events,onPick,favorites,tags}){
     const today=new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
     const upcoming=events.filter(e=>parseDate(e.date)>=today).slice(0,4);
@@ -226,23 +230,22 @@
       <div style={{display:'flex',flexDirection:'column',gap:10}}>
         {upcoming.length===0&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',textAlign:'center',padding:20}}>&#20170;&#26376;&#12399;&#12418;&#12358;&#12452;&#12505;&#12531;&#12488;&#12364;&#12354;&#12426;&#12414;&#12379;&#12435;</div>}
         {upcoming.map(e=>{
-          const d=parseDate(e.date),isToday=sameDay(d,TODAY),isCS=e.comingSoon||false;
-          const color=getEventColor(e,tags);
-          const lb=['#F5E642','#B8F0B0','#D4B0F0','#FFD23F'].includes(color);
-          return(<PressCard key={e.id||e.date} onTap={()=>onPick(e)} style={{display:'flex',gap:12,alignItems:'center',background:'#fff',border:isCS?`4px solid ${C.orange}`:BT,borderRadius:14,padding:'10px 12px',boxShadow:isCS?SS:S,cursor:'pointer',opacity:isCS?0.65:1}}>
-            <div style={{width:54,height:54,flexShrink:0,background:color,border:B,borderRadius:10,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',boxShadow:SS,position:'relative'}}>
-              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,fontWeight:700,color:lb?'#111':'#fff'}}>{d.getMonth()+1}/{WDAYS[d.getDay()]}</div>
-              <div style={{fontFamily:'"Reggae One",system-ui',fontSize:26,lineHeight:1,textShadow:'2px 2px 0 #111',color:lb?'#111':'#fff'}}>{d.getDate()}</div>
+          const d=parseDate(e.date),g=primaryTag(e.tags,tags),isToday=sameDay(d,TODAY),isCS=e.comingSoon||false;
+          return(<PressCard key={e.id||e.date} onTap={()=>onPick(e)} style={{display:'flex',gap:12,alignItems:'center',background:'#fff',border:isCS?`4px solid ${C.orange}`:BT,borderRadius:14,padding:'10px 12px',boxShadow:isCS?SS:S,cursor:'pointer',opacity:isCS?0.7:1}}>
+            <div style={{width:54,height:54,flexShrink:0,background:g.color,color:'#fff',border:B,borderRadius:10,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',boxShadow:SS,position:'relative'}}>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,fontWeight:700}}>{d.getMonth()+1}/{WDAYS[d.getDay()]}</div>
+              <div style={{fontFamily:'"Reggae One",system-ui',fontSize:26,lineHeight:1,textShadow:'2px 2px 0 #111'}}>{d.getDate()}</div>
               {isCS&&<div style={{position:'absolute',top:-6,right:-6,background:C.orange,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:8,borderRadius:4,padding:'2px 4px',border:'1.5px solid #111',lineHeight:1}}>CS</div>}
             </div>
             <div style={{flex:1,minWidth:0}}>
-              <div style={{display:'flex',gap:6,alignItems:'center',marginBottom:2,flexWrap:'wrap'}}>
-                {(e.tags||[]).slice(0,2).map(tid=>{const tg=tags.find(x=>x.id===tid);const tlb=['#F5E642','#B8F0B0','#D4B0F0'].includes(tg&&tg.color);return tg?(<span key={tid} style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:tg.color,color:tlb?'#111':'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}># {tg.label}</span>):null;})}
+              <div style={{display:'flex',gap:6,alignItems:'center',marginBottom:2}}>
+                <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}># {g.label}</span>
                 {isToday&&<span style={{fontFamily:'"Reggae One",system-ui',fontSize:9,background:C.ink,color:'#fff',padding:'1px 6px',borderRadius:4}}>TODAY</span>}
                 {favorites[e.date]&&<span style={{fontSize:11}}>&#11088;</span>}
               </div>
-              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',color:isCS?C.orange:'#111'}}>{isCS?'COMING SOON...':e.title}</div>
+              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{isCS?'COMING SOON...':e.title}</div>
               {!isCS&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',marginTop:2}}>DJ {e.djs.length}&#32068;&#12539;VJ {e.vjs.length}&#32068;&#12539;24:00&#8594;5:00</div>}
+              {isCS&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:C.orange,marginTop:2}}>&#35814;&#32048;&#12399;&#36817;&#26085;&#20844;&#38283;&#20104;&#23450;</div>}
             </div>
             <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:isCS?C.orange:'#111'}}>&#8250;</div>
           </PressCard>);
@@ -250,10 +253,11 @@
       </div>
     </div>);
   }
+
   function ListView({events,onPick,favorites,tags}){
     const today=new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
     const byMonth={};
-    events.forEach(e=>{const d=parseDate(e.date);const k=`${d.getFullYear()}-${d.getMonth()+1}`;(byMonth[k]=byMonth[k]||[]).push(e);});
+    events.forEach(e=>{const d=parseDate(e.date);const k=`${d.getFullYear()}-${d.getMonth()+1}`;(byMonth[k]=(byMonth[k]||[]));byMonth[k].push(e);});
     return(<div style={{padding:'6px 16px 20px',display:'flex',flexDirection:'column',gap:14}}>
       {Object.keys(byMonth).sort().map(mk=>{
         const[y,m]=mk.split('-').map(Number);
@@ -263,18 +267,16 @@
           </div>
           <div style={{display:'flex',flexDirection:'column',gap:10}}>
             {byMonth[mk].map(e=>{
-              const d=parseDate(e.date),isPast=d<today,isToday=sameDay(d,TODAY),isCS=e.comingSoon||false;
-              const color=getEventColor(e,tags);
-              const lb=['#F5E642','#B8F0B0','#D4B0F0','#FFD23F'].includes(color);
-              return(<PressCard key={e.id||e.date} onTap={()=>onPick(e)} style={{display:'flex',gap:12,alignItems:'center',background:'#fff',border:isCS?`4px solid ${C.orange}`:BT,borderRadius:12,padding:'10px 12px',boxShadow:isPast?'none':(isCS?SS:S),cursor:'pointer',opacity:isPast?0.55:(isCS?0.70:1),filter:isPast?'saturate(0.4)':'none'}}>
-                <div style={{width:44,height:44,flexShrink:0,background:color,border:B,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',position:'relative'}}>
-                  <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9,color:lb?'#111':'#fff'}}>{WDAYS[d.getDay()]}</div>
-                  <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,lineHeight:1,textShadow:'1.5px 1.5px 0 #111',color:lb?'#111':'#fff'}}>{d.getDate()}</div>
+              const d=parseDate(e.date),g=primaryTag(e.tags,tags),isPast=d<today,isToday=sameDay(d,TODAY),isCS=e.comingSoon||false;
+              return(<PressCard key={e.id||e.date} onTap={()=>onPick(e)} style={{display:'flex',gap:12,alignItems:'center',background:'#fff',border:isCS?`4px solid ${C.orange}`:BT,borderRadius:12,padding:'10px 12px',boxShadow:isPast?'none':(isCS?SS:S),cursor:'pointer',opacity:isPast?0.55:(isCS?0.7:1),filter:isPast?'saturate(0.4)':'none'}}>
+                <div style={{width:44,height:44,flexShrink:0,background:g.color,color:'#fff',border:B,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',position:'relative'}}>
+                  <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9}}>{WDAYS[d.getDay()]}</div>
+                  <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,lineHeight:1,textShadow:'1.5px 1.5px 0 #111'}}>{d.getDate()}</div>
                   {isCS&&<div style={{position:'absolute',top:-5,right:-5,background:C.orange,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:7,borderRadius:3,padding:'1px 4px',border:'1.5px solid #111',lineHeight:1}}>CS</div>}
                 </div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{display:'flex',gap:6,alignItems:'center',marginBottom:2,flexWrap:'wrap'}}>
-                    {(e.tags||[]).slice(0,2).map(tid=>{const tg=tags.find(x=>x.id===tid);const tlb=['#F5E642','#B8F0B0','#D4B0F0'].includes(tg&&tg.color);return tg?(<span key={tid} style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:tg.color,color:tlb?'#111':'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}># {tg.label}</span>):null;})}
+                    <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}># {g.label}</span>
                     {isPast&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:'#999',color:'#fff',borderRadius:4,padding:'0 5px'}}>&#32066;&#20102;</span>}
                     {isToday&&<span style={{fontFamily:'"Reggae One",system-ui',fontSize:9,background:C.ink,color:'#fff',padding:'1px 6px',borderRadius:4}}>TODAY</span>}
                     {favorites[e.date]&&<span style={{fontSize:11}}>&#11088;</span>}
@@ -289,6 +291,7 @@
       })}
     </div>);
   }
+
   function PersonRow({id,people}){
     const p=people[id]||{name:id,x:'@'+id},handle=(p.x||'@'+id).replace('@','');
     const[imgOk,setImgOk]=React.useState(true);
@@ -305,32 +308,31 @@
   }
   function SecTitle({children,color=C.red}){return(<div style={{display:'inline-flex',alignItems:'center',gap:8,marginBottom:10}}><div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,background:color,color:'#fff',border:BT,borderRadius:8,padding:'3px 12px',boxShadow:SS,transform:'rotate(-2deg)'}}>{children}</div></div>);}
   function FlyerArea({event,tags}){
-    const color=getEventColor(event,tags);
-    const t1=tags.find(x=>x.id===(event.tags&&event.tags[0]))||{label:'?'};
+    const g=primaryTag(event.tags,tags);
     if(event.flyer)return(<div style={{aspectRatio:'3/4',border:BT,borderRadius:14,overflow:'hidden',boxShadow:SB}}><img src={event.flyer} alt="flyer" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/></div>);
-    return(<div style={{position:'relative',aspectRatio:'3/4',border:BT,borderRadius:14,overflow:'hidden',boxShadow:SB,background:`${pat.halftone('rgba(17,17,17,0.3)')},${pat.stripes(color,C.yellow)}`,backgroundSize:'6px 6px,auto'}}>
+    return(<div style={{position:'relative',aspectRatio:'3/4',border:BT,borderRadius:14,overflow:'hidden',boxShadow:SB,background:`${pat.halftone('rgba(17,17,17,0.3)')},${pat.stripes(g.color,C.yellow)}`,backgroundSize:'6px 6px,auto'}}>
       <div style={{position:'absolute',inset:0,background:'rgba(255,251,236,0.35)'}}/>
       <div style={{position:'absolute',top:16,left:16,right:16,display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
-        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:13,background:C.ink,color:'#fff',border:B,borderRadius:6,padding:'2px 8px',transform:'rotate(-3deg)'}}># {t1.label}</div>
+        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:13,background:C.ink,color:'#fff',border:B,borderRadius:6,padding:'2px 8px',transform:'rotate(-3deg)'}}># {g.label}</div>
         <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#fff',border:B,borderRadius:4,padding:'2px 6px'}}>FLYER</div>
       </div>
       <div style={{position:'absolute',left:0,right:0,bottom:16,padding:'0 16px',display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
         <div style={{fontFamily:'"Reggae One",system-ui',fontSize:28,lineHeight:1,color:'#fff',textShadow:'3px 3px 0 #111',textAlign:'center',transform:'rotate(-2deg)',maxWidth:'100%'}}>{event.title}</div>
-        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#fff',border:B,borderRadius:4,padding:'2px 10px',color:'#555'}}>[flyer image here]</div>
       </div>
       <div style={{position:'absolute',top:'45%',left:-20,width:60,height:60,borderRadius:'50%',background:C.yellow,border:B}}/>
       <div style={{position:'absolute',top:'30%',right:-24,width:80,height:80,borderRadius:'50%',background:C.turquoise,border:B,opacity:0.9}}/>
     </div>);
   }
+
   function LoadingScreen({event,tags}){
-    const color=getEventColor(event,tags);
+    const g=primaryTag(event.tags,tags);
     const dots=['\ud83c\udfb5','\ud83c\udfa7','\ud83c\udfa4'];
     return(<div style={{position:'fixed',inset:0,zIndex:30,maxWidth:480,margin:'0 auto',background:C.paper,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:24}}>
       <div style={{position:'absolute',inset:0,pointerEvents:'none',backgroundImage:pat.halftone('rgba(46,197,206,0.18)'),backgroundSize:'8px 8px'}}/>
       <div style={{position:'absolute',top:-20,left:-20,width:130,height:130,borderRadius:'50%',background:C.yellow,border:BT,opacity:0.7}}/>
       <div style={{position:'absolute',bottom:-30,right:-20,width:100,height:100,borderRadius:'50%',background:C.turquoise,border:BT,opacity:0.6}}/>
       <div style={{position:'relative',zIndex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:20}}>
-        <div style={{background:color,border:BT,borderRadius:16,padding:'10px 20px',boxShadow:SB,transform:'rotate(-2deg)',fontFamily:'"Reggae One",system-ui',fontSize:13,color:'#fff',maxWidth:260,textAlign:'center'}}>{event.title}</div>
+        <div style={{background:g.color,border:BT,borderRadius:16,padding:'10px 20px',boxShadow:SB,transform:'rotate(-2deg)',fontFamily:'"Reggae One",system-ui',fontSize:13,color:'#fff',maxWidth:260,textAlign:'center'}}>{event.title}</div>
         <div style={{display:'flex',gap:14,alignItems:'center'}}>
           {dots.map((d,i)=>(<div key={i} className="vb-loading-dot" style={{fontSize:32,lineHeight:1,animationDelay:`${i*0.12}s`}}>{d}</div>))}
         </div>
@@ -338,8 +340,9 @@
       </div>
     </div>);
   }
+
   function ComingSoonScreen({event,onBack,tags}){
-    const color=getEventColor(event,tags);
+    const g=primaryTag(event.tags,tags);
     const d=parseDate(event.date);
     return(<div className="vb-detail-enter" style={{position:'fixed',inset:0,zIndex:30,background:C.paper,overflow:'auto',maxWidth:480,margin:'0 auto'}}>
       <div style={{position:'absolute',inset:0,pointerEvents:'none',backgroundImage:pat.halftone('rgba(255,138,30,0.15)'),backgroundSize:'8px 8px'}}/>
@@ -347,28 +350,27 @@
         <button onClick={onBack} style={{display:'flex',alignItems:'center',gap:6,background:'#fff',border:BT,borderRadius:999,padding:'8px 14px 8px 12px',boxShadow:S,fontFamily:'"Reggae One",system-ui',fontSize:14}}><span style={{fontSize:18}}>&#8592;</span>&#25147;&#12427;</button>
       </div>
       <div style={{position:'relative',padding:'20px 16px',display:'flex',flexDirection:'column',alignItems:'center',gap:24,textAlign:'center'}}>
-        <div style={{background:color,color:'#fff',border:BT,borderRadius:14,padding:'10px 20px',boxShadow:SB,transform:'rotate(-2deg)',fontFamily:'"Reggae One",system-ui',fontSize:13}}>
+        <div style={{background:g.color,color:'#fff',border:BT,borderRadius:14,padding:'10px 20px',boxShadow:SB,transform:'rotate(-2deg)',fontFamily:'"Reggae One",system-ui',fontSize:13}}>
           {d.getFullYear()}&#24180; {d.getMonth()+1}&#26376; {d.getDate()}&#26085;&#65288;{WDAYS[d.getDay()]}&#65289;
         </div>
-        <StarBurst size={120} color={C.orange} spikes={16}>
-          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:13,lineHeight:1.3}}>COMING<br/>SOON</div>
-        </StarBurst>
+        <StarBurst size={120} color={C.orange} spikes={16}><div style={{fontFamily:'"Reggae One",system-ui',fontSize:13,lineHeight:1.3}}>COMING<br/>SOON</div></StarBurst>
         <div style={{fontFamily:'"Reggae One",system-ui',fontSize:26,color:C.ink}}>{event.title}</div>
         <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',lineHeight:1.8}}>
           &#35814;&#32048;&#12399;&#36817;&#26085;&#20844;&#38283;&#20104;&#23450;&#12391;&#12377;<br/>
           &#20844;&#24335;X&#12398; #&#12508;&#12459;&#12502;&#12461;&#12452;&#12505;&#12531;&#12488; &#12434;&#12362;&#30906;&#12363;&#12417;&#12367;&#12384;&#12373;&#12356;
         </div>
-        <a href="https://x.com/vocabuki" target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,background:C.ink,color:'#fff',border:BT,borderRadius:12,padding:'14px 20px',textDecoration:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,width:'100%'}}>
+        <a href={event.xurl||'https://x.com/vocabuki'} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,background:C.ink,color:'#fff',border:BT,borderRadius:12,padding:'14px 20px',textDecoration:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,width:'100%'}}>
           <XIcon size={22}/>X&#12391;&#12501;&#12457;&#12525;&#12540;&#12377;&#12427;
         </a>
       </div>
     </div>);
   }
+
   function DetailScreen({event,onBack,favorites,toggleFav,people,tags}){
     if(!event)return null;
     const d=parseDate(event.date);
+    const eventTags=resolveTags(event.tags,tags);
     const isFav=!!favorites[event.date],isPast=d<new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
-    const color=getEventColor(event,tags);
     return(<div className="vb-detail-enter" style={{position:'fixed',inset:0,zIndex:30,background:C.paper,overflow:'auto',maxWidth:480,margin:'0 auto'}}>
       <div style={{position:'absolute',inset:0,pointerEvents:'none',opacity:0.5,backgroundImage:pat.halftone('rgba(230,57,70,0.18)'),backgroundSize:'6px 6px'}}/>
       <div style={{position:'sticky',top:0,zIndex:5,padding:'14px 16px 10px',background:`linear-gradient(to bottom,${C.paper} 75%,transparent)`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
@@ -383,9 +385,9 @@
             <div style={{fontFamily:'"Reggae One",system-ui',fontSize:14,textAlign:'right'}}>({WDAYS[d.getDay()]})</div>
           </div>
           <div style={{flex:1,paddingTop:6}}>
-            <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:6}}>
-              {(event.tags||[]).map(tid=>{const tg=tags.find(x=>x.id===tid);const lb=['#F5E642','#B8F0B0','#D4B0F0'].includes(tg&&tg.color);return tg?(<span key={tid} style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:tg.color,color:lb?'#111':'#fff',border:'2px solid #111',borderRadius:4,padding:'1px 8px',fontWeight:700}}># {tg.label}</span>):null;})}
-              {isPast&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#666',color:'#fff',border:'2px solid #111',borderRadius:4,padding:'1px 8px'}}>&#32066;&#20102;</span>}
+            <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+              {eventTags.map(t=>(<span key={t.id} style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:t.color||'#fff',color:t.color?(['#F5E642','#B8F0B0','#D4B0F0'].includes(t.color)?'#111':'#fff'):C.turquoiseDark,border:'2px solid #111',borderRadius:4,padding:'2px 8px',fontWeight:700}}># {t.label}</span>))}
+              {isPast&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#666',color:'#fff',border:'2px solid #111',borderRadius:4,padding:'2px 8px'}}>&#32066;&#20102;</span>}
             </div>
           </div>
         </div>
@@ -407,6 +409,7 @@
       </div>
     </div>);
   }
+
   function App(){
     const[events,setEvents]=React.useState([]);
     const[tags,setTags]=React.useState(TAGS_DEFAULT);
@@ -415,6 +418,7 @@
     const[loading,setLoading]=React.useState(true);
     const[fetchErr,setFetchErr]=React.useState(false);
     const[people,setPeople]=React.useState(PEOPLE_DEFAULT);
+
     React.useEffect(()=>{
       fetch('./events.json?t='+Date.now())
         .then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
@@ -428,6 +432,7 @@
         })
         .catch(()=>{setEvents(EVENTS_DEFAULT);setFetchErr(true);setLoading(false);});
     },[]);
+
     const[favorites,setFv_]=React.useState(()=>ls.get('vb_favs',{}));
     const[view,setVw_]=React.useState(()=>ls.get('vb_view','month'));
     const[cursor,setCu_]=React.useState(()=>{const s=ls.get('vb_cursor',null);return s?new Date(s[0],s[1],1):new Date(TODAY.getFullYear(),TODAY.getMonth(),1);});
@@ -435,6 +440,7 @@
     const[readyEvent,setReadyEvent]=React.useState(null);
     const[tagSet,setTagSet]=React.useState(new Set());
     const timerRef=React.useRef(null);
+
     const openEvent=(ev)=>{
       const shell=document.getElementById('app-shell');
       if(shell)shell.scrollTop=0;
@@ -453,10 +459,12 @@
       setTagSet(prev=>{const n=new Set(prev);n.has(id)?n.delete(id):n.add(id);return n;});
     };
     const onTodayTap=()=>setCursor(new Date(TODAY.getFullYear(),TODAY.getMonth(),1));
+
     const filteredEvents=React.useMemo(()=>tagSet.size===0?events:events.filter(e=>(e.tags||[]).some(t=>tagSet.has(t))),[events,tagSet]);
     const eventByDate=React.useMemo(()=>{const m={};filteredEvents.forEach(e=>{m[e.date]=e;});return m;},[filteredEvents]);
     const cells=React.useMemo(()=>buildMonthCells(cursor.getFullYear(),cursor.getMonth()),[cursor]);
     const weekStart=React.useMemo(()=>{const base=sameDay(cursor,new Date(TODAY.getFullYear(),TODAY.getMonth(),1))?TODAY:new Date(cursor.getFullYear(),cursor.getMonth(),1);const wi=weekIdx(base);return new Date(base.getFullYear(),base.getMonth(),base.getDate()-wi);},[cursor]);
+
     if(loading)return(
       <div style={{position:'fixed',inset:0,background:C.paper,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:20}}>
         <div style={{position:'absolute',inset:0,backgroundImage:pat.halftone('rgba(46,197,206,0.18)'),backgroundSize:'8px 8px'}}/>
@@ -466,6 +474,7 @@
         <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',letterSpacing:2,position:'relative'}}>LOADING...</div>
       </div>
     );
+
     return(<div style={{position:'relative',width:'100%',minHeight:'100vh',background:C.paper,fontFamily:'"M PLUS Rounded 1c",system-ui'}}>
       <div style={{position:'fixed',inset:0,pointerEvents:'none',backgroundImage:pat.halftone('rgba(46,197,206,0.14)'),backgroundSize:'8px 8px',zIndex:0,maxWidth:480}}/>
       <div style={{position:'absolute',top:-20,left:-20,width:110,height:110,borderRadius:'50%',background:C.yellow,border:B,opacity:0.85,pointerEvents:'none',zIndex:0}}/>
@@ -501,6 +510,7 @@
       {readyEvent&&!readyEvent.comingSoon&&<DetailScreen event={readyEvent} onBack={closeEvent} favorites={favorites} toggleFav={toggleFav} people={people} tags={tags}/>}
     </div>);
   }
+
   ReactDOM.createRoot(document.getElementById('app')).render(<App/>);
   </script>
 </body>
