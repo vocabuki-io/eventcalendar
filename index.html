@@ -419,23 +419,43 @@
     const[fetchErr,setFetchErr]=React.useState(false);
     const[people,setPeople]=React.useState(PEOPLE_DEFAULT);
 
-    React.useEffect(()=>{
-      fetch('./events.json?t='+Date.now())
-        .then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
-        .then(data=>{
-          setEvents(data.events||[]);
-          setTags(data.tags||TAGS_DEFAULT);
-          setDayBgMap(data.dayBgMap||{});
-          setPeople({...PEOPLE_DEFAULT,...(data.people||{})});
-          setClosedDays(data.closedDays||[]);
-          setLoading(false);
-        })
-        .catch(()=>{setEvents(EVENTS_DEFAULT);setFetchErr(true);setLoading(false);});
-    },[]);
+    const[quarters,setQuarters]=React.useState([]);
+    const loadedQ=React.useRef({});
 
     const[favorites,setFv_]=React.useState(()=>ls.get('vb_favs',{}));
     const[view,setVw_]=React.useState(()=>ls.get('vb_view','month'));
     const[cursor,setCu_]=React.useState(()=>{const s=ls.get('vb_cursor',null);return s?new Date(s[0],s[1],1):new Date(TODAY.getFullYear(),TODAY.getMonth(),1);});
+    const qKey=d=>{const m=d.getMonth();return d.getFullYear()+'-Q'+(Math.floor(m/3)+1);};
+    const fetchQuarter=React.useCallback((qk,avail)=>{
+      if(!qk)return;
+      if(loadedQ.current[qk])return;
+      if(avail&&avail.indexOf(qk)<0){loadedQ.current[qk]=true;return;}
+      loadedQ.current[qk]=true;
+      fetch('./events-'+qk+'.json?t='+Date.now())
+        .then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
+        .then(arr=>{setEvents(prev=>{const seen={};const merged=[];prev.concat(arr).forEach(ev=>{if(!seen[ev.id]){seen[ev.id]=true;merged.push(ev);}});return merged;});})
+        .catch(()=>{});
+    },[]);
+    React.useEffect(()=>{
+      Promise.all([
+        fetch('./meta.json?t='+Date.now()).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}),
+        fetch('./people.json?t='+Date.now()).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
+      ]).then(res=>{
+        const meta=res[0],ppl=res[1];
+        setTags((meta.tags&&meta.tags.length)?meta.tags:TAGS_DEFAULT);
+        setDayBgMap(meta.dayBgMap||{});
+        setClosedDays(meta.closedDays||[]);
+        const qs=meta.quarters||[];
+        setQuarters(qs);
+        setPeople({...PEOPLE_DEFAULT,...(ppl||{})});
+        fetchQuarter(qKey(cursor),qs);
+        setLoading(false);
+      }).catch(()=>{setEvents(EVENTS_DEFAULT);setFetchErr(true);setLoading(false);});
+    },[]);
+    React.useEffect(()=>{
+      if(quarters.length===0)return;
+      fetchQuarter(qKey(cursor),quarters);
+    },[cursor,quarters]);
     const[pendingEvent,setPendingEvent]=React.useState(null);
     const[readyEvent,setReadyEvent]=React.useState(null);
     const[tagSet,setTagSet]=React.useState(new Set());
