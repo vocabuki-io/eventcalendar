@@ -166,8 +166,8 @@
     const bg=isClosed?null:event?(dayBg||(g?g.color:C.yellow)):(cell.outside?'rgba(255,255,255,0.4)':(defaultAccent||'#fff'));
     return(
       <div onClick={()=>!isClosed&&event&&onClick()} style={{position:'relative',aspectRatio:'1/1.15',border:B,borderRadius:8,minWidth:0,background:bg,padding:4,cursor:(event&&!isClosed)?'pointer':'default',opacity:(cell.outside||isPast)?0.55:1,filter:isPast?'saturate(0.4)':'none',boxShadow:(event&&!isPast)?SS:'none',display:'flex',flexDirection:'column',alignItems:'flex-start',overflow:'visible',textAlign:'left',transform:isToday?'scale(1.02)':'none',outline:isToday?`3px solid ${C.ink}`:'none',outlineOffset:isToday?'2px':0}}>
-        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:13,lineHeight:1,color:event?'#fff':'#777',textShadow:event?'1px 1px 0 #111':'none',zIndex:3,position:'relative'}}>{cell.date.getDate()}</div>
-        {event&&!cell.outside&&<div style={{fontFamily:'"Reggae One",system-ui',fontSize:9,lineHeight:1.2,color:'#fff',textShadow:'1px 1px 0 rgba(0,0,0,0.5)',overflow:'hidden',maxHeight:28,zIndex:3,position:'relative',marginTop:1,width:'100%'}}>{isCS?'CS':event.title.slice(0,4)}</div>}
+        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:15,lineHeight:1,color:event?'#fff':'#777',textShadow:event?'1px 1px 0 #111':'none',zIndex:3,position:'relative'}}>{cell.date.getDate()}</div>
+        {event&&!cell.outside&&<div style={{fontFamily:'"Reggae One",system-ui',fontSize:11,lineHeight:1.2,color:'#fff',textShadow:'1px 1px 0 rgba(0,0,0,0.5)',overflow:'hidden',maxHeight:28,zIndex:3,position:'relative',marginTop:1,width:'100%'}}>{isCS?'CS':event.title.slice(0,4)}</div>}
         {isCS&&!cell.outside&&!isClosed&&<div style={{position:'absolute',top:2,right:2,background:C.orange,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:7,borderRadius:3,padding:'1px 3px',border:'1.5px solid #111',zIndex:4,lineHeight:1}}>CS</div>}
         {isToday&&<div style={{position:'absolute',top:-10,right:-6,zIndex:10,pointerEvents:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,lineHeight:1,color:'#fff',WebkitTextStroke:'3px #FF3DA5',paintOrder:'stroke fill',transform:'rotate(-8deg)'}}>NOW</div>}
         {isClosed&&!cell.outside&&<>
@@ -412,6 +412,7 @@
 
   function App(){
     const[events,setEvents]=React.useState([]);
+    const[cursor,setCu_]=React.useState(()=>{const s=ls.get('vb_cursor',null);return s?new Date(s[0],s[1],1):new Date(TODAY.getFullYear(),TODAY.getMonth(),1);});
     const[tags,setTags]=React.useState(TAGS_DEFAULT);
     const[dayBgMap,setDayBgMap]=React.useState({});
     const[closedDays,setClosedDays]=React.useState([]);
@@ -419,43 +420,33 @@
     const[fetchErr,setFetchErr]=React.useState(false);
     const[people,setPeople]=React.useState(PEOPLE_DEFAULT);
 
-    const[quarters,setQuarters]=React.useState([]);
-    const loadedQ=React.useRef({});
+    React.useEffect(()=>{
+      fetch('./events.json?t='+Date.now())
+        .then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
+        .then(data=>{
+          const evs=data.events||[];
+          setEvents(evs);
+          setTags(data.tags||TAGS_DEFAULT);
+          setDayBgMap(data.dayBgMap||{});
+          setPeople({...PEOPLE_DEFAULT,...(data.people||{})});
+          setClosedDays(data.closedDays||[]);
+          if(!ls.get('vb_cursor',null)&&evs.length>0){
+            const ck=fmtDate(new Date()).slice(0,7);
+            const hasThisMonth=evs.some(e=>e.date.slice(0,7)===ck);
+            if(!hasThisMonth){
+              const todayStr=fmtDate(new Date());
+              const future=evs.filter(e=>e.date>=todayStr).sort((a,b)=>a.date.localeCompare(b.date));
+              const target=future.length>0?future[0]:[...evs].sort((a,b)=>b.date.localeCompare(a.date))[0];
+              if(target){const td=parseDate(target.date);setCu_(new Date(td.getFullYear(),td.getMonth(),1));}
+            }
+          }
+          setLoading(false);
+        })
+        .catch(()=>{setEvents(EVENTS_DEFAULT);setFetchErr(true);setLoading(false);});
+    },[]);
 
     const[favorites,setFv_]=React.useState(()=>ls.get('vb_favs',{}));
     const[view,setVw_]=React.useState(()=>ls.get('vb_view','month'));
-    const[cursor,setCu_]=React.useState(()=>{const s=ls.get('vb_cursor',null);return s?new Date(s[0],s[1],1):new Date(TODAY.getFullYear(),TODAY.getMonth(),1);});
-    const qKey=d=>{const m=d.getMonth();return d.getFullYear()+'-Q'+(Math.floor(m/3)+1);};
-    const fetchQuarter=React.useCallback((qk,avail)=>{
-      if(!qk)return;
-      if(loadedQ.current[qk])return;
-      if(avail&&avail.indexOf(qk)<0){loadedQ.current[qk]=true;return;}
-      loadedQ.current[qk]=true;
-      fetch('./events-'+qk+'.json?t='+Date.now())
-        .then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
-        .then(arr=>{setEvents(prev=>{const seen={};const merged=[];prev.concat(arr).forEach(ev=>{if(!seen[ev.id]){seen[ev.id]=true;merged.push(ev);}});return merged;});})
-        .catch(()=>{});
-    },[]);
-    React.useEffect(()=>{
-      Promise.all([
-        fetch('./meta.json?t='+Date.now()).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}),
-        fetch('./people.json?t='+Date.now()).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
-      ]).then(res=>{
-        const meta=res[0],ppl=res[1];
-        setTags((meta.tags&&meta.tags.length)?meta.tags:TAGS_DEFAULT);
-        setDayBgMap(meta.dayBgMap||{});
-        setClosedDays(meta.closedDays||[]);
-        const qs=meta.quarters||[];
-        setQuarters(qs);
-        setPeople({...PEOPLE_DEFAULT,...(ppl||{})});
-        fetchQuarter(qKey(cursor),qs);
-        setLoading(false);
-      }).catch(()=>{setEvents(EVENTS_DEFAULT);setFetchErr(true);setLoading(false);});
-    },[]);
-    React.useEffect(()=>{
-      if(quarters.length===0)return;
-      fetchQuarter(qKey(cursor),quarters);
-    },[cursor,quarters]);
     const[pendingEvent,setPendingEvent]=React.useState(null);
     const[readyEvent,setReadyEvent]=React.useState(null);
     const[tagSet,setTagSet]=React.useState(new Set());
