@@ -47,8 +47,8 @@ window.T={
   footerNote:"\u7de8\u96c6\u5f8c\u306f\u5fc5\u305a\u4e0a\u306e\u300c\u4fdd\u5b58\u300d\u30dc\u30bf\u30f3\u3092\u62bc\u3057\u3066\u304f\u3060\u3055\u3044\u3002\u4fdd\u5b58\u5f8c1\uff5e2\u5206\u3067GitHub Pages\u306b\u53cd\u6620\u3055\u308c\u307e\u3059\u3002",
   pwL:"\u30d1\u30b9\u30ef\u30fc\u30c9",pwPh:"\u30d1\u30b9\u30ef\u30fc\u30c9\u3092\u5165\u529b",
   pwErr:"\u30d1\u30b9\u30ef\u30fc\u30c9\u304c\u9055\u3044\u307e\u3059",
-  tokenPh:"github_pat_xxxxxxxxxxxx",
-  tokenNote:"GitHub Settings \u2192 Developer settings \u2192 Fine-grained tokens",
+  tokenPh:"xxxxxxxxxxxx",
+  tokenNote:"",
   tokenLogin:"\u30ed\u30b0\u30a4\u30f3",tokenCheck:"\u78ba\u8a8d\u4e2d...",
   tokenErr:"\u30c8\u30fc\u30af\u30f3\u30a8\u30e9\u30fc: ",tokenEmpty:"\u30c8\u30fc\u30af\u30f3\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044",
   confirmDel:"\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f",
@@ -63,7 +63,7 @@ window.T={
   closedMgmt:"\u4f11\u696d\u65e5\u7ba1\u7406",
   closedNote:"\u4f11\u696d\u65e5\u3092\u8a2d\u5b9a\u3059\u308b\u3068\u30ab\u30ec\u30f3\u30c0\u30fc\u306b\uff08\u4f11\uff09\u3068\u8868\u793a\u3055\u308c\u307e\u3059",
   closedAdd:"\u8ffd\u52a0",closedEmpty:"\u4f11\u696d\u65e5\u306a\u3057",
-  idL:"ID (GitHub PAT)",
+  idL:"ID",
   dupBtn:"\u8907\u88fd",
   statusL:"\u516c\u958b\u72b6\u614b",
   csOn:"CS \u8a2d\u5b9a\u4e2d",csOff:"\u8a73\u7d30\u516c\u958b",
@@ -89,7 +89,8 @@ window.T={
 const GH_OWNER='vocabuki-io';
 const GH_REPO='eventcalendar';
 const GH_PATH='events.json';
-const ADMIN_PASSWORD='shinjuku@2452';
+const ADMIN_PW_HASH='3b33abb9ed02762e621268cfb4d416b3a8b84e8aacf9f8e25a07cdd5c1f231c7';
+async function sha256Hex(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
 const T=window.T;
 const C={turquoise:'#2EC5CE',turquoiseDark:'#1EA3AC',yellow:'#FFD23F',red:'#E63946',orange:'#FF8A1E',paper:'#FFFBEC',ink:'#111111'};
 const B='3px solid #111',BT='4px solid #111',S='4px 4px 0 #111',SB='6px 6px 0 #111',SS='2px 2px 0 #111';
@@ -133,7 +134,7 @@ function SHead({children}){return(<div style={{fontFamily:'"Reggae One",system-u
 
 async function ghFetch(token,path,method,body){
   method=method||'GET';
-  const hdrs={Authorization:'token '+token,'Content-Type':'application/json',Accept:'application/vnd.github.v3+json'};
+  const hdrs={Authorization:'token github_pat_'+token,'Content-Type':'application/json',Accept:'application/vnd.github.v3+json'};
   const opts={method,headers:hdrs};
   if(body)opts.body=JSON.stringify(body);
   const url='https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+path;
@@ -347,7 +348,7 @@ function BulkInputBlock({tags,onAdd}){
 function LoginScreen({onLogin}){
   const[id,setId]=React.useState(()=>sessionStorage.getItem('vb_token')||'');
   const[pw,setPw]=React.useState('');const[err,setErr]=React.useState('');const[busy,setBusy]=React.useState(false);
-  const handleSubmit=async(e)=>{e.preventDefault();if(pw!==ADMIN_PASSWORD){setErr(T.pwErr);setTimeout(()=>setErr(''),2000);return;}if(!id.trim()){setErr(T.tokenEmpty);return;}setBusy(true);setErr('');try{await ghFetch(id.trim(),GH_PATH);sessionStorage.setItem('vb_token',id.trim());onLogin(id.trim());}catch(ex){setErr(T.tokenErr+ex.message);setBusy(false);}};
+  const handleSubmit=async(e)=>{e.preventDefault();if((await sha256Hex(pw))!==ADMIN_PW_HASH){setErr(T.pwErr);setTimeout(()=>setErr(''),2000);return;}if(!id.trim()){setErr(T.tokenEmpty);return;}setBusy(true);setErr('');try{await ghFetch(id.trim(),GH_PATH);sessionStorage.setItem('vb_token',id.trim());onLogin(id.trim());}catch(ex){setErr(T.tokenErr+ex.message);setBusy(false);}};
   const iSt={width:'100%',border:BT,borderRadius:10,padding:'12px 14px',fontSize:15,outline:'none',background:'#fff',marginBottom:4};
   return(
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:20,background:C.paper}}>
@@ -362,8 +363,7 @@ function LoginScreen({onLogin}){
         </div>
         <form onSubmit={handleSubmit} autoComplete="on">
           <Label>{T.idL}</Label>
-          <input type="text" name="username" value={id} onChange={e=>setId(e.target.value)} placeholder={T.tokenPh} autoComplete="username" style={iSt}/>
-          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',marginBottom:12,lineHeight:1.7}}>{T.tokenNote}</div>
+          <input type="text" name="username" value={id} onChange={e=>setId(e.target.value)} placeholder={T.tokenPh} autoComplete="username" style={{...iSt,marginBottom:12}}/>
           <Label>{T.pwL}</Label>
           <input type="password" name="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder={T.pwPh} autoComplete="current-password" style={iSt}/>
           {err&&<div style={{color:C.red,fontFamily:'"DotGothic16",monospace',fontSize:11,marginBottom:4,marginTop:4}}>{err}</div>}
