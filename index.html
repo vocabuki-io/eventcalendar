@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Reggae+One&family=RocknRoll+One&family=DotGothic16&family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
-    html { margin:0; padding:0; background:#FFFBEC; }
+    html { margin:0; padding:0; background:#FFFBEC; overflow-x:hidden; width:100%; }
     body { margin:0; padding:0; font-family:"M PLUS Rounded 1c",system-ui; background:#FFFBEC; background-image:radial-gradient(circle at 3px 3px,rgba(46,197,206,0.14) 1.8px,transparent 2px); background-size:8px 8px; background-attachment:fixed; min-height:100dvh; display:flex; justify-content:center; align-items:flex-start; overflow-x:hidden; }
     #app-shell { width:100%; max-width:480px; min-height:100dvh; position:relative; background:transparent; }
     #app { width:100%; position:relative; min-height:100%; }
@@ -183,9 +183,9 @@
     </div>);
   }
   function WeekdayRow(){
-    return(<div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,padding:'0 14px',marginTop:6}}>
+    return(<div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,padding:'0 8px',marginTop:6}}>
       {WDAYS.map((w,i)=>{const isSat=i===5,isSun=i===6;return(
-        <div key={w} style={{textAlign:'center',fontFamily:'"DotGothic16",monospace',fontSize:13,padding:'4px 0',color:isSun?C.red:isSat?C.turquoiseDark:'#111',background:isSun?'rgba(230,57,70,0.1)':isSat?'rgba(46,197,206,0.12)':'transparent',border:B,borderRadius:8,fontWeight:700}}>{w}</div>
+        <div key={w} style={{textAlign:'center',fontFamily:'"DotGothic16",monospace',fontSize:13,padding:'4px 0',color:isSun?C.red:isSat?C.turquoiseDark:'#111',background:isSun?'rgba(230,57,70,0.1)':isSat?'rgba(46,197,206,0.12)':'transparent',border:'2px solid #111',borderRadius:8,fontWeight:700}}>{w}</div>
       );})}
     </div>);
   }
@@ -198,13 +198,12 @@
     const favOf=ev=>!!(favorites&&favorites[ev.id||ev.date]);
     const baseBg=outside?'rgba(255,255,255,0.4)':'#fff';
     return(
-      <div style={{position:'relative',aspectRatio:'1/1.15',border:B,borderRadius:8,minWidth:0,overflow:'hidden',background:baseBg,opacity:(outside||isPast)?0.55:1,filter:isPast?'saturate(0.4)':'none',boxShadow:(has&&!isPast)?SS:'none',display:'flex',flexDirection:'column',transform:isToday?'scale(1.02)':'none',outline:isToday?`3px solid ${C.ink}`:'none',outlineOffset:isToday?'2px':0}}>
-        <div style={{position:'absolute',top:3,left:4,zIndex:6,fontFamily:'"Reggae One",system-ui',fontSize:15,lineHeight:1,color:has?'#fff':(outside?'#aaa':'#777'),textShadow:has?'1px 1px 0 #111':'none',pointerEvents:'none'}}>{cell.date.getDate()}</div>
+      <div style={{position:'relative',aspectRatio:'1/1.12',border:'2px solid #111',borderRadius:8,minWidth:0,overflow:'hidden',background:baseBg,opacity:(outside||isPast)?0.55:1,filter:isPast?'saturate(0.4)':'none',boxShadow:(has&&!isPast)?SS:'none',display:'flex',flexDirection:'column',transform:isToday?'scale(1.02)':'none',outline:isToday?`2.5px solid ${C.ink}`:'none',outlineOffset:isToday?'2px':0}}>
+        <div style={{position:'absolute',top:2,left:3,zIndex:6,fontFamily:'"Reggae One",system-ui',fontSize:15,lineHeight:1,color:has?'#fff':(outside?'#aaa':'#777'),textShadow:has?'1px 1px 0 #111':'none',pointerEvents:'none'}}>{cell.date.getDate()}</div>
         {single&&(()=>{
           const ev=evs[0];const g=primaryTag(ev.tags,tags);const col=dayBg||g.color;const isCS=ev.comingSoon||false;
-          return(<div onClick={()=>onPick(ev)} style={{flex:1,background:col,cursor:'pointer',padding:4,position:'relative'}}>
-            <div style={{height:16}}/>
-            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:11,lineHeight:1.2,color:'#fff',textShadow:'1px 1px 0 rgba(0,0,0,0.5)',overflow:'hidden',maxHeight:26}}>{isCS?'CS':ev.title.slice(0,4)}</div>
+          return(<div onClick={()=>onPick(ev)} style={{flex:1,background:col,cursor:'pointer',position:'relative',display:'flex',alignItems:'center',padding:'0 4px'}}>
+            <div style={{width:'100%',fontFamily:'"Reggae One",system-ui',fontSize:11,lineHeight:1.1,color:'#fff',textShadow:'1px 1px 0 rgba(0,0,0,0.5)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',textAlign:'left'}}>{isCS?'CS':ev.title}</div>
             {isCS&&<div style={{position:'absolute',top:2,right:2,background:C.orange,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:7,borderRadius:3,padding:'1px 3px',border:'1.5px solid #111',lineHeight:1}}>CS</div>}
             {favOf(ev)&&<div style={{position:'absolute',bottom:2,right:2}}><Icon name="star" size={10} color="#111" fill={C.yellow}/></div>}
           </div>);
@@ -212,13 +211,13 @@
         {!single&&has&&evs.slice(0,2).map((ev,i)=>{
           const g=primaryTag(ev.tags,tags);const isCS=ev.comingSoon||false;
           return(<div key={ev.id||i} onClick={()=>onPick(ev)} style={{flex:1,minHeight:0,background:g.color,cursor:'pointer',display:'flex',alignItems:'center',padding:'0 3px',position:'relative',borderTop:i===1?'2px solid #111':'none'}}>
-            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:9,lineHeight:1,color:'#fff',textShadow:'1px 1px 0 rgba(0,0,0,0.5)',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',marginLeft:i===0?17:0}}>{isCS?'CS':ev.title.slice(0,4)}</div>
+            <div style={{width:'100%',fontFamily:'"Reggae One",system-ui',fontSize:9,lineHeight:1,color:'#fff',textShadow:'1px 1px 0 rgba(0,0,0,0.5)',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',marginLeft:i===0?16:0}}>{isCS?'CS':ev.title}</div>
             {isCS&&<div style={{position:'absolute',top:1,right:1,background:C.orange,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:6,borderRadius:2,padding:'0 2px',border:'1px solid #111',lineHeight:1.3}}>CS</div>}
             {favOf(ev)&&<div style={{position:'absolute',bottom:1,right:1}}><Icon name="star" size={7} color="#111" fill={C.yellow}/></div>}
           </div>);
         })}
         {!has&&<div style={{flex:1}}/>}
-        {isToday&&<div style={{position:'absolute',top:-10,right:-6,zIndex:10,pointerEvents:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,lineHeight:1,color:'#fff',WebkitTextStroke:'3px #FF3DA5',paintOrder:'stroke fill',transform:'rotate(-8deg)'}}>NOW</div>}
+        {isToday&&<div style={{position:'absolute',top:1,right:2,zIndex:20,pointerEvents:'none',fontFamily:'"Reggae One",system-ui',fontSize:13,lineHeight:1,color:'#fff',WebkitTextStroke:'2.5px #FF3DA5',paintOrder:'stroke fill',transform:'rotate(-6deg)'}}>NOW</div>}
         {isClosed&&!outside&&<>
           <div style={{position:'absolute',inset:0,background:'rgba(200,200,200,0.80)',borderRadius:6,zIndex:1}}/>
           <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',zIndex:2,fontFamily:'"Reggae One",system-ui',fontSize:22,color:'#E63946',fontWeight:900}}>&#20241;</div>
@@ -228,7 +227,7 @@
   }
 
   function MonthGrid({cells,eventsByDate,onPick,favorites,dayBgMap,tags,closedDays}){
-    return(<div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,padding:'6px 14px 14px'}}>
+    return(<div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,padding:'6px 8px 14px'}}>
       {cells.map((c,i)=>{
         const key=fmtDate(c.date);const evs=eventsByDate[key]||[];
         const isToday=sameDay(c.date,TODAY);
@@ -492,7 +491,7 @@
       ['pin','住所','新宿区歌舞伎町 2-45-2 gest32ビル 5F 新宿motion(ボカブキ)'],
       ['train','JR新大久保駅','徒歩15分'],
       ['train','西武新宿駅（西武新宿線）','徒歩2分'],
-      ['clock','営業時間','毎週 OPEN 24:00 ── CLOSE 5:00'],
+      ['clock','営業時間','OPEN 24:00 ── CLOSE 5:00'],
       ['noentry','年齢制限','18歳以上（高校生不可）'],
     ];
     return(<div className="fade-in" style={{display:'flex',flexDirection:'column',gap:14}}>
