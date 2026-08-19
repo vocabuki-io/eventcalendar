@@ -128,7 +128,6 @@ function baseData() {
     ],
     dayBgMap: {},
     closedDays: [],
-    watchAccounts: ['vocabuki'],
     people: { drag_on_3: { name: 'dragon3', x: '@drag_on_3' } },
   };
 }

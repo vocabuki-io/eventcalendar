@@ -12,9 +12,9 @@ GitHub Pages で公開している静的サイトです。
 | `index.html` | 公開カレンダー。月／週／リスト表示、イベント詳細、About、イベント診断 |
 | `admin.html` | 管理画面。ブラウザから `events.json` を編集して GitHub にコミットする |
 | `events.json` | **唯一のデータ源**。イベント・タグ・出演者・休業日をまとめて持つ |
+| `images/` | フライヤー・ギャラリー画像。`events.json` にはここへのパスだけを入れる |
 | `mcp/` | Claude から MCP 経由でカレンダーを編集するサーバー |
-| `docs/OPERATIONS.md` | 運営ガイドと改善提案 |
-| `scraper/`, `.github/workflows/scrape.yml` | X の告知ポストを取得する仕組み（→ [運営ガイド 4-2](docs/OPERATIONS.md#4-2-スクレイパーの扱いを決める優先度-中)） |
+| `docs/OPERATIONS.md` | 運営ガイド |
 
 ビルド不要です。React と Babel を CDN から読み込み、ブラウザ上で JSX を変換して動きます。
 
@@ -35,6 +35,8 @@ OPEN 23:30 CLOSE 5:00、料金は 2000円（1D込）。
 `admin.html` を開いてログイン → 週を選んで編集 → カード内の「保存」→ **画面上部の「保存」**。
 
 どちらも同じ `events.json` を編集します。同時に触っても、後から書いた方が先の変更を消すことはありません。
+
+画像はどちらの経路でも `images/` にファイルとして保存され、`events.json` にはパスだけが入ります（長辺 1600px に自動縮小）。`events.json` は全訪問者が毎回読むファイルなので、画像そのものは絶対に入れません。
 
 ## 開発
 
