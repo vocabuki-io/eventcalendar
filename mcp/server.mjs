@@ -424,7 +424,6 @@ const handlers = {
     const out = {
       tags: data.tags || [],
       closedDays: data.closedDays || [],
-      watchAccounts: data.watchAccounts || [],
       peopleCount: Object.keys(data.people || {}).length,
       eventCount: data.events.length,
       repo: `${cfg.owner}/${cfg.repo}@${cfg.branch}`,
