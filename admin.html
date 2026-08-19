@@ -78,6 +78,29 @@ window.T={
   watchMgmt:"\u30b9\u30af\u30ec\u30a4\u30d1\u30fc\u76e3\u8996\u30a2\u30ab\u30a6\u30f3\u30c8",
   watchNote:"#\u30dc\u30ab\u30d6\u30ad\u30a4\u30d9\u30f3\u30c8 \u6295\u7a3f\u3092\u81ea\u52d5\u53d6\u5f97\u3059\u308b\u30a2\u30ab\u30a6\u30f3\u30c8\u3092\u767b\u9332\u3057\u307e\u3059\u3002events.json \u306b\u4fdd\u5b58\u3055\u308c scraper \u304c\u53c2\u7167\u3057\u307e\u3059\u3002",
   watchAdd:"\u8ffd\u52a0",watchEmpty:"\u76e3\u8996\u30a2\u30ab\u30a6\u30f3\u30c8\u306a\u3057",watchCheck:"X\u3067\u78ba\u8a8d",
+  detailSec:"\u30a4\u30d9\u30f3\u30c8\u8a73\u7d30",
+  openL:"OPEN",
+  closeL:"CLOSE",
+  venueL:"\u4f1a\u5834",
+  priceL:"\u6599\u91d1",
+  descL:"\u8a73\u7d30\u30c6\u30ad\u30b9\u30c8",
+  descPh:"\u30a4\u30d9\u30f3\u30c8\u306e\u8aac\u660e\u30fb\u6ce8\u610f\u4e8b\u9805\u306a\u3069\uff08\u6539\u884c\u305d\u306e\u307e\u307e\u8868\u793a\u3055\u308c\u307e\u3059\uff09",
+  xurlL:"\u30a4\u30d9\u30f3\u30c8\u544a\u77e5\u30dd\u30b9\u30c8\uff08X\uff09\u306eURL",
+  imagesL:"\u8ffd\u52a0\u753b\u50cf\uff08\u30ae\u30e3\u30e9\u30ea\u30fc\uff09",
+  imgUrlPh:"\u753b\u50cfURL \u307e\u305f\u306f images/xxx.jpg",
+  imgCapPh:"\u30ad\u30e3\u30d7\u30b7\u30e7\u30f3\uff08\u4efb\u610f\uff09",
+  imgAdd:"\uff0b \u753b\u50cf\u3092\u8ffd\u52a0",
+  imgEmpty:"\u8ffd\u52a0\u753b\u50cf\u306a\u3057",
+  linksL:"\u30ea\u30f3\u30af",
+  linkLabelPh:"\u30ea\u30f3\u30af\u540d\uff08\u4f8b: \u4e88\u7d04\u30d5\u30a9\u30fc\u30e0\uff09",
+  linkUrlPh:"https://...",
+  linkAdd:"\uff0b \u30ea\u30f3\u30af\u3092\u8ffd\u52a0",
+  linkEmpty:"\u30ea\u30f3\u30af\u306a\u3057",
+  venuePh:"\u672a\u5165\u529b\u306a\u3089 \u6b4c\u821e\u4f0e\u753a Gest32\u30d3\u30eb 5F",
+  timePh:"\u672a\u5165\u529b\u306a\u3089 24:00 / 5:00",
+  pricePh:"\u4f8b: \u00a52,000 (1D\u8fbc)",
+  urlInvalid:"http(s):// \u3067\u59cb\u307e\u308bURL\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044",
+  imgUrlInvalid:"http(s):// \u306eURL\u3001\u307e\u305f\u306f images/xxx.jpg \u306e\u3088\u3046\u306a\u30d1\u30b9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044",
 };
 </script>
 
@@ -92,7 +115,7 @@ const GH_PATH='events.json';
 const ADMIN_PW_HASH='3b33abb9ed02762e621268cfb4d416b3a8b84e8aacf9f8e25a07cdd5c1f231c7';
 async function sha256Hex(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
 const T=window.T;
-const C={turquoise:'#2EC5CE',turquoiseDark:'#1EA3AC',yellow:'#FFD23F',red:'#E63946',orange:'#FF8A1E',paper:'#FFFBEC',ink:'#111111'};
+const C={turquoise:'#2EC5CE',turquoiseDark:'#1EA3AC',yellow:'#FFD23F',red:'#E63946',orange:'#FF8A1E',paper:'#FFFBEC',ink:'#111111',purple:'#6A3FD9'};
 const B='3px solid #111',BT='4px solid #111',S='4px 4px 0 #111',SB='6px 6px 0 #111',SS='2px 2px 0 #111';
 const pat={halftone:c=>`radial-gradient(circle at 3px 3px,${c} 1.8px,transparent 2px)`};
 const TAGS_DEFAULT=[
@@ -132,9 +155,15 @@ const TODAY=new Date();
 function Label({children}){return(<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#555',marginBottom:3}}>{children}</div>);}
 function SHead({children}){return(<div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,background:C.ink,color:'#fff',border:BT,borderRadius:8,padding:'4px 12px',transform:'rotate(-1deg)',boxShadow:SS,display:'inline-block',marginBottom:12}}>{children}</div>);}
 
+// Accept a PAT pasted with or without its github_pat_ prefix.
+function normalizeToken(token){
+  const t=(token||'').trim();
+  if(/^(github_pat_|ghp_|gho_|ghs_)/.test(t))return t;
+  return 'github_pat_'+t;
+}
 async function ghFetch(token,path,method,body){
   method=method||'GET';
-  const hdrs={Authorization:'token github_pat_'+token,'Content-Type':'application/json',Accept:'application/vnd.github.v3+json'};
+  const hdrs={Authorization:'token '+normalizeToken(token),'Content-Type':'application/json',Accept:'application/vnd.github.v3+json'};
   const opts={method,headers:hdrs};
   if(body)opts.body=JSON.stringify(body);
   const url='https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+path;
@@ -227,15 +256,103 @@ function TagsBlock({draft,setDraft,tags}){
   );
 }
 
+function isHttpUrl(u){return /^https?:\/\//i.test((u||'').trim());}
+// Images may also be a repo-relative path such as "images/flyer.jpg" (what the MCP
+// upload_image tool returns); index.html resolves those against the site root.
+function isImageRef(u){const t=(u||'').trim();return isHttpUrl(t)||(/^[\w.][\w./-]*$/.test(t)&&!t.startsWith('//'));}
+
+// Every key EventCard can edit. On save these are dropped from the stored event before the
+// draft is merged back in, so a field cleared in the UI is really gone from events.json.
+const EDITABLE_KEYS=['date','title','tags','djs','vjs','flyer','comingSoon','openTime','closeTime','venue','price','description','xurl','images','links'];
+// Optional text fields left blank are omitted entirely; the public page falls back to its defaults.
+const OPTIONAL_TEXT_FIELDS=['openTime','closeTime','venue','price','description','xurl'];
+function normalizeDraft(draft){
+  const out={...draft};
+  OPTIONAL_TEXT_FIELDS.forEach(k=>{
+    const v=typeof out[k]==='string'?out[k].trim():out[k];
+    if(v===''||v===undefined||v===null)delete out[k];else out[k]=v;
+  });
+  const imgs=(out.images||[]).filter(i=>i&&i.url);
+  if(imgs.length)out.images=imgs;else delete out.images;
+  const lnks=(out.links||[]).filter(l=>l&&l.url);
+  if(lnks.length)out.links=lnks;else delete out.links;
+  return out;
+}
+
+// Gallery images: url + optional caption.
+function ImagesBlock({draft,setDraft}){
+  const[url,setUrl]=React.useState('');const[cap,setCap]=React.useState('');const[err,setErr]=React.useState('');
+  const cur=draft.images||[];
+  const add=()=>{const u=url.trim();if(!u)return;if(!isImageRef(u)){setErr(T.imgUrlInvalid);return;}setErr('');setDraft(d=>({...d,images:[...(d.images||[]),{url:u,caption:cap.trim()}]}));setUrl('');setCap('');};
+  const rm=i=>setDraft(d=>({...d,images:(d.images||[]).filter((_,j)=>j!==i)}));
+  const iSt={width:'100%',border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none',minWidth:0};
+  return(
+    <div>
+      <Label>{T.imagesL}</Label>
+      <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:4}}>
+        {cur.length===0&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#aaa'}}>{T.imgEmpty}</div>}
+        {cur.map((im,i)=>(
+          <div key={i} style={{display:'flex',alignItems:'center',gap:8,background:'#f8f8f8',border:B,borderRadius:8,padding:8}}>
+            <img src={im.url} alt="" style={{width:46,height:46,objectFit:'cover',border:B,borderRadius:6,flexShrink:0,background:'#fff'}}/>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:12,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{im.caption||'(no caption)'}</div>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9,color:'#888',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{im.url}</div>
+            </div>
+            <button onClick={()=>rm(i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'4px 10px',boxShadow:SS}}>{T.del}</button>
+          </div>
+        ))}
+        <div style={{background:'#f0f0f0',border:BT,borderRadius:10,padding:10,display:'flex',flexDirection:'column',gap:8}}>
+          <input value={url} onChange={e=>{setUrl(e.target.value);setErr('');}} placeholder={T.imgUrlPh} style={iSt}/>
+          <input value={cap} onChange={e=>setCap(e.target.value)} onKeyDown={e=>e.key==='Enter'&&add()} placeholder={T.imgCapPh} style={iSt}/>
+          {err&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:C.red}}>{err}</div>}
+          <button onClick={add} style={{border:BT,borderRadius:8,padding:'11px',background:C.purple,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>{T.imgAdd}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Free-form links: label + url (booking form, ticket page, ...).
+function LinksBlock({draft,setDraft}){
+  const[label,setLabel]=React.useState('');const[url,setUrl]=React.useState('');const[err,setErr]=React.useState('');
+  const cur=draft.links||[];
+  const add=()=>{const u=url.trim();if(!u)return;if(!isHttpUrl(u)){setErr(T.urlInvalid);return;}setErr('');setDraft(d=>({...d,links:[...(d.links||[]),{label:label.trim()||u,url:u}]}));setLabel('');setUrl('');};
+  const rm=i=>setDraft(d=>({...d,links:(d.links||[]).filter((_,j)=>j!==i)}));
+  const iSt={width:'100%',border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none',minWidth:0};
+  return(
+    <div>
+      <Label>{T.linksL}</Label>
+      <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:4}}>
+        {cur.length===0&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#aaa'}}>{T.linkEmpty}</div>}
+        {cur.map((l,i)=>(
+          <div key={i} style={{display:'flex',alignItems:'center',gap:8,background:'#f8f8f8',border:B,borderRadius:8,padding:'8px 12px'}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{l.label}</div>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9,color:'#888',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{l.url}</div>
+            </div>
+            <button onClick={()=>rm(i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'4px 10px',boxShadow:SS}}>{T.del}</button>
+          </div>
+        ))}
+        <div style={{background:'#f0f0f0',border:BT,borderRadius:10,padding:10,display:'flex',flexDirection:'column',gap:8}}>
+          <input value={label} onChange={e=>setLabel(e.target.value)} placeholder={T.linkLabelPh} style={iSt}/>
+          <input value={url} onChange={e=>{setUrl(e.target.value);setErr('');}} onKeyDown={e=>e.key==='Enter'&&add()} placeholder={T.linkUrlPh} style={iSt}/>
+          {err&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:C.red}}>{err}</div>}
+          <button onClick={add} style={{border:BT,borderRadius:8,padding:'11px',background:C.turquoise,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>{T.linkAdd}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function EventCard({ev,tags,people,dayBgMap,onSave,onDelete,onDuplicate}){
   const[open,setOpen]=React.useState(false);
   const[draft,setDraft]=React.useState(null);
   const[savedMark,setSavedMark]=React.useState(false);
   const[djName,setDjName]=React.useState('');const[djXid,setDjXid]=React.useState('');
   const[vjName,setVjName]=React.useState('');const[vjXid,setVjXid]=React.useState('');
-  const startEdit=()=>{setDraft({date:ev.date,title:ev.title,tags:[...(ev.tags||[])],djs:[...ev.djs],vjs:[...ev.vjs],flyer:ev.flyer||null,dayBg:(dayBgMap[ev.date]!==undefined?dayBgMap[ev.date]:null),comingSoon:ev.comingSoon||false});setDjName('');setDjXid('');setVjName('');setVjXid('');setOpen(true);};
+  const startEdit=()=>{setDraft({date:ev.date,title:ev.title,tags:[...(ev.tags||[])],djs:[...(ev.djs||[])],vjs:[...(ev.vjs||[])],flyer:ev.flyer||null,dayBg:(dayBgMap[ev.date]!==undefined?dayBgMap[ev.date]:null),comingSoon:ev.comingSoon||false,openTime:ev.openTime||'',closeTime:ev.closeTime||'',venue:ev.venue||'',price:ev.price||'',description:ev.description||'',xurl:ev.xurl||'',images:(ev.images||[]).map(i=>({...i})),links:(ev.links||[]).map(l=>({...l}))});setDjName('');setDjXid('');setVjName('');setVjXid('');setOpen(true);};
   const cancel=()=>{setOpen(false);setDraft(null);};
-  const saveCard=()=>{onSave(ev.id||ev.date,draft);setSavedMark(true);setTimeout(()=>setSavedMark(false),2000);setOpen(false);setDraft(null);};
+  const saveCard=()=>{onSave(ev.id||ev.date,normalizeDraft(draft),ev.date);setSavedMark(true);setTimeout(()=>setSavedMark(false),2000);setOpen(false);setDraft(null);};
   const d=parseDate(ev.date);const g=primaryTag(ev.tags,tags);
   const curBg=(dayBgMap[ev.date]!==undefined?dayBgMap[ev.date]:null);const isCS=ev.comingSoon||false;
   const iSt={width:'100%',border:BT,borderRadius:8,padding:'10px 12px',fontSize:14,background:'#fff',outline:'none'};
@@ -271,6 +388,19 @@ function EventCard({ev,tags,people,dayBgMap,onSave,onDelete,onDuplicate}){
           <PerfBlock role="djs" labelText={T.djL} addText={T.djAdd} bgColor={C.yellow} draft={draft} setDraft={setDraft} people={people} nameV={djName} setNameV={setDjName} xidV={djXid} setXidV={setDjXid}/>
           <PerfBlock role="vjs" labelText={T.vjL} addText={T.vjAdd} bgColor={C.turquoise} draft={draft} setDraft={setDraft} people={people} nameV={vjName} setNameV={setVjName} xidV={vjXid} setXidV={setVjXid}/>
           <div><Label>{T.flyerL}</Label><div style={{marginTop:6,display:'flex',flexDirection:'column',gap:8}}>{draft.flyer&&(<div style={{position:'relative',border:BT,borderRadius:10,overflow:'hidden',maxWidth:180}}><img src={draft.flyer} alt="flyer" style={{width:'100%',display:'block'}}/><button onClick={()=>setDraft(d=>({...d,flyer:null}))} style={{position:'absolute',top:6,right:6,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'3px 8px',boxShadow:SS}}>{T.del}</button></div>)}<label style={{display:'inline-flex',alignItems:'center',gap:8,border:BT,borderRadius:10,padding:'12px 16px',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS,cursor:'pointer'}}>{draft.flyer?T.flyerChg:T.flyerAdd}<input type="file" accept="image/*" onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev2=>setDraft(d=>({...d,flyer:ev2.target.result}));r.readAsDataURL(f);}} style={{display:'none'}}/></label></div></div>
+          <div style={{borderTop:'3px dashed #ccc',paddingTop:14,display:'flex',flexDirection:'column',gap:14}}>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:14,background:C.orange,color:'#fff',border:B,borderRadius:8,padding:'3px 12px',boxShadow:SS,display:'inline-block',alignSelf:'flex-start'}}>{T.detailSec}</div>
+            <div style={{display:'flex',gap:8}}>
+              <div style={{flex:1,minWidth:0}}><Label>{T.openL}</Label><input type="text" value={draft.openTime} onChange={e=>setDraft(d=>({...d,openTime:e.target.value}))} placeholder={T.timePh} style={iSt}/></div>
+              <div style={{flex:1,minWidth:0}}><Label>{T.closeL}</Label><input type="text" value={draft.closeTime} onChange={e=>setDraft(d=>({...d,closeTime:e.target.value}))} placeholder={T.timePh} style={iSt}/></div>
+            </div>
+            <div><Label>{T.venueL}</Label><input type="text" value={draft.venue} onChange={e=>setDraft(d=>({...d,venue:e.target.value}))} placeholder={T.venuePh} style={iSt}/></div>
+            <div><Label>{T.priceL}</Label><input type="text" value={draft.price} onChange={e=>setDraft(d=>({...d,price:e.target.value}))} placeholder={T.pricePh} style={iSt}/></div>
+            <div><Label>{T.descL}</Label><textarea value={draft.description} onChange={e=>setDraft(d=>({...d,description:e.target.value}))} placeholder={T.descPh} style={{...iSt,minHeight:110,resize:'vertical',lineHeight:1.7}}/></div>
+            <div><Label>{T.xurlL}</Label><input type="text" value={draft.xurl} onChange={e=>setDraft(d=>({...d,xurl:e.target.value}))} placeholder="https://x.com/vocabuki/status/..." style={iSt}/></div>
+            <ImagesBlock draft={draft} setDraft={setDraft}/>
+            <LinksBlock draft={draft} setDraft={setDraft}/>
+          </div>
           <div style={{display:'flex',gap:8,paddingTop:4}}>
             <button onClick={saveCard} style={{flex:2,border:BT,borderRadius:10,padding:'14px 0',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}>{T.saveBt}</button>
             <button onClick={cancel} style={{flex:1,border:BT,borderRadius:10,padding:'14px 0',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS}}>{T.cancelBt}</button>
@@ -408,9 +538,9 @@ function AdminApp(){
     for(const ev of events){const key=ev.date+'|'+ev.title;if(seen.has(key))dupes.push(ev.title+' ('+ev.date+')');seen.add(key);}
     if(dupes.length>0){setStatus('error');setErrMsg(T.dupeErr+dupes.join(', '));return;}
     setStatus('saving');
-    try{await saveGH(token,{...extraData,events,tags,dayBgMap,closedDays,watchAccounts,people},sha);const{sha:ns}=await loadGH(token);setSha(ns);setStatus('saved');setTimeout(()=>setStatus('idle'),2500);}catch(e){setStatus('error');setErrMsg(e.message);}
+    try{const sortedEvents=[...events].sort((a,b)=>a.date.localeCompare(b.date));await saveGH(token,{...extraData,events:sortedEvents,tags,dayBgMap,closedDays,watchAccounts,people},sha);const{sha:ns}=await loadGH(token);setSha(ns);setStatus('saved');setTimeout(()=>setStatus('idle'),2500);}catch(e){setStatus('error');setErrMsg(e.message);}
   };
-  const handleSave=(evId,draft)=>{setEvents(prev=>prev.map(e=>(e.id||e.date)!==evId?e:{...e,...draft}));setDayBgMap(m=>{const n={...m};if(draft.dayBg===null)delete n[draft.date];else n[draft.date]=draft.dayBg;return n;});};
+  const handleSave=(evId,draft,prevDate)=>{const{dayBg,...evFields}=draft;setEvents(prev=>prev.map(e=>{if((e.id||e.date)!==evId)return e;const base={...e};EDITABLE_KEYS.forEach(k=>delete base[k]);return{...base,...evFields};}));setDayBgMap(m=>{const n={...m};if(prevDate&&prevDate!==draft.date)delete n[prevDate];if(dayBg===null||dayBg===undefined)delete n[draft.date];else n[draft.date]=dayBg;return n;});};
   const handleDelete=evId=>setEvents(prev=>prev.filter(e=>(e.id||e.date)!==evId));
   const handleDuplicate=ev=>setEvents(prev=>[...prev,{...ev,id:uid()}]);
   const handleBulkAdd=ne=>setEvents(prev=>[...prev,...ne]);

@@ -66,6 +66,24 @@
     nono4e:{name:'\u4e43\u3005\u702c',x:'@nono4e'},aym_pngn:{name:'\u3042\u3086\u3080',x:'@aym_pngn'},
   };
   const STAFF=['drag_on_3','rockstar_saihan','nono4e','aym_pngn'];
+  // イベント詳細のデフォルト（イベント側に指定がない場合に使う会場の基本情報）
+  const VENUE_DEFAULT={open:'24:00',close:'5:00',venue:'\u6b4c\u821e\u4f0e\u753a Gest32\u30d3\u30eb 5F'};
+  // 追加フィールド（openTime/closeTime/venue/price/description/images/links）は全て任意。
+  // 未設定なら従来通りの表示にフォールバックする。
+  function evOpen(ev){return (ev&&ev.openTime)||VENUE_DEFAULT.open;}
+  function evClose(ev){return (ev&&ev.closeTime)||VENUE_DEFAULT.close;}
+  function evVenue(ev){return (ev&&ev.venue)||VENUE_DEFAULT.venue;}
+  function evImages(ev){return Array.isArray(ev&&ev.images)?ev.images.filter(i=>i&&i.url):[];}
+  function evLinks(ev){return Array.isArray(ev&&ev.links)?ev.links.filter(l=>l&&l.url):[];}
+  // 外部から流し込まれた URL を描画前に検証する（javascript: などを弾く）
+  function safeUrl(u){
+    if(typeof u!=='string')return null;
+    const t=u.trim();
+    if(/^(https?:|mailto:)/i.test(t))return t;
+    if(/^data:image\//i.test(t))return t;
+    if(/^[\w./-]+$/.test(t)&&!t.startsWith('//'))return t; // リポジトリ内の相対パス
+    return null;
+  }
   const EVENTS_DEFAULT=[];
 
   const ls={
@@ -248,7 +266,7 @@
       if(evs.length===0){
         rows.push(<div key={key} style={{display:'flex',gap:12,alignItems:'stretch',border:BT,borderRadius:14,background:'#FFF6E0',overflow:'hidden',opacity:isPast?0.55:1,filter:isPast?'saturate(0.4)':'none'}}>
           <div style={{width:52,flexShrink:0,background:'#f0f0f0',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2,padding:'10px 4px'}}>
-            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#999'}}>{WDAYS[d.getDay()]}</div>
+            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#999'}}>{WDAYS[weekIdx(d)]}</div>
             <div style={{fontFamily:'"Reggae One",system-ui',fontSize:26,lineHeight:1,color:'#bbb'}}>{d.getDate()}</div>
           </div>
           <div style={{flex:1,padding:'10px 12px 10px 0',display:'flex',alignItems:'center'}}>
@@ -260,7 +278,7 @@
           const isCS=ev.comingSoon||false;const g=primaryTag(ev.tags,tags);
           rows.push(<div key={key+'-'+(ev.id||ei)} onClick={()=>onPick(ev)} style={{display:'flex',gap:12,alignItems:'stretch',border:BT,borderRadius:14,background:'#fff',boxShadow:S,overflow:'hidden',cursor:'pointer',opacity:isPast?0.55:1,filter:isPast?'saturate(0.4)':'none'}}>
             <div style={{width:52,flexShrink:0,background:g.color,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2,padding:'10px 4px'}}>
-              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#fff'}}>{WDAYS[d.getDay()]}</div>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#fff'}}>{WDAYS[weekIdx(d)]}</div>
               <div style={{fontFamily:'"Reggae One",system-ui',fontSize:26,lineHeight:1,color:'#fff',textShadow:'2px 2px 0 #111'}}>{d.getDate()}</div>
             </div>
             <div style={{flex:1,padding:'10px 12px 10px 0',display:'flex',flexDirection:'column',justifyContent:'center',minWidth:0}}>
@@ -270,7 +288,7 @@
                 {favorites[ev.id||ev.date]&&<Icon name="star" size={12} color="#111" fill={C.yellow}/>}
               </div>
               <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:16,lineHeight:1.2,opacity:isCS?0.6:1}}>{isCS?'COMING SOON':ev.title}</div>
-              {!isCS&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',marginTop:4}}>DJ {ev.djs.length} / VJ {ev.vjs.length} &#12539; OPEN 24:00</div>}
+              {!isCS&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',marginTop:4}}>DJ {(ev.djs||[]).length} / VJ {(ev.vjs||[]).length} &#12539; OPEN {evOpen(ev)}</div>}
             </div>
           </div>);
         });
@@ -281,19 +299,19 @@
 
   function UpcomingList({events,onPick,favorites,tags}){
     const today=new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
-    const upcoming=events.filter(e=>parseDate(e.date)>=today).slice(0,4);
+    const upcoming=events.filter(e=>parseDate(e.date)>=today).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4);
     return(<div style={{padding:'14px 16px 24px'}}>
       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
         <div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,background:C.ink,color:'#fff',border:BT,borderRadius:8,padding:'3px 12px',transform:'rotate(-2deg)',boxShadow:SS}}>UP NEXT</div>
         <div style={{flex:1,height:4,background:pat.stripesB('#111',C.yellow),border:B,borderRadius:4}}/>
       </div>
       <div style={{display:'flex',flexDirection:'column',gap:10}}>
-        {upcoming.length===0&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',textAlign:'center',padding:20}}>&#20170;&#26376;&#12399;&#12418;&#12358;&#12452;&#12505;&#12531;&#12488;&#12364;&#12354;&#12426;&#12414;&#12379;&#12435;</div>}
+        {upcoming.length===0&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',textAlign:'center',padding:20}}>&#20104;&#23450;&#12373;&#12428;&#12390;&#12356;&#12427;&#12452;&#12505;&#12531;&#12488;&#12399;&#12354;&#12426;&#12414;&#12379;&#12435;</div>}
         {upcoming.map(e=>{
           const d=parseDate(e.date),g=primaryTag(e.tags,tags),isToday=sameDay(d,TODAY),isCS=e.comingSoon||false;
           return(<PressCard key={e.id||e.date} onTap={()=>onPick(e)} style={{display:'flex',gap:12,alignItems:'center',background:'#fff',border:isCS?`4px solid ${C.orange}`:BT,borderRadius:14,padding:'10px 12px',boxShadow:isCS?SS:S,cursor:'pointer',opacity:isCS?0.7:1}}>
             <div style={{width:54,height:54,flexShrink:0,background:g.color,color:'#fff',border:B,borderRadius:10,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',boxShadow:SS,position:'relative'}}>
-              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,fontWeight:700}}>{d.getMonth()+1}/{WDAYS[d.getDay()]}</div>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,fontWeight:700}}>{d.getMonth()+1}/{WDAYS[weekIdx(d)]}</div>
               <div style={{fontFamily:'"Reggae One",system-ui',fontSize:26,lineHeight:1,textShadow:'2px 2px 0 #111'}}>{d.getDate()}</div>
               {isCS&&<div style={{position:'absolute',top:-6,right:-6,background:C.orange,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:8,borderRadius:4,padding:'2px 4px',border:'1.5px solid #111',lineHeight:1}}>CS</div>}
             </div>
@@ -304,7 +322,7 @@
                 {favorites[e.id||e.date]&&<Icon name="star" size={13} color="#111" fill={C.yellow}/>}
               </div>
               <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{isCS?'COMING SOON...':e.title}</div>
-              {!isCS&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',marginTop:2}}>DJ {e.djs.length}&#32068;&#12539;VJ {e.vjs.length}&#32068;&#12539;24:00&#8594;5:00</div>}
+              {!isCS&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',marginTop:2}}>DJ {(e.djs||[]).length}&#32068;&#12539;VJ {(e.vjs||[]).length}&#32068;&#12539;{evOpen(e)}&#8594;{evClose(e)}</div>}
               {isCS&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:C.orange,marginTop:2}}>&#35814;&#32048;&#12399;&#36817;&#26085;&#20844;&#38283;&#20104;&#23450;</div>}
             </div>
             <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:isCS?C.orange:'#111'}}>&#8250;</div>
@@ -317,7 +335,8 @@
   function ListView({events,onPick,favorites,tags}){
     const today=new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
     const byMonth={};
-    events.forEach(e=>{const d=parseDate(e.date);const k=`${d.getFullYear()}-${d.getMonth()+1}`;(byMonth[k]=(byMonth[k]||[]));byMonth[k].push(e);});
+    events.forEach(e=>{const d=parseDate(e.date);const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;(byMonth[k]=(byMonth[k]||[]));byMonth[k].push(e);});
+    Object.keys(byMonth).forEach(k=>byMonth[k].sort((a,b)=>a.date.localeCompare(b.date)));
     return(<div style={{padding:'6px 16px 20px',display:'flex',flexDirection:'column',gap:14}}>
       {Object.keys(byMonth).sort().map(mk=>{
         const[y,m]=mk.split('-').map(Number);
@@ -330,7 +349,7 @@
               const d=parseDate(e.date),g=primaryTag(e.tags,tags),isPast=d<today,isToday=sameDay(d,TODAY),isCS=e.comingSoon||false;
               return(<PressCard key={e.id||e.date} onTap={()=>onPick(e)} style={{display:'flex',gap:12,alignItems:'center',background:'#fff',border:isCS?`4px solid ${C.orange}`:BT,borderRadius:12,padding:'10px 12px',boxShadow:isPast?'none':(isCS?SS:S),cursor:'pointer',opacity:isPast?0.55:(isCS?0.7:1),filter:isPast?'saturate(0.4)':'none'}}>
                 <div style={{width:44,height:44,flexShrink:0,background:g.color,color:'#fff',border:B,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',position:'relative'}}>
-                  <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9}}>{WDAYS[d.getDay()]}</div>
+                  <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9}}>{WDAYS[weekIdx(d)]}</div>
                   <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,lineHeight:1,textShadow:'1.5px 1.5px 0 #111'}}>{d.getDate()}</div>
                   {isCS&&<div style={{position:'absolute',top:-5,right:-5,background:C.orange,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:7,borderRadius:3,padding:'1px 4px',border:'1.5px solid #111',lineHeight:1}}>CS</div>}
                 </div>
@@ -369,7 +388,8 @@
   function SecTitle({children,color=C.red}){return(<div style={{display:'inline-flex',alignItems:'center',gap:8,marginBottom:10}}><div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,background:color,color:'#fff',border:BT,borderRadius:8,padding:'3px 12px',boxShadow:SS,transform:'rotate(-2deg)'}}>{children}</div></div>);}
   function FlyerArea({event,tags}){
     const g=primaryTag(event.tags,tags);
-    if(event.flyer)return(<div style={{aspectRatio:'3/4',border:BT,borderRadius:14,overflow:'hidden',boxShadow:SB}}><img src={event.flyer} alt="flyer" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/></div>);
+    const flyerSrc=safeUrl(event.flyer);
+    if(flyerSrc)return(<div style={{aspectRatio:'3/4',border:BT,borderRadius:14,overflow:'hidden',boxShadow:SB}}><img src={flyerSrc} alt="flyer" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/></div>);
     return(<div style={{position:'relative',aspectRatio:'3/4',border:BT,borderRadius:14,overflow:'hidden',boxShadow:SB,background:`${pat.halftone('rgba(17,17,17,0.3)')},${pat.stripes(g.color,C.yellow)}`,backgroundSize:'6px 6px,auto'}}>
       <div style={{position:'absolute',inset:0,background:'rgba(255,251,236,0.35)'}}/>
       <div style={{position:'absolute',top:16,left:16,right:16,display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
@@ -381,6 +401,46 @@
       </div>
       <div style={{position:'absolute',top:'45%',left:-20,width:60,height:60,borderRadius:'50%',background:C.yellow,border:B}}/>
       <div style={{position:'absolute',top:'30%',right:-24,width:80,height:80,borderRadius:'50%',background:C.turquoise,border:B,opacity:0.9}}/>
+    </div>);
+  }
+
+  // 追加画像ギャラリー（タップで拡大）
+  function EventGallery({images}){
+    const[zoom,setZoom]=React.useState(null);
+    const shots=(images||[]).map(i=>({url:safeUrl(i.url),caption:i.caption||''})).filter(i=>i.url);
+    if(shots.length===0)return null;
+    return(<div style={{marginBottom:18}}>
+      <SecTitle color={C.purple}>&#12462;&#12515;&#12521;&#12522;&#12540;</SecTitle>
+      <div style={{display:'grid',gridTemplateColumns:shots.length===1?'1fr':'1fr 1fr',gap:8}}>
+        {shots.map((im,i)=>(
+          <button key={i} onClick={()=>setZoom(im)} style={{padding:0,border:BT,borderRadius:12,overflow:'hidden',boxShadow:S,background:'#fff',display:'block',width:'100%'}}>
+            <img src={im.url} alt={im.caption||`image ${i+1}`} loading="lazy" style={{width:'100%',aspectRatio:shots.length===1?'4/3':'1/1',objectFit:'cover',display:'block'}}/>
+            {im.caption&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',padding:'6px 8px',textAlign:'left',borderTop:'2px solid #111',background:'#fff'}}>{im.caption}</div>}
+          </button>
+        ))}
+      </div>
+      {zoom&&(<div onClick={()=>setZoom(null)} style={{position:'fixed',inset:0,zIndex:60,background:'rgba(17,17,17,0.88)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:12,padding:20,cursor:'zoom-out'}}>
+        <img src={zoom.url} alt={zoom.caption||'image'} style={{maxWidth:'100%',maxHeight:'78vh',objectFit:'contain',border:BT,borderRadius:12,background:'#fff'}}/>
+        {zoom.caption&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#fff',textAlign:'center'}}>{zoom.caption}</div>}
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#bbb'}}>&#12479;&#12483;&#12503;&#12391;&#38281;&#12376;&#12427;</div>
+      </div>)}
+    </div>);
+  }
+  // 任意の外部リンク（予約フォーム・チケット・特設ページなど）
+  function EventLinks({links}){
+    const items=(links||[]).map(l=>({label:l.label||l.url,url:safeUrl(l.url)})).filter(l=>l.url);
+    if(items.length===0)return null;
+    return(<div style={{marginBottom:18}}>
+      <SecTitle color={C.turquoiseDark}>&#12522;&#12531;&#12463;</SecTitle>
+      <div style={{display:'flex',flexDirection:'column',gap:8}}>
+        {items.map((l,i)=>(
+          <a key={i} href={l.url} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:10,background:'#fff',border:BT,borderRadius:12,padding:'12px 14px',textDecoration:'none',color:C.ink,boxShadow:SS}}>
+            <Icon name="globe" size={18} color={C.turquoiseDark}/>
+            <span style={{flex:1,minWidth:0,fontFamily:'"RocknRoll One",system-ui',fontSize:14,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{l.label}</span>
+            <span style={{fontFamily:'"Reggae One",system-ui',fontSize:16}}>&#8599;</span>
+          </a>
+        ))}
+      </div>
     </div>);
   }
 
@@ -411,7 +471,7 @@
       </div>
       <div style={{position:'relative',padding:'20px 16px',display:'flex',flexDirection:'column',alignItems:'center',gap:24,textAlign:'center'}}>
         <div style={{background:g.color,color:'#fff',border:BT,borderRadius:14,padding:'10px 20px',boxShadow:SB,transform:'rotate(-2deg)',fontFamily:'"Reggae One",system-ui',fontSize:13}}>
-          {d.getFullYear()}&#24180; {d.getMonth()+1}&#26376; {d.getDate()}&#26085;&#65288;{WDAYS[d.getDay()]}&#65289;
+          {d.getFullYear()}&#24180; {d.getMonth()+1}&#26376; {d.getDate()}&#26085;&#65288;{WDAYS[weekIdx(d)]}&#65289;
         </div>
         <StarBurst size={120} color={C.orange} spikes={16}><div style={{fontFamily:'"Reggae One",system-ui',fontSize:13,lineHeight:1.3}}>COMING<br/>SOON</div></StarBurst>
         <div style={{fontFamily:'"Reggae One",system-ui',fontSize:26,color:C.ink}}>{event.title}</div>
@@ -419,7 +479,9 @@
           &#35814;&#32048;&#12399;&#36817;&#26085;&#20844;&#38283;&#20104;&#23450;&#12391;&#12377;<br/>
           &#20844;&#24335;X&#12398; #&#12508;&#12459;&#12502;&#12461;&#12452;&#12505;&#12531;&#12488; &#12434;&#12362;&#30906;&#12363;&#12417;&#12367;&#12384;&#12373;&#12356;
         </div>
-        <a href={event.xurl||'https://x.com/vocabuki'} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,background:C.ink,color:'#fff',border:BT,borderRadius:12,padding:'14px 20px',textDecoration:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,width:'100%'}}>
+        {event.description&&<div style={{width:'100%',background:'#fff',border:BT,borderRadius:14,padding:'14px 16px',boxShadow:S,fontFamily:'"M PLUS Rounded 1c",system-ui',fontSize:13,lineHeight:1.9,color:'#222',whiteSpace:'pre-wrap',wordBreak:'break-word',textAlign:'left'}}>{event.description}</div>}
+        <div style={{width:'100%',textAlign:'left'}}><EventLinks links={evLinks(event)}/></div>
+        <a href={safeUrl(event.xurl)||'https://x.com/vocabuki'} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,background:C.ink,color:'#fff',border:BT,borderRadius:12,padding:'14px 20px',textDecoration:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,width:'100%'}}>
           <XIcon size={22}/>X&#12391;&#12501;&#12457;&#12525;&#12540;&#12377;&#12427;
         </a>
       </div>
@@ -442,7 +504,7 @@
           <div style={{background:C.red,color:'#fff',border:BT,borderRadius:14,padding:'10px 14px',boxShadow:SB,transform:'rotate(-3deg)',flexShrink:0}}>
             <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,opacity:0.95}}>{d.getFullYear()}&#24180;{d.getMonth()+1}&#26376;</div>
             <div style={{fontFamily:'"Reggae One",system-ui',fontSize:56,lineHeight:0.95,textShadow:'3px 3px 0 #111'}}>{d.getDate()}</div>
-            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:14,textAlign:'right'}}>({WDAYS[d.getDay()]})</div>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:14,textAlign:'right'}}>({WDAYS[weekIdx(d)]})</div>
           </div>
           <div style={{flex:1,paddingTop:6}}>
             <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
@@ -455,14 +517,18 @@
           <div style={{position:'absolute',top:-6,right:-6,transform:'rotate(12deg)'}}><StarBurst size={52} color={C.yellow} spikes={14}><div style={{fontSize:10,color:'#111',textShadow:'none'}}>LIVE</div></StarBurst></div>
           <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',marginBottom:4}}>EVENT TITLE</div>
           <div style={{fontFamily:'"Reggae One",system-ui',fontSize:28,lineHeight:1.1,color:C.ink,paddingRight:50}}>{event.title}</div>
-          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,marginTop:8,color:'#333'}}>OPEN 24:00 / CLOSE 5:00 &#65295; &#27468;&#33310;&#20238;&#30010; Gest32&#12499;&#12523; 5F</div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,marginTop:8,color:'#333'}}>OPEN {evOpen(event)} / CLOSE {evClose(event)} &#65295; {evVenue(event)}</div>
+          {event.price&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,marginTop:4,color:'#333'}}>&#26009;&#37329; {event.price}</div>}
         </div>
         <div style={{marginBottom:18}}><FlyerArea event={event} tags={tags}/></div>
-        <div style={{marginBottom:18}}><SecTitle color={C.red}>&#20986;&#28436;DJ</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{event.djs.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>
-        <div style={{marginBottom:18}}><SecTitle color={C.turquoiseDark}>&#20986;&#28436;VJ</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{event.vjs.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>
+        {event.description&&<div style={{marginBottom:18}}><SecTitle color={C.orange}>&#12452;&#12505;&#12531;&#12488;&#35443;&#32048;</SecTitle><div style={{background:'#fff',border:BT,borderRadius:14,padding:'14px 16px',boxShadow:S,fontFamily:'"M PLUS Rounded 1c",system-ui',fontSize:13,lineHeight:1.9,color:'#222',whiteSpace:'pre-wrap',wordBreak:'break-word'}}>{event.description}</div></div>}
+        <EventGallery images={evImages(event)}/>
+        {(event.djs||[]).length>0&&<div style={{marginBottom:18}}><SecTitle color={C.red}>&#20986;&#28436;DJ</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{event.djs.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>}
+        {(event.vjs||[]).length>0&&<div style={{marginBottom:18}}><SecTitle color={C.turquoiseDark}>&#20986;&#28436;VJ</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{event.vjs.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>}
         <div style={{marginBottom:22}}><SecTitle color={C.ink}>&#12508;&#12459;&#12502;&#12461;&#12473;&#12479;&#12483;&#12501;</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{STAFF.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>
+        <EventLinks links={evLinks(event)}/>
         <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:8}}>
-          <a href={event.xurl||'https://x.com/vocabuki'} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,background:C.ink,color:'#fff',border:BT,borderRadius:12,padding:'14px 16px',textDecoration:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}><XIcon size={22}/>X&#12391;&#12452;&#12505;&#12531;&#12488;&#12434;&#35211;&#12427;</a>
+          <a href={safeUrl(event.xurl)||'https://x.com/vocabuki'} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,background:C.ink,color:'#fff',border:BT,borderRadius:12,padding:'14px 16px',textDecoration:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}><XIcon size={22}/>X&#12391;&#12452;&#12505;&#12531;&#12488;&#12434;&#35211;&#12427;</a>
           <button onClick={()=>toggleFav(event.id||event.date)} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:isFav?C.yellow:'#fff',color:'#111',border:BT,borderRadius:12,padding:'12px 16px',fontFamily:'"RocknRoll One",system-ui',fontSize:14,boxShadow:SS}}><Icon name="star" size={18} color="#111" fill={isFav?C.yellow:'none'}/>{isFav?'\u304a\u6c17\u306b\u5165\u308a\u304b\u3089\u5916\u3059':'\u304a\u6c17\u306b\u5165\u308a\u306b\u8ffd\u52a0'}</button>
         </div>
         <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,textAlign:'center',color:'#666',marginTop:20,lineHeight:1.5}}>&#24773;&#22577;&#12399;X&#12398; #&#12508;&#12459;&#12502;&#12461;&#12452;&#12505;&#12531;&#12488; &#12424;&#12426;&#33258;&#21205;&#21462;&#24471;&#12375;&#12390;&#12356;&#12414;&#12377;&#12290;<br/>&#26368;&#26032;&#24773;&#22577;&#12399;&#21508;DJ&#12539;VJ&#12539;&#12508;&#12459;&#12502;&#12461;&#20844;&#24335;X&#12434;&#12372;&#30906;&#35469;&#12367;&#12384;&#12373;&#12356;&#12290;</div>
