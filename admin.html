@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>VOCABUKI ADMIN</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,6 +16,13 @@
     input, textarea, select { font-family:inherit; }
     ::-webkit-scrollbar { width:4px; }
     ::-webkit-scrollbar-thumb { background:rgba(17,17,17,0.2); border-radius:2px; }
+    /* iOS zooms into any field whose text is under 16px and never zooms back out,
+       which makes the whole form unusable on a phone. Force 16px on touch devices. */
+    @media (pointer: coarse) {
+      input, textarea, select { font-size: 16px !important; }
+    }
+    /* Keep the fixed header on one line on a 320px screen. */
+    .vb-nowrap { white-space: nowrap; }
   </style>
 </head>
 <body>
@@ -101,10 +108,13 @@ window.T={
   imgUploading:"\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u4e2d...",
   imgUploadBt:"\ud83d\udcce \u7aef\u672b\u304b\u3089\u753b\u50cf\u3092\u9078\u3076",
   imgTooBig:"\u753b\u50cf\u304c\u5927\u304d\u3059\u304e\u307e\u3059\uff08\u4e0a\u9650 10MB\uff09",
-  imgNotImage:"\u753b\u50cf\u30d5\u30a1\u30a4\u30eb\u3092\u9078\u3093\u3067\u304f\u3060\u3055\u3044\uff08JPEG / PNG / GIF / WebP\uff09",
+  imgNotImage:"\u753b\u50cf\u30d5\u30a1\u30a4\u30eb\u3092\u9078\u3093\u3067\u304f\u3060\u3055\u3044",
+  imgUnsupported:"\u3053\u306e\u5f62\u5f0f\u306e\u753b\u50cf\u306f\u3053\u306e\u7aef\u672b\u3067\u5909\u63db\u3067\u304d\u307e\u305b\u3093\u3002JPEG \u304b PNG \u3067\u4fdd\u5b58\u3057\u76f4\u3057\u3066\u304b\u3089\u304a\u8a66\u3057\u304f\u3060\u3055\u3044\u3002",
   imgUploadFail:"\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u306b\u5931\u6557\u3057\u307e\u3057\u305f: ",
   imgOrUrl:"\u307e\u305f\u306f URL \u3092\u76f4\u63a5\u5165\u529b",
   flyerNote:"\u753b\u50cf\u306f images/ \u306b\u30d5\u30a1\u30a4\u30eb\u3068\u3057\u3066\u4fdd\u5b58\u3055\u308c\u3001events.json \u306b\u306f\u30d1\u30b9\u3060\u3051\u304c\u5165\u308a\u307e\u3059\u3002",
+  rememberL:"\u3053\u306e\u7aef\u672b\u306b\u30ed\u30b0\u30a4\u30f3\u3092\u8a18\u61b6\u3059\u308b",
+  rememberNote:"\u5171\u6709\u306e\u7aef\u672b\u3067\u306f\u5916\u3057\u3066\u3001\u4f7f\u3044\u7d42\u308f\u3063\u305f\u3089\u30ed\u30b0\u30a2\u30a6\u30c8\u3057\u3066\u304f\u3060\u3055\u3044\u3002",
 };
 </script>
 
@@ -119,6 +129,20 @@ const GH_PATH='events.json';
 const ADMIN_PW_HASH='3b33abb9ed02762e621268cfb4d416b3a8b84e8aacf9f8e25a07cdd5c1f231c7';
 async function sha256Hex(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
 const T=window.T;
+// The PAT lives in sessionStorage by default. Phones discard tabs aggressively and
+// re-typing a PAT on a phone keyboard is not realistic, so the login screen can opt
+// into localStorage instead ("remember on this device").
+const tokenStore={
+  get(){try{return localStorage.getItem('vb_token')||sessionStorage.getItem('vb_token')||'';}catch(e){return '';}},
+  isRemembered(){try{return !!localStorage.getItem('vb_token');}catch(e){return false;}},
+  set(tk,remember){
+    try{
+      sessionStorage.setItem('vb_token',tk);
+      if(remember)localStorage.setItem('vb_token',tk);else localStorage.removeItem('vb_token');
+    }catch(e){}
+  },
+  clear(){try{sessionStorage.removeItem('vb_token');localStorage.removeItem('vb_token');}catch(e){}},
+};
 const C={turquoise:'#2EC5CE',turquoiseDark:'#1EA3AC',yellow:'#FFD23F',red:'#E63946',orange:'#FF8A1E',paper:'#FFFBEC',ink:'#111111',purple:'#6A3FD9'};
 const B='3px solid #111',BT='4px solid #111',S='4px 4px 0 #111',SB='6px 6px 0 #111',SS='2px 2px 0 #111';
 const pat={halftone:c=>`radial-gradient(circle at 3px 3px,${c} 1.8px,transparent 2px)`};
@@ -205,13 +229,13 @@ function PerfBlock({role,labelText,addText,bgColor,draft,setDraft,people,nameV,s
               <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{p.name}</div>
               <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{p.x||('@'+id)}</div>
             </div>
-            <button onClick={()=>rmPerf(i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'4px 10px',boxShadow:SS}}>{T.del}</button>
+            <button onClick={()=>rmPerf(i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'9px 12px',minHeight:38,boxShadow:SS}}>{T.del}</button>
           </div>);})}
         <div style={{background:'#f0f0f0',border:BT,borderRadius:10,padding:10,display:'flex',flexDirection:'column',gap:8}}>
           <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555'}}>{T.perfNew}</div>
-          <div style={{display:'flex',gap:6}}>
-            <input value={nameV} onChange={e=>setNameV(e.target.value)} placeholder={T.namePh} style={{flex:1,border:BT,borderRadius:8,padding:'10px',fontSize:13,outline:'none',minWidth:0}}/>
-            <div style={{flex:1,display:'flex',alignItems:'center',border:BT,borderRadius:8,background:'#fff',overflow:'hidden',minWidth:0}}>
+          <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+            <input value={nameV} onChange={e=>setNameV(e.target.value)} placeholder={T.namePh} style={{flex:'1 1 130px',border:BT,borderRadius:8,padding:'10px',fontSize:13,outline:'none',minWidth:0}}/>
+            <div style={{flex:'1 1 130px',display:'flex',alignItems:'center',border:BT,borderRadius:8,background:'#fff',overflow:'hidden',minWidth:0}}>
               <span style={{padding:'0 4px 0 8px',fontFamily:'"DotGothic16",monospace',fontSize:13,color:'#888',flexShrink:0}}>@</span>
               <input value={xidV} onChange={e=>setXidV(e.target.value.replace(/^@/,''))} onKeyDown={e=>e.key==='Enter'&&addPerf()} placeholder={T.xidPh} style={{flex:1,border:'none',padding:'10px 6px 10px 0',fontSize:13,outline:'none',background:'transparent',minWidth:0}}/>
             </div>
@@ -243,7 +267,7 @@ function TagsBlock({draft,setDraft,tags}){
         {cur.length===0&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#aaa'}}>\u30bf\u30b0\u672a\u8a2d\u5b9a</div>}
         {cur.map(t=>{const info=tagInfo(t);const col=info&&info.color;const lbl=info?info.label:t;return(
           <div key={t} style={{display:'inline-flex',alignItems:'center',gap:4,background:col||C.turquoise,color:col?(['#F5E642','#B8F0B0','#D4B0F0'].includes(col)?'#111':'#fff'):'#fff',border:B,borderRadius:20,padding:'5px 8px 5px 12px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>
-            # {lbl}<button onClick={()=>rmTag(t)} style={{background:'none',border:'none',color:'inherit',fontSize:14,padding:'0 0 0 4px',lineHeight:1,cursor:'pointer'}}>x</button>
+            # {lbl}<button onClick={()=>rmTag(t)} aria-label="remove" style={{background:'none',border:'none',color:'inherit',fontSize:16,minWidth:32,minHeight:32,padding:'0 0 0 6px',lineHeight:1,cursor:'pointer'}}>x</button>
           </div>);})}
       </div>
       {/* \u8272\u4ed8\u304d\u30bf\u30b0\u3092\u30af\u30a4\u30c3\u30af\u8ffd\u52a0 */}
@@ -252,8 +276,8 @@ function TagsBlock({draft,setDraft,tags}){
           <button key={t.id} onClick={()=>on?rmTag(t.id):addTag(t.id)} style={{display:'inline-flex',alignItems:'center',gap:4,border:on?'3px solid #111':'2px solid #111',borderRadius:8,padding:'6px 12px',background:on?t.color:'#fff',color:on?(['#F5E642','#B8F0B0','#D4B0F0'].includes(t.color)?'#111':'#fff'):'#111',fontFamily:'"DotGothic16",monospace',fontSize:12,cursor:'pointer',boxShadow:on?SS:'none',whiteSpace:'nowrap'}}># {t.label}</button>);})}
       </div>
       {/* \u81ea\u7531\u30bf\u30b0\u5165\u529b */}
-      <div style={{display:'flex',gap:6}}>
-        <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addTag()} placeholder={T.tagAddPh} style={{flex:1,border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none'}}/>
+      <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+        <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addTag()} placeholder={T.tagAddPh} style={{flex:'1 1 140px',minWidth:0,border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none'}}/>
         <button onClick={()=>addTag()} style={{border:BT,borderRadius:8,padding:'8px 14px',background:C.turquoise,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS,flexShrink:0}}>\uff0b</button>
       </div>
     </div>
@@ -274,7 +298,8 @@ const IMG_MAX_BYTES=10*1024*1024;   // reject anything larger outright
 const IMG_MAX_DIM=1600;             // long edge after downscaling
 const IMG_PASSTHROUGH_BYTES=300*1024; // small enough already: upload the original bytes
 const IMG_JPEG_QUALITY=0.85;
-const IMG_TYPES=['image/jpeg','image/png','image/gif','image/webp'];
+// Types we can store as-is. Anything else the browser reports as an image (iPhone
+// HEIC/HEIF, Android HEIF, ...) still goes through the canvas path and comes out JPEG.
 const IMG_EXT={'image/jpeg':'jpg','image/png':'png','image/gif':'gif','image/webp':'webp'};
 
 function bytesToBase64(bytes){
@@ -297,17 +322,20 @@ function loadImageEl(file){
 // Shrink to IMG_MAX_DIM and re-encode as JPEG. Files that are already small and
 // within bounds are passed through untouched (keeps PNG transparency and crisp text).
 async function prepareImage(file){
-  if(file.size<=IMG_PASSTHROUGH_BYTES){
+  const knownExt=IMG_EXT[file.type];
+  if(knownExt&&file.size<=IMG_PASSTHROUGH_BYTES){
     const buf=new Uint8Array(await file.arrayBuffer());
     try{
       const img=await loadImageEl(file);
-      if(Math.max(img.width,img.height)<=IMG_MAX_DIM)return{bytes:buf,ext:IMG_EXT[file.type]||'jpg'};
-    }catch(e){return{bytes:buf,ext:IMG_EXT[file.type]||'jpg'};}
+      if(Math.max(img.width,img.height)<=IMG_MAX_DIM)return{bytes:buf,ext:knownExt};
+    }catch(e){return{bytes:buf,ext:knownExt};}
   }
   if(file.type==='image/gif'){ // animated GIFs would lose their frames on canvas
     return{bytes:new Uint8Array(await file.arrayBuffer()),ext:'gif'};
   }
-  const img=await loadImageEl(file);
+  let img;
+  try{img=await loadImageEl(file);}
+  catch(e){throw new Error(T.imgUnsupported);}
   const scale=Math.min(1,IMG_MAX_DIM/Math.max(img.width,img.height));
   const w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));
   const canvas=document.createElement('canvas');
@@ -330,7 +358,7 @@ function imageFileName(ext,hint){
 
 // Returns the repo-relative path to store in the event (e.g. "images/20260905-abc123.jpg").
 async function uploadImage(token,file,hint){
-  if(IMG_TYPES.indexOf(file.type)===-1)throw new Error(T.imgNotImage);
+  if(!/^image\//i.test(file.type||''))throw new Error(T.imgNotImage);
   if(file.size>IMG_MAX_BYTES)throw new Error(T.imgTooBig);
   const{bytes,ext}=await prepareImage(file);
   const path='images/'+imageFileName(ext,hint);
@@ -350,7 +378,7 @@ function ImageUploadButton({token,hint,onDone,label}){
     if(!f)return;
     setErr('');setBusy(true);
     try{const r=await uploadImage(token,f,hint);onDone(r.path,r.preview);}
-    catch(ex){setErr((ex.message===T.imgNotImage||ex.message===T.imgTooBig)?ex.message:(T.imgUploadFail+ex.message));}
+    catch(ex){const known=[T.imgNotImage,T.imgTooBig,T.imgUnsupported].indexOf(ex.message)!==-1;setErr(known?ex.message:(T.imgUploadFail+ex.message));}
     finally{setBusy(false);}
   };
   return(
@@ -401,7 +429,7 @@ function ImagesBlock({draft,setDraft,token,hint,shownSrc,addPreview}){
               <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:12,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{im.caption||'(no caption)'}</div>
               <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9,color:'#888',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{im.url}</div>
             </div>
-            <button onClick={()=>rm(i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'4px 10px',boxShadow:SS}}>{T.del}</button>
+            <button onClick={()=>rm(i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'9px 12px',minHeight:38,boxShadow:SS}}>{T.del}</button>
           </div>
         ))}
         <div style={{background:'#f0f0f0',border:BT,borderRadius:10,padding:10,display:'flex',flexDirection:'column',gap:8}}>
@@ -435,7 +463,7 @@ function LinksBlock({draft,setDraft}){
               <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{l.label}</div>
               <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9,color:'#888',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{l.url}</div>
             </div>
-            <button onClick={()=>rm(i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'4px 10px',boxShadow:SS}}>{T.del}</button>
+            <button onClick={()=>rm(i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'9px 12px',minHeight:38,boxShadow:SS}}>{T.del}</button>
           </div>
         ))}
         <div style={{background:'#f0f0f0',border:BT,borderRadius:10,padding:10,display:'flex',flexDirection:'column',gap:8}}>
@@ -507,9 +535,9 @@ function EventCard({ev,tags,people,dayBgMap,token,onSave,onDelete,onDuplicate}){
           </div>
           <div style={{borderTop:'3px dashed #ccc',paddingTop:14,display:'flex',flexDirection:'column',gap:14}}>
             <div style={{fontFamily:'"Reggae One",system-ui',fontSize:14,background:C.orange,color:'#fff',border:B,borderRadius:8,padding:'3px 12px',boxShadow:SS,display:'inline-block',alignSelf:'flex-start'}}>{T.detailSec}</div>
-            <div style={{display:'flex',gap:8}}>
-              <div style={{flex:1,minWidth:0}}><Label>{T.openL}</Label><input type="text" value={draft.openTime} onChange={e=>setDraft(d=>({...d,openTime:e.target.value}))} placeholder={T.timePh} style={iSt}/></div>
-              <div style={{flex:1,minWidth:0}}><Label>{T.closeL}</Label><input type="text" value={draft.closeTime} onChange={e=>setDraft(d=>({...d,closeTime:e.target.value}))} placeholder={T.timePh} style={iSt}/></div>
+            <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+              <div style={{flex:'1 1 120px',minWidth:0}}><Label>{T.openL}</Label><input type="text" value={draft.openTime} onChange={e=>setDraft(d=>({...d,openTime:e.target.value}))} placeholder={T.timePh} style={iSt}/></div>
+              <div style={{flex:'1 1 120px',minWidth:0}}><Label>{T.closeL}</Label><input type="text" value={draft.closeTime} onChange={e=>setDraft(d=>({...d,closeTime:e.target.value}))} placeholder={T.timePh} style={iSt}/></div>
             </div>
             <div><Label>{T.venueL}</Label><input type="text" value={draft.venue} onChange={e=>setDraft(d=>({...d,venue:e.target.value}))} placeholder={T.venuePh} style={iSt}/></div>
             <div><Label>{T.priceL}</Label><input type="text" value={draft.price} onChange={e=>setDraft(d=>({...d,price:e.target.value}))} placeholder={T.pricePh} style={iSt}/></div>
@@ -542,7 +570,7 @@ function ClosedDaysBlock({closedDays,setClosedDays}){
       </div>
       {closedDays.length===0
         ?<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#aaa',textAlign:'center',padding:'8px 0'}}>{T.closedEmpty}</div>
-        :<div style={{display:'flex',flexWrap:'wrap',gap:6}}>{closedDays.map(d=>(<div key={d} style={{display:'inline-flex',alignItems:'center',gap:4,background:'#eee',border:B,borderRadius:20,padding:'4px 8px 4px 10px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>{d}<button onClick={()=>setClosedDays(prev=>prev.filter(x=>x!==d))} style={{background:'none',border:'none',fontSize:14,padding:'0 0 0 4px',lineHeight:1,cursor:'pointer',color:'#666'}}>x</button></div>))}</div>}
+        :<div style={{display:'flex',flexWrap:'wrap',gap:6}}>{closedDays.map(d=>(<div key={d} style={{display:'inline-flex',alignItems:'center',gap:4,background:'#eee',border:B,borderRadius:20,padding:'4px 8px 4px 10px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>{d}<button onClick={()=>setClosedDays(prev=>prev.filter(x=>x!==d))} aria-label="remove" style={{background:'none',border:'none',fontSize:16,minWidth:32,minHeight:32,padding:'0 0 0 6px',lineHeight:1,cursor:'pointer',color:'#666'}}>x</button></div>))}</div>}
     </div>
   );
 }
@@ -563,9 +591,10 @@ function BulkInputBlock({tags,onAdd}){
 }
 
 function LoginScreen({onLogin}){
-  const[id,setId]=React.useState(()=>sessionStorage.getItem('vb_token')||'');
+  const[id,setId]=React.useState(()=>tokenStore.get());
   const[pw,setPw]=React.useState('');const[err,setErr]=React.useState('');const[busy,setBusy]=React.useState(false);
-  const handleSubmit=async(e)=>{e.preventDefault();if((await sha256Hex(pw))!==ADMIN_PW_HASH){setErr(T.pwErr);setTimeout(()=>setErr(''),2000);return;}if(!id.trim()){setErr(T.tokenEmpty);return;}setBusy(true);setErr('');try{await ghFetch(id.trim(),GH_PATH);sessionStorage.setItem('vb_token',id.trim());onLogin(id.trim());}catch(ex){setErr(T.tokenErr+ex.message);setBusy(false);}};
+  const[remember,setRemember]=React.useState(true);
+  const handleSubmit=async(e)=>{e.preventDefault();if((await sha256Hex(pw))!==ADMIN_PW_HASH){setErr(T.pwErr);setTimeout(()=>setErr(''),2000);return;}if(!id.trim()){setErr(T.tokenEmpty);return;}setBusy(true);setErr('');try{await ghFetch(id.trim(),GH_PATH);tokenStore.set(id.trim(),remember);onLogin(id.trim());}catch(ex){setErr(T.tokenErr+ex.message);setBusy(false);}};
   const iSt={width:'100%',border:BT,borderRadius:10,padding:'12px 14px',fontSize:15,outline:'none',background:'#fff',marginBottom:4};
   return(
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:20,background:C.paper}}>
@@ -583,6 +612,11 @@ function LoginScreen({onLogin}){
           <input type="text" name="username" value={id} onChange={e=>setId(e.target.value)} placeholder={T.tokenPh} autoComplete="username" style={{...iSt,marginBottom:12}}/>
           <Label>{T.pwL}</Label>
           <input type="password" name="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder={T.pwPh} autoComplete="current-password" style={iSt}/>
+          <label style={{display:'flex',alignItems:'center',gap:10,marginTop:12,cursor:'pointer'}}>
+            <input type="checkbox" checked={remember} onChange={e=>setRemember(e.target.checked)} style={{width:22,height:22,flexShrink:0,accentColor:C.turquoise}}/>
+            <span style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{T.rememberL}</span>
+          </label>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',marginTop:4,lineHeight:1.6}}>{T.rememberNote}</div>
           {err&&<div style={{color:C.red,fontFamily:'"DotGothic16",monospace',fontSize:11,marginBottom:4,marginTop:4}}>{err}</div>}
           <button type="submit" disabled={busy} style={{width:'100%',border:BT,borderRadius:10,padding:'13px',background:busy?'#999':C.turquoise,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,marginTop:8}}>{busy?T.tokenCheck:T.tokenLogin}</button>
         </form>
@@ -592,8 +626,8 @@ function LoginScreen({onLogin}){
 }
 
 function AdminApp(){
-  const[token,setToken]=React.useState(()=>sessionStorage.getItem('vb_token')||'');
-  const[loggedIn,setLoggedIn]=React.useState(()=>!!sessionStorage.getItem('vb_token'));
+  const[token,setToken]=React.useState(()=>tokenStore.get());
+  const[loggedIn,setLoggedIn]=React.useState(()=>!!tokenStore.get());
   const[events,setEvents]=React.useState([]);
   const[tags,setTags]=React.useState(TAGS_DEFAULT);
   const[dayBgMap,setDayBgMap]=React.useState({});
@@ -615,7 +649,7 @@ function AdminApp(){
       const{events:ev,tags:tg,dayBgMap:dbm,closedDays:cd,people:p,...rest}=data;
       setEvents(ev||[]);setTags(tg||TAGS_DEFAULT);setDayBgMap(dbm||{});setClosedDays(cd||[]);setPeople({...PEOPLE_DEFAULT,...(p||{})});setExtraData(rest);setSha(sha);setStatus('idle');
     }).catch(e=>{
-      if(e.message.includes('401')||e.message.includes('Bad cred')){sessionStorage.removeItem('vb_token');setLoggedIn(false);}
+      if(e.message.includes('401')||e.message.includes('Bad cred')){tokenStore.clear();setLoggedIn(false);}
       setStatus('error');setErrMsg(e.message);
     });
   },[loggedIn,token]);
@@ -641,7 +675,7 @@ function AdminApp(){
   const sorted=React.useMemo(()=>[...events].sort((a,b)=>a.date.localeCompare(b.date)),[events]);
   const weekEvts=sorted.filter(e=>e.date>=wsStr&&e.date<=weStr);
   const isThisWeek=fmtDate(getWeekStart(TODAY))===wsStr;
-  const logout=()=>{sessionStorage.removeItem('vb_token');setToken('');setLoggedIn(false);};
+  const logout=()=>{tokenStore.clear();setToken('');setLoggedIn(false);};
   const barBg=status==='loading'||status==='saving'?'#555':status==='saved'?'#3FB55E':status==='error'?C.red:null;
   const barTx=status==='loading'?T.ghLoading:status==='saving'?T.ghSaving:status==='saved'?T.ghSaved:status==='error'?(T.ghError+errMsg):null;
   const navBtn={width:42,height:42,border:BT,borderRadius:8,background:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:20,boxShadow:SS,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0};
@@ -651,13 +685,12 @@ function AdminApp(){
       <div style={{position:'fixed',top:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:520,zIndex:50,background:C.ink,boxShadow:'0 2px 8px rgba(0,0,0,0.3)'}}>
         <div style={{padding:'12px 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
           <div style={{display:'flex',alignItems:'center',gap:8}}>
-            <span style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#fff'}}>VOCA</span>
-            <span style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:C.turquoise}}>BUKI</span>
-            <span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#aaa'}}>{T.mgmt}</span>
+            <span className="vb-nowrap" style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#fff'}}>VOCA</span>
+            <span className="vb-nowrap" style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:C.turquoise}}>BUKI</span>
           </div>
-          <div style={{display:'flex',gap:8}}>
-            <button onClick={doSave} disabled={status==='loading'||status==='saving'} style={{background:status==='saved'?'#3FB55E':C.red,color:'#fff',border:BT,borderRadius:10,padding:'9px 16px',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS,opacity:status==='loading'||status==='saving'?0.6:1}}>{status==='saving'?T.saving:status==='saved'?T.saved:T.save}</button>
-            <button onClick={logout} style={{background:'#333',color:'#aaa',border:'2px solid #555',borderRadius:8,padding:'9px 12px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>{T.logout}</button>
+          <div style={{display:'flex',gap:8,flexShrink:0}}>
+            <button className="vb-nowrap" onClick={doSave} disabled={status==='loading'||status==='saving'} style={{background:status==='saved'?'#3FB55E':C.red,color:'#fff',border:BT,borderRadius:10,padding:'9px 14px',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS,opacity:status==='loading'||status==='saving'?0.6:1}}>{status==='saving'?T.saving:status==='saved'?T.saved:T.save}</button>
+            <button className="vb-nowrap" onClick={logout} style={{background:'#333',color:'#aaa',border:'2px solid #555',borderRadius:8,padding:'9px 10px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>{T.logout}</button>
           </div>
         </div>
         {barBg&&<div style={{background:barBg,color:'#fff',fontFamily:'"DotGothic16",monospace',fontSize:11,padding:'7px 16px',textAlign:'center'}}>{barTx}</div>}
@@ -672,12 +705,12 @@ function AdminApp(){
             {tags.map(t=>(<div key={t.id} style={{display:'flex',alignItems:'center',gap:10,background:'#fff',border:BT,borderRadius:10,padding:'12px 14px',boxShadow:SS}}>
               <div style={{width:30,height:30,borderRadius:6,background:t.color||'#ddd',border:B,flexShrink:0}}/>
               <div style={{flex:1,fontFamily:'"RocknRoll One",system-ui',fontSize:14}}># {t.label}<span style={{color:'#888',fontFamily:'"DotGothic16",monospace',fontSize:10,marginLeft:6}}>{t.id}</span></div>
-              <button onClick={()=>rmTag(t.id)} style={{background:'#fff',border:B,borderRadius:6,fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#666',padding:'4px 10px',boxShadow:SS}}>{T.del}</button>
+              <button onClick={()=>rmTag(t.id)} style={{background:'#fff',border:B,borderRadius:6,fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#666',padding:'9px 12px',minHeight:38,boxShadow:SS}}>{T.del}</button>
             </div>))}
             <div style={{background:'#fff',border:BT,borderRadius:10,padding:12,boxShadow:SS}}>
               <Label>{T.tagNew}</Label>
-              <div style={{display:'flex',gap:8,marginTop:4}}>
-                <input value={newLabel} onChange={e=>setNewLabel(e.target.value)} placeholder={T.tagNamePh} style={{flex:1,border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none'}}/>
+              <div style={{display:'flex',gap:8,marginTop:4,flexWrap:'wrap'}}>
+                <input value={newLabel} onChange={e=>setNewLabel(e.target.value)} placeholder={T.tagNamePh} style={{flex:'1 1 140px',minWidth:0,border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none'}}/>
                 <input type="color" value={newColor} onChange={e=>setNewColor(e.target.value)} style={{width:48,height:48,border:BT,borderRadius:8,padding:2,cursor:'pointer'}}/>
                 <button onClick={addTag} style={{border:BT,borderRadius:8,padding:'8px 14px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>{T.tagAdd}</button>
               </div>
