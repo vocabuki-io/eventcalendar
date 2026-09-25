@@ -19,7 +19,7 @@
     drag_on_3:{name:'dragon3',x:'@drag_on_3'},rockstar_saihan:{name:'\u0418ASU',x:'@rockstar_saihan'},
     nono4e:{name:'\u4e43\u3005\u702c',x:'@nono4e'},aym_pngn:{name:'\u3042\u3086\u3080',x:'@aym_pngn'},
   };
-  const STAFF=['drag_on_3','rockstar_saihan','nono4e','aym_pngn'];
+  const STAFF=['drag_on_3','rockstar_saihan','aym_pngn'];
   // イベント詳細のデフォルト（イベント側に指定がない場合に使う会場の基本情報）
   const VENUE_DEFAULT={open:'24:00',close:'5:00',venue:'\u6b4c\u821e\u4f0e\u753a Gest32\u30d3\u30eb 5F'};
   // 追加フィールド（openTime/closeTime/venue/price/description/images/links）は全て任意。
@@ -146,33 +146,43 @@
     const fg=on?(LIGHT_TAG_COLORS.includes(tag.color)?'#111':'#fff'):'#111';
     return(<button onClick={onClick} style={{flexShrink:0,border:B,borderRadius:999,padding:'6px 14px',background:bg,color:fg,boxShadow:on?SS:'none',fontFamily:'"RocknRoll One",system-ui',fontSize:13,transform:on?'translate(-1px,-1px)':'none',whiteSpace:'nowrap'}}># {tag.label}</button>);
   }
-  function TagFilter({activeSet,toggleTag,tags}){
+  function TagFilter({activeSet,toggleTag,tags,favOnly,toggleFav}){
     const allOn=activeSet.size===0;
     const rows=FILTER_GROUPS.map(g=>({...g,tags:tags.filter(t=>t.group===g.id)})).filter(g=>g.tags.length>0);
     const rowStyle={display:'flex',gap:8,overflowX:'auto',alignItems:'center',padding:'0 16px 4px',marginLeft:-16,marginRight:-16};
-    const labelStyle={flexShrink:0,fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#666',minWidth:54};
+    const chip=on=>({flexShrink:0,border:B,borderRadius:999,padding:'6px 14px',background:on?'#111':'#fff',color:on?'#fff':'#111',boxShadow:on?SS:'none',fontFamily:'"RocknRoll One",system-ui',fontSize:13,transform:on?'translate(-1px,-1px)':'none',whiteSpace:'nowrap'});
     return(<div style={{display:'flex',flexDirection:'column',gap:6}}>
+      <div style={rowStyle}>
+        <button onClick={toggleFav} style={{...chip(favOnly),background:favOnly?C.yellow:'#fff',color:'#111',display:'inline-flex',alignItems:'center',gap:6}}><Icon name="star" size={14} color="#111" fill={favOnly?'#fff':C.yellow}/>&#12362;&#27671;&#12395;&#20837;&#12426;</button>
+      </div>
       {rows.map((g,i)=>(<div key={g.id} style={rowStyle}>
-        <div style={labelStyle}>{g.label}</div>
-        {i===0&&<button onClick={()=>toggleTag('all')} style={{flexShrink:0,border:B,borderRadius:999,padding:'6px 14px',background:allOn?'#111':'#fff',color:allOn?'#fff':'#111',boxShadow:allOn?SS:'none',fontFamily:'"RocknRoll One",system-ui',fontSize:13,transform:allOn?'translate(-1px,-1px)':'none',whiteSpace:'nowrap'}}># ALL</button>}
+        {i===0&&<button onClick={()=>toggleTag('all')} style={chip(allOn)}># ALL</button>}
         {g.tags.map(t=>(<TagChip key={t.id} tag={t} on={activeSet.has(t.id)} onClick={()=>toggleTag(t.id)}/>))}
       </div>))}
     </div>);
   }
-  function MonthHeader({year,month,onPrev,onNext,onToday}){
-    return(<div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 16px',gap:8}}>
-      <div style={{display:'flex',alignItems:'center',gap:8}}>
-        <PopBtn onClick={onPrev} bg={C.yellow} size={38}>&#8249;</PopBtn>
-        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:28,lineHeight:1,display:'flex',alignItems:'baseline',gap:6}}>
-          <span style={{color:C.red}}>{year}</span><span style={{fontSize:16,color:'#111'}}>&#24180;</span>
-          <span style={{color:C.turquoiseDark,fontSize:38}}>{month+1}</span><span style={{fontSize:16,color:'#111'}}>&#26376;</span>
-        </div>
-      </div>
-      <div style={{display:'flex',gap:8}}>
-        <button onClick={onToday} style={{border:BT,background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:13,padding:'6px 12px',borderRadius:999,boxShadow:SS}}>&#20170;&#26085;</button>
-        <PopBtn onClick={onNext} bg={C.yellow} size={38}>&#8250;</PopBtn>
-      </div>
+  // 月・週で共通のヘッダー。矢印ボタンは大きく、文字と「今日」はボタンの下辺にそろえる。
+  const NAV_BTN=76;
+  function NavHeader({title,onPrev,onNext}){
+    return(<div style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',padding:'0 16px',gap:6}}>
+      <PopBtn onClick={onPrev} bg={C.yellow} size={NAV_BTN} style={{fontSize:36,flexShrink:0}}>&#8249;</PopBtn>
+      <div style={{flex:1,minWidth:0,display:'flex',justifyContent:'center'}}>{title}</div>
+      <PopBtn onClick={onNext} bg={C.yellow} size={NAV_BTN} style={{fontSize:36,flexShrink:0}}>&#8250;</PopBtn>
     </div>);
+  }
+  function TodayBtn({onClick}){
+    return(<button onClick={onClick} style={{marginLeft:'auto',border:BT,background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:13,padding:'6px 12px',borderRadius:999,boxShadow:SS,whiteSpace:'nowrap'}}>&#20170;&#26085;</button>);
+  }
+  function MonthHeader({year,month,onPrev,onNext}){
+    return(<NavHeader onPrev={onPrev} onNext={onNext} title={
+      <div style={{fontFamily:'"Reggae One",system-ui',fontSize:'min(28px,7.5vw)',lineHeight:1,display:'flex',alignItems:'baseline',gap:6,whiteSpace:'nowrap'}}>
+        <span style={{color:C.red}}>{year}</span><span style={{fontSize:16,color:'#111'}}>&#24180;</span>
+        <span style={{color:C.turquoiseDark,fontSize:'min(38px,10.2vw)'}}>{month+1}</span><span style={{fontSize:16,color:'#111'}}>&#26376;</span>
+      </div>}/>);
+  }
+  function WeekHeader({start,onPrev,onNext}){
+    return(<NavHeader onPrev={onPrev} onNext={onNext} title={
+      <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,lineHeight:1,whiteSpace:'nowrap'}}>{start.getMonth()+1}&#26376; <span style={{fontSize:12,color:'#555'}}>{start.getDate()}&#26085;&#12316;</span></div>}/>);
   }
   function WeekdayRow(){
     return(<div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,padding:'0 8px',marginTop:6}}>
@@ -182,6 +192,8 @@
     </div>);
   }
 
+  // 今日のマス：赤いネオン風の外枠
+  const TODAY_NEON='0 0 0 2px #fff,0 0 0 4.5px #FF2D55,0 0 8px 5px rgba(255,45,85,0.75),0 0 18px 8px rgba(255,45,85,0.35)';
   function DayCell({cell,events,isToday,isPast,favorites,onPick,dayBg,tags,isClosed}){
     const outside=cell.outside;
     const evs=(isClosed||outside)?[]:(events||[]);
@@ -190,24 +202,23 @@
     const favOf=ev=>!!(favorites&&favorites[ev.id||ev.date]);
     const baseBg=outside?'rgba(255,255,255,0.4)':'#fff';
     return(
-      <div style={{position:'relative',aspectRatio:'1/1.12',border:'2px solid #111',borderRadius:8,minWidth:0,overflow:'hidden',background:baseBg,opacity:(outside||isPast)?0.55:1,filter:isPast?'saturate(0.4)':'none',boxShadow:(has&&!isPast)?SS:'none',display:'flex',flexDirection:'column',transform:isToday?'scale(1.02)':'none',outline:isToday?`2.5px solid ${C.ink}`:'none',outlineOffset:isToday?'2px':0}}>
+      <div style={{position:'relative',aspectRatio:'1/1.12',border:'2px solid #111',borderRadius:8,minWidth:0,overflow:'hidden',background:baseBg,opacity:(outside||isPast)?0.55:1,filter:isPast?'saturate(0.4)':'none',boxShadow:isToday?TODAY_NEON:((has&&!isPast)?SS:'none'),display:'flex',flexDirection:'column',transform:isToday?'scale(1.02)':'none',zIndex:isToday?2:'auto'}}>
         <div style={{position:'absolute',top:2,left:3,zIndex:6,fontFamily:'"Reggae One",system-ui',fontSize:15,lineHeight:1,color:has?'#fff':(outside?'#aaa':'#777'),textShadow:has?'1px 1px 0 #111':'none',pointerEvents:'none'}}>{cell.date.getDate()}</div>
         {single&&(()=>{
           const ev=evs[0];const g=primaryTag(ev.tags,tags);const col=dayBg||g.color;const isCS=ev.comingSoon||false;
           return(<div onClick={()=>onPick(ev)} style={{flex:1,background:col,cursor:'pointer',position:'relative',display:'flex',alignItems:'center',padding:'0 4px'}}>
-            <div style={{width:'100%',fontFamily:'"Reggae One",system-ui',fontSize:11,lineHeight:1.1,color:'#fff',textShadow:'1px 1px 0 rgba(0,0,0,0.5)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',textAlign:'left'}}>{isCS?'\uff1f\uff1f\uff1f':ev.title}</div>
+            <div style={{width:'100%',fontFamily:'"Reggae One",system-ui',fontSize:11,lineHeight:1.1,color:'#fff',textShadow:'1px 1px 0 rgba(0,0,0,0.5)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',textAlign:'left'}}>{ev.title}</div>
             {favOf(ev)&&<div style={{position:'absolute',bottom:2,right:2}}><Icon name="star" size={10} color="#111" fill={C.yellow}/></div>}
           </div>);
         })()}
         {!single&&has&&evs.slice(0,2).map((ev,i)=>{
           const g=primaryTag(ev.tags,tags);const isCS=ev.comingSoon||false;
           return(<div key={ev.id||i} onClick={()=>onPick(ev)} style={{flex:1,minHeight:0,background:g.color,cursor:'pointer',display:'flex',alignItems:'center',padding:'0 3px',position:'relative',borderTop:i===1?'2px solid #111':'none'}}>
-            <div style={{width:'100%',fontFamily:'"Reggae One",system-ui',fontSize:9,lineHeight:1,color:'#fff',textShadow:'1px 1px 0 rgba(0,0,0,0.5)',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',marginLeft:i===0?16:0}}>{isCS?'\uff1f\uff1f\uff1f':ev.title}</div>
+            <div style={{width:'100%',fontFamily:'"Reggae One",system-ui',fontSize:9,lineHeight:1,color:'#fff',textShadow:'1px 1px 0 rgba(0,0,0,0.5)',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',marginLeft:i===0?16:0}}>{ev.title}</div>
             {favOf(ev)&&<div style={{position:'absolute',bottom:1,right:1}}><Icon name="star" size={7} color="#111" fill={C.yellow}/></div>}
           </div>);
         })}
         {!has&&<div style={{flex:1}}/>}
-        {isToday&&<div style={{position:'absolute',top:1,right:2,zIndex:20,pointerEvents:'none',fontFamily:'"Reggae One",system-ui',fontSize:13,lineHeight:1,color:'#fff',WebkitTextStroke:'2.5px #FF3DA5',paintOrder:'stroke fill',transform:'rotate(-6deg)'}}>NOW</div>}
         {isClosed&&!outside&&<>
           <div style={{position:'absolute',inset:0,background:'rgba(200,200,200,0.80)',borderRadius:6,zIndex:1}}/>
           <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',zIndex:2,fontFamily:'"Reggae One",system-ui',fontSize:22,color:'#E63946',fontWeight:900}}>&#20241;</div>
@@ -259,7 +270,7 @@
                 {isCS&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:C.orange,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}>？？？</span>}
                 {favorites[ev.id||ev.date]&&<Icon name="star" size={12} color="#111" fill={C.yellow}/>}
               </div>
-              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:16,lineHeight:1.2,opacity:isCS?0.6:1}}>{isCS?'COMING SOON':ev.title}</div>
+              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:16,lineHeight:1.2,opacity:isCS?0.6:1}}>{ev.title}</div>
               {!isCS&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',marginTop:4}}>DJ {(ev.djs||[]).length} / VJ {(ev.vjs||[]).length} &#12539; OPEN {evOpen(ev)}</div>}
             </div>
           </div>);
@@ -293,7 +304,7 @@
                 {isToday&&<span style={{fontFamily:'"Reggae One",system-ui',fontSize:9,background:C.ink,color:'#fff',padding:'1px 6px',borderRadius:4}}>TODAY</span>}
                 {favorites[e.id||e.date]&&<Icon name="star" size={13} color="#111" fill={C.yellow}/>}
               </div>
-              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{isCS?'COMING SOON...':e.title}</div>
+              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{e.title}</div>
               {!isCS&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',marginTop:2}}>DJ {(e.djs||[]).length}&#32068;&#12539;VJ {(e.vjs||[]).length}&#32068;&#12539;{evOpen(e)}&#8594;{evClose(e)}</div>}
               {isCS&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:C.orange,marginTop:2}}>&#35814;&#32048;&#12399;&#36817;&#26085;&#20844;&#38283;&#20104;&#23450;</div>}
             </div>
@@ -304,13 +315,20 @@
     </div>);
   }
 
-  function ListView({events,onPick,favorites,tags}){
+  function ListView({events,onPick,favorites,tags,startKey}){
     const today=new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
+    const[showEarlier,setShowEarlier]=React.useState(false);
+    React.useEffect(()=>setShowEarlier(false),[startKey]);
     const byMonth={};
     events.forEach(e=>{const d=parseDate(e.date);const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;(byMonth[k]=(byMonth[k]||[]));byMonth[k].push(e);});
     Object.keys(byMonth).forEach(k=>byMonth[k].sort((a,b)=>a.date.localeCompare(b.date)));
+    const keys=Object.keys(byMonth).sort();
+    const earlier=keys.filter(k=>k<startKey);
+    const shown=showEarlier?keys:keys.filter(k=>k>=startKey);
     return(<div style={{padding:'6px 16px 20px',display:'flex',flexDirection:'column',gap:14}}>
-      {Object.keys(byMonth).sort().map(mk=>{
+      {!showEarlier&&earlier.length>0&&<button onClick={()=>setShowEarlier(true)} style={{alignSelf:'center',border:B,borderRadius:999,background:'#fff',padding:'6px 16px',fontFamily:'"DotGothic16",monospace',fontSize:12,boxShadow:SS}}>&#9650; &#12381;&#12428;&#12424;&#12426;&#21069;&#12398;&#12452;&#12505;&#12531;&#12488;&#12434;&#34920;&#31034;</button>}
+      {shown.length===0&&<div style={{textAlign:'center',fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#888',padding:'20px 0'}}>&#35442;&#24403;&#12377;&#12427;&#12452;&#12505;&#12531;&#12488;&#12399;&#12354;&#12426;&#12414;&#12379;&#12435;</div>}
+      {shown.map(mk=>{
         const[y,m]=mk.split('-').map(Number);
         return(<div key={mk}>
           <div style={{display:'inline-flex',alignItems:'baseline',gap:4,fontFamily:'"Reggae One",system-ui',background:C.yellow,border:BT,borderRadius:8,padding:'4px 12px',boxShadow:SS,marginBottom:10,transform:'rotate(-1.5deg)'}}>
@@ -332,7 +350,7 @@
                     {isToday&&<span style={{fontFamily:'"Reggae One",system-ui',fontSize:9,background:C.ink,color:'#fff',padding:'1px 6px',borderRadius:4}}>TODAY</span>}
                     {favorites[e.id||e.date]&&<Icon name="star" size={13} color="#111" fill={C.yellow}/>}
                   </div>
-                  <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,color:isCS?C.orange:'#111'}}>{isCS?'COMING SOON...':e.title}</div>
+                  <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,color:isCS?C.orange:'#111'}}>{e.title}</div>
                 </div>
                 <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:isCS?C.orange:'#111'}}>&#8250;</div>
               </PressCard>);
@@ -772,6 +790,7 @@
     const[pendingEvent,setPendingEvent]=React.useState(null);
     const[readyEvent,setReadyEvent]=React.useState(null);
     const[tagSet,setTagSet]=React.useState(new Set());
+    const[favOnly,setFavOnly]=React.useState(false);
     const[csToast,setCsToast]=React.useState(false);
     const timerRef=React.useRef(null);
     const csTimerRef=React.useRef(null);
@@ -784,7 +803,11 @@
     };
     const closeEvent=()=>{setReadyEvent(null);setPendingEvent(null);if(timerRef.current)clearTimeout(timerRef.current);};
     const setFv=v=>{const n=typeof v==='function'?v(favorites):v;setFv_(n);ls.set('vb_favs',n);};
-    const setView=v=>{setVw_(v);ls.set('vb_view',v);};
+    // 週表示の開始日。月表示から切り替えたときは、その月（今月なら今週）から始める。
+    const weekStartFor=c=>{const base=sameDay(c,new Date(TODAY.getFullYear(),TODAY.getMonth(),1))?TODAY:new Date(c.getFullYear(),c.getMonth(),1);return new Date(base.getFullYear(),base.getMonth(),base.getDate()-weekIdx(base));};
+    const[weekStart,setWeekStart]=React.useState(()=>weekStartFor(cursor));
+    const setView=v=>{if(v==='week'&&view!=='week')setWeekStart(weekStartFor(cursor));setVw_(v);ls.set('vb_view',v);};
+    const moveWeek=n=>{const w=new Date(weekStart.getFullYear(),weekStart.getMonth(),weekStart.getDate()+7*n);setWeekStart(w);setCursor(new Date(w.getFullYear(),w.getMonth(),1));};
     const setCursor=v=>{const n=typeof v==='function'?v(cursor):v;setCu_(n);ls.set('vb_cursor',[n.getFullYear(),n.getMonth()]);};
     const toggleFav=k=>setFv(f=>{const n={...f};n[k]?delete n[k]:(n[k]=true);return n;});
     const scrollToTop=()=>{window.scrollTo({top:0,behavior:'smooth'});};
@@ -792,7 +815,7 @@
       if(id==='all'){setTagSet(new Set());return;}
       setTagSet(prev=>{const n=new Set(prev);n.has(id)?n.delete(id):n.add(id);return n;});
     };
-    const onTodayTap=()=>setCursor(new Date(TODAY.getFullYear(),TODAY.getMonth(),1));
+    const onTodayTap=()=>{const c=new Date(TODAY.getFullYear(),TODAY.getMonth(),1);setCursor(c);setWeekStart(weekStartFor(c));};
     const goToEventByName=(matchKeys)=>{
       setView('month');
       const todayStr=fmtDate(new Date());
@@ -803,10 +826,10 @@
       setTimeout(()=>{const el=document.getElementById('vb-cal-anchor');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},60);
     };
 
-    const filteredEvents=React.useMemo(()=>events.filter(e=>matchesTagFilter(e,tagSet,tags)),[events,tagSet,tags]);
-    const eventsByDate=React.useMemo(()=>{const m={};filteredEvents.forEach(e=>{(m[e.date]=m[e.date]||[]).push(e);});return m;},[filteredEvents]);
+    // タグ・お気に入りの絞り込みはリスト表示だけ。月・週は常に全件。
+    const filteredEvents=React.useMemo(()=>events.filter(e=>matchesTagFilter(e,tagSet,tags)&&(!favOnly||favorites[e.id||e.date])),[events,tagSet,tags,favOnly,favorites]);
+    const eventsByDate=React.useMemo(()=>{const m={};events.forEach(e=>{(m[e.date]=m[e.date]||[]).push(e);});return m;},[events]);
     const cells=React.useMemo(()=>buildMonthCells(cursor.getFullYear(),cursor.getMonth()),[cursor]);
-    const weekStart=React.useMemo(()=>{const base=sameDay(cursor,new Date(TODAY.getFullYear(),TODAY.getMonth(),1))?TODAY:new Date(cursor.getFullYear(),cursor.getMonth(),1);const wi=weekIdx(base);return new Date(base.getFullYear(),base.getMonth(),base.getDate()-wi);},[cursor]);
 
     if(loading)return(
       <div style={{position:'fixed',inset:0,background:C.paper,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:20}}>
@@ -829,22 +852,20 @@
           <div style={{position:'absolute',inset:0,opacity:0.25,backgroundImage:pat.stripes('rgba(255,255,255,0.5)','transparent')}}/>
           <div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,position:'relative',letterSpacing:1}}>&#12452;&#12505;&#12531;&#12488;&#12459;&#12524;&#12531;&#12480;&#12540;</div>
         </div>
-        {view==='month'&&<MonthHeader year={cursor.getFullYear()} month={cursor.getMonth()} onPrev={()=>setCursor(c=>new Date(c.getFullYear(),c.getMonth()-1,1))} onNext={()=>setCursor(c=>new Date(c.getFullYear(),c.getMonth()+1,1))} onToday={onTodayTap}/>}
-        {view==='week'&&(<div style={{padding:'0 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>{weekStart.getMonth()+1}&#26376; <span style={{fontSize:12,color:'#555'}}>{weekStart.getDate()}&#26085;&#12316;</span></div>
-          <button onClick={onTodayTap} style={{border:BT,background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:13,padding:'6px 12px',borderRadius:999,boxShadow:SS}}>&#20170;&#26085;</button>
-        </div>)}
+        {view==='month'&&<MonthHeader year={cursor.getFullYear()} month={cursor.getMonth()} onPrev={()=>setCursor(c=>new Date(c.getFullYear(),c.getMonth()-1,1))} onNext={()=>setCursor(c=>new Date(c.getFullYear(),c.getMonth()+1,1))}/>}
+        {view==='week'&&<WeekHeader start={weekStart} onPrev={()=>moveWeek(-1)} onNext={()=>moveWeek(1)}/>}
         {view==='list'&&<div style={{padding:'0 16px 8px'}}><div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>&#12452;&#12505;&#12531;&#12488;&#19968;&#35239;</div></div>}
         <div id="vb-cal-anchor"/>
         <div style={{padding:'10px 16px 10px',display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
           <ViewSwitcher view={view} setView={setView}/>
-          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666'}}>{filteredEvents.length} events</div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666'}}>{view==='list'?filteredEvents.length:events.length} events</div>
+          {view!=='list'&&<TodayBtn onClick={onTodayTap}/>}
         </div>
-        <div style={{padding:'0 16px 10px'}}><TagFilter activeSet={tagSet} toggleTag={toggleTag} tags={tags}/></div>
+        {view==='list'&&<div style={{padding:'0 16px 10px'}}><TagFilter activeSet={tagSet} toggleTag={toggleTag} tags={tags} favOnly={favOnly} toggleFav={()=>setFavOnly(f=>!f)}/></div>}
         {view==='month'&&<WeekdayRow/>}
-        {view==='month'&&(<><MonthGrid cells={cells} eventsByDate={eventsByDate} onPick={openEvent} favorites={favorites} dayBgMap={dayBgMap} tags={tags} closedDays={closedDays}/><UpcomingList events={filteredEvents} onPick={openEvent} favorites={favorites} tags={tags}/></>)}
+        {view==='month'&&(<><MonthGrid cells={cells} eventsByDate={eventsByDate} onPick={openEvent} favorites={favorites} dayBgMap={dayBgMap} tags={tags} closedDays={closedDays}/><UpcomingList events={events} onPick={openEvent} favorites={favorites} tags={tags}/></>)}
         {view==='week'&&<div style={{paddingTop:10}}><WeekView start={weekStart} eventsByDate={eventsByDate} onPick={openEvent} favorites={favorites} tags={tags}/></div>}
-        {view==='list'&&<ListView events={filteredEvents} onPick={openEvent} favorites={favorites} tags={tags}/>}
+        {view==='list'&&<ListView events={filteredEvents} onPick={openEvent} favorites={favorites} tags={tags} startKey={`${cursor.getFullYear()}-${String(cursor.getMonth()+1).padStart(2,'0')}`}/>}
         <AboutAccordion menus={ABOUT_BOTTOM} onGoCalendar={goToEventByName}/>
         <div style={{textAlign:'center',padding:'14px 16px 30px',fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666'}}>&#12508;&#12459;&#12525;&#23554;&#38272;&#12490;&#12452;&#12488;&#12463;&#12521;&#12502; &#12508;&#12459;&#12502;&#12461;<br/>&#27468;&#33310;&#20238;&#30010; 2-45-2 Gest32&#12499;&#12523; 5F / &#27598;&#26085;&#21942;&#26989; 24:00-5:00</div>
       </div>
