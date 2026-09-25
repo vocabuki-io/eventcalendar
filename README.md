@@ -16,6 +16,7 @@ GitHub Pages で公開している静的サイトです。
 | `images/` | フライヤー・ギャラリー画像。`events.json` にはここへのパスだけを入れる |
 | `mcp/` | Claude から MCP 経由でカレンダーを編集するサーバー |
 | `docs/OPERATIONS.md` | 運営ガイド |
+| `site.mjs` / `docs/CLOUDFLARE.md` | Cloudflare Pages 用に公開してよいものだけを `dist/` に書き出す（`npm run site`）と、その移行手順 |
 
 画面のソースは `src/*.jsx` にあり、`npm run build` で `js/*.js` に変換したものをコミットして配信しています（ブラウザで JSX を変換しないので軽い）。React は CDN から本番用ビルドを読み込みます。
 
