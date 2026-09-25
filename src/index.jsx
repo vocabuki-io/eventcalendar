@@ -1,0 +1,860 @@
+// index.html のアプリ本体（JSX）。編集したら `npm run build` で js/index.js を作り直すこと。
+  const C={turquoise:'#2EC5CE',turquoiseDark:'#1EA3AC',yellow:'#FFD23F',red:'#E63946',orange:'#FF8A1E',paper:'#FFFBEC',ink:'#111111',purple:'#6A3FD9'};
+  const B='3px solid #111',BT='4px solid #111',S='4px 4px 0 #111',SB='6px 6px 0 #111',SS='2px 2px 0 #111';
+  const pat={
+    halftone:(c='#E63946')=>`radial-gradient(circle at 3px 3px,${c} 1.8px,transparent 2px)`,
+    stripes:(a,b)=>`repeating-linear-gradient(45deg,${a} 0 6px,${b} 6px 14px)`,
+    stripesB:(a,b)=>`repeating-linear-gradient(45deg,${a} 0 10px,${b} 10px 22px)`,
+  };
+  const TODAY=new Date();
+  const TAGS_DEFAULT=[
+    {id:'vocaloid',label:'\u30dc\u30ab\u30ed',color:'#39C5BB',group:'genre'},
+    {id:'anime',label:'\u30a2\u30cb\u30bd\u30f3',color:'#E63946',group:'genre'},
+    {id:'vtuber',label:'Vtuber',color:'#D4B0F0',group:'genre'},
+    {id:'game',label:'\u30b2\u30fc\u30e0',color:'#FF8A1E',group:'genre'},
+    {id:'utaite',label:'\u6b4c\u3044\u624b',color:'#6A3FD9',group:'genre'},
+    {id:'other',label:'\u305d\u306e\u4ed6',color:'#F5E642',group:'genre'},
+  ];
+  const PEOPLE_DEFAULT={
+    drag_on_3:{name:'dragon3',x:'@drag_on_3'},rockstar_saihan:{name:'\u0418ASU',x:'@rockstar_saihan'},
+    nono4e:{name:'\u4e43\u3005\u702c',x:'@nono4e'},aym_pngn:{name:'\u3042\u3086\u3080',x:'@aym_pngn'},
+  };
+  const STAFF=['drag_on_3','rockstar_saihan','nono4e','aym_pngn'];
+  // イベント詳細のデフォルト（イベント側に指定がない場合に使う会場の基本情報）
+  const VENUE_DEFAULT={open:'24:00',close:'5:00',venue:'\u6b4c\u821e\u4f0e\u753a Gest32\u30d3\u30eb 5F'};
+  // 追加フィールド（openTime/closeTime/venue/price/description/images/links）は全て任意。
+  // 未設定なら従来通りの表示にフォールバックする。
+  function evOpen(ev){return (ev&&ev.openTime)||VENUE_DEFAULT.open;}
+  function evClose(ev){return (ev&&ev.closeTime)||VENUE_DEFAULT.close;}
+  function evVenue(ev){return (ev&&ev.venue)||VENUE_DEFAULT.venue;}
+  function evImages(ev){return Array.isArray(ev&&ev.images)?ev.images.filter(i=>i&&i.url):[];}
+  function evLinks(ev){return Array.isArray(ev&&ev.links)?ev.links.filter(l=>l&&l.url):[];}
+  // 外部から流し込まれた URL を描画前に検証する（javascript: などを弾く）
+  function safeUrl(u){
+    if(typeof u!=='string')return null;
+    const t=u.trim();
+    if(/^(https?:|mailto:)/i.test(t))return t;
+    if(/^data:image\//i.test(t))return t;
+    if(/^[\w./-]+$/.test(t)&&!t.startsWith('//'))return t; // リポジトリ内の相対パス
+    return null;
+  }
+  const EVENTS_DEFAULT=[];
+
+  const ls={
+    get:(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;}},
+    set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}},
+  };
+
+  const WDAYS=['\u6708','\u706b','\u6c34','\u6728','\u91d1','\u571f','\u65e5'];
+  // tags\u914d\u5217\u304b\u3089\u30de\u30b9\u30bf\u60c5\u5831\u3092\u89e3\u6c7a
+  function resolveTags(tagIds,tagsMaster){
+    return (tagIds||[]).map(id=>{const m=tagsMaster.find(t=>t.id===id);return m||{id,label:id,color:null};});
+  }
+  // \u4e3b\u5f79\u306e\u8272\uff08\u30de\u30b9\u30bf\u306b\u8272\u5b9a\u7fa9\u304c\u3042\u308b\u6700\u521d\u306e\u30bf\u30b0\uff09
+  function primaryTag(tagIds,tagsMaster){
+    for(const id of (tagIds||[])){const m=tagsMaster.find(t=>t.id===id);if(m&&m.color)return m;}
+    return {id:'?',label:(tagIds&&tagIds[0])||'?',color:'#666'};
+  }
+  function fmtDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return`${y}-${m}-${day}`;}
+  function parseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+  function sameDay(a,b){return a.toDateString()===b.toDateString();}
+  function weekIdx(d){return(d.getDay()+6)%7;}
+  function buildMonthCells(year,month){
+    const first=new Date(year,month,1),startPad=(first.getDay()+6)%7;
+    const daysInMonth=new Date(year,month+1,0).getDate(),cells=[];
+    const prevDays=new Date(year,month,0).getDate();
+    for(let i=startPad-1;i>=0;i--)cells.push({date:new Date(year,month-1,prevDays-i),outside:true});
+    for(let d=1;d<=daysInMonth;d++)cells.push({date:new Date(year,month,d),outside:false});
+    while(cells.length<42){const last=cells[cells.length-1].date;const nxt=new Date(last.getFullYear(),last.getMonth(),last.getDate()+1);cells.push({date:nxt,outside:nxt.getMonth()!==month});}
+    return cells;
+  }
+
+  function PressCard({children,onTap,style={},className=''}){
+    const ref=React.useRef();
+    const reset=()=>{if(ref.current)ref.current.classList.remove('pressed');};
+    const press=()=>{if(ref.current)ref.current.classList.add('pressed');};
+    const handleClick=()=>{press();setTimeout(()=>{reset();onTap();},120);};
+    return(<div ref={ref} className={`vb-card ${className}`} style={style} onPointerDown={press} onPointerUp={reset} onPointerLeave={reset} onClick={handleClick}>{children}</div>);
+  }
+  function StarBurst({size=80,color='#E63946',spikes=20,children,style={}}){
+    const pts=[];const cx=size/2,cy=size/2,outer=size/2,inner=size/2*0.86;
+    for(let i=0;i<spikes*2;i++){const r=i%2===0?outer:inner;const a=(Math.PI/spikes)*i-Math.PI/2;pts.push(`${cx+r*Math.cos(a)},${cy+r*Math.sin(a)}`);}
+    return(<div style={{position:'relative',width:size,height:size,...style}}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{position:'absolute',inset:0}}>
+        <polygon points={pts.join(' ')} fill={color} stroke="#111" strokeWidth="2.5" strokeLinejoin="round"/>
+      </svg>
+      <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'"Reggae One",system-ui',color:'#fff',textShadow:'2px 2px 0 #111',textAlign:'center',lineHeight:1}}>{children}</div>
+    </div>);
+  }
+  function XIcon({size=18}){return(<svg width={size} height={size} viewBox="0 0 24 24" style={{display:'block'}}><rect x="1.5" y="1.5" width="21" height="21" rx="4.5" fill="#111"/><path d="M7 7l10 10M17 7L7 17" stroke="#fff" strokeWidth="2.4" strokeLinecap="round"/></svg>);}
+  function Icon({name,size=22,color='currentColor',sw=2.2,fill='none',style={}}){
+    const sp={fill:'none',stroke:color,strokeWidth:sw,strokeLinecap:'round',strokeLinejoin:'round'};
+    const G={
+      pin:(<g {...sp}><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.6"/></g>),
+      train:(<g {...sp}><rect x="6" y="3" width="12" height="13" rx="3"/><path d="M6.5 11h11M9 19l-1.6 2.6M15 19l1.6 2.6"/><circle cx="9.3" cy="13.7" r="0.9"/><circle cx="14.7" cy="13.7" r="0.9"/></g>),
+      clock:(<g {...sp}><circle cx="12" cy="12" r="8.5"/><path d="M12 7.4V12l3 1.8"/></g>),
+      noentry:(<g {...sp}><circle cx="12" cy="12" r="8.5"/><path d="M7.5 12h9"/></g>),
+      question:(<g {...sp}><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.3 2.4c-.9.3-1.4 1-1.4 1.9"/><path d="M11.5 16.4h.02"/></g>),
+      beer:(<g {...sp}><path d="M7.5 8h7v9.5a2 2 0 0 1-2 2H9.5a2 2 0 0 1-2-2z"/><path d="M14.5 10h2.2a1.6 1.6 0 0 1 1.6 1.6v2.4a1.6 1.6 0 0 1-1.6 1.6h-2.2"/><path d="M7.5 8c0-1.7 1.6-3 3.5-3s3.5 1.3 3.5 3"/><path d="M9.8 11.5v5M12.2 11.5v5"/></g>),
+      globe:(<g {...sp}><circle cx="12" cy="12" r="8.5"/><path d="M3.6 12h16.8M12 3.5c2.4 2.3 2.4 14.7 0 17M12 3.5c-2.4 2.3-2.4 14.7 0 17"/></g>),
+      target:(<g {...sp}><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="0.9"/></g>),
+      game:(<g {...sp}><rect x="3" y="8" width="18" height="9" rx="4.5"/><path d="M8 11v3M6.5 12.5h3"/><circle cx="15.5" cy="11.8" r="0.9"/><circle cx="17.4" cy="14" r="0.9"/></g>),
+      mic:(<g {...sp}><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v3.2M9 20.4h6"/></g>),
+      gem:(<g {...sp}><path d="M6 4.5h12l3 4-9 11.5L3 8.5z"/><path d="M3 8.5h18M9 4.5l-3 4 6 11.5 6-11.5-3-4"/></g>),
+      mixer:(<g {...sp}><path d="M7 4v16M12 4v16M17 4v16"/><circle cx="7" cy="9" r="1.7"/><circle cx="12" cy="15" r="1.7"/><circle cx="17" cy="8" r="1.7"/></g>),
+      moon:(<g {...sp}><path d="M20 14.4A8 8 0 1 1 9.6 4 6.5 6.5 0 0 0 20 14.4z"/></g>),
+      calendar:(<g {...sp}><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 9.5h16M8.5 3v4M15.5 3v4"/></g>),
+      refresh:(<g {...sp}><path d="M19.5 9.5A7.2 7.2 0 1 0 20 14"/><path d="M19.5 4v5.5H14"/></g>),
+      music:(<g {...sp}><path d="M9 17.5V6l9.5-2v11.5"/><ellipse cx="6.6" cy="17.6" rx="2.5" ry="2.1"/><ellipse cx="16.1" cy="15.6" rx="2.5" ry="2.1"/></g>),
+      headphone:(<g {...sp}><path d="M5 13a7 7 0 0 1 14 0"/><rect x="3.5" y="12.5" width="3.6" height="6.5" rx="1.7"/><rect x="16.9" y="12.5" width="3.6" height="6.5" rx="1.7"/></g>),
+      star:(<path d="M12 3.6l2.6 5.3 5.8.9-4.2 4.1 1 5.8L12 17l-5.2 2.7 1-5.8L3.6 9.8l5.8-.9z" fill={fill} stroke={color} strokeWidth={sw} strokeLinejoin="round"/>),
+    };
+    return(<svg width={size} height={size} viewBox="0 0 24 24" style={{display:'block',...style}}>{G[name]||null}</svg>);
+  }
+  function VbLogo(){return(<div style={{display:'inline-flex',alignItems:'center',fontFamily:'"Reggae One",system-ui',userSelect:'none'}}><div style={{fontSize:22,lineHeight:1,background:C.yellow,color:C.ink,border:B,borderRadius:10,padding:'6px 14px',boxShadow:SS,letterSpacing:2}}>&#12508;&#12459;&#12502;&#12461;</div></div>);}
+  function PopBtn({children,onClick,bg=C.yellow,color='#111',size=40,style={}}){
+    const ref=React.useRef();
+    return(<button ref={ref} onClick={onClick} style={{width:size,height:size,background:bg,color,border:BT,borderRadius:'50%',boxShadow:S,display:'flex',alignItems:'center',justifyContent:'center',padding:0,fontFamily:'"Reggae One",system-ui',fontSize:18,...style}}
+      onPointerDown={()=>{if(ref.current){ref.current.style.transform='translate(3px,3px)';ref.current.style.boxShadow='1px 1px 0 #111';}}}
+      onPointerUp={()=>{if(ref.current){ref.current.style.transform='';ref.current.style.boxShadow=S;}}}
+      onPointerLeave={()=>{if(ref.current){ref.current.style.transform='';ref.current.style.boxShadow=S;}}}
+    >{children}</button>);
+  }
+
+  function ViewSwitcher({view,setView}){
+    return(<div style={{display:'inline-flex',border:BT,borderRadius:999,background:'#fff',boxShadow:SS,padding:3,gap:2}}>
+      {[{id:'month',label:'\u6708'},{id:'week',label:'\u9031'},{id:'list',label:'\u30ea\u30b9\u30c8'}].map(o=>(
+        <button key={o.id} onClick={()=>setView(o.id)} style={{border:'none',background:view===o.id?C.ink:'transparent',color:view===o.id?'#fff':'#111',fontFamily:'"RocknRoll One",system-ui',fontSize:13,padding:'6px 12px',borderRadius:999}}>{o.label}</button>
+      ))}
+    </div>);
+  }
+  // \u8272\u3092\u6301\u3064\u30bf\u30b0\u306e\u307f\u30d5\u30a3\u30eb\u30bf\u30fc\u306b\u8868\u793a
+  // タグの軸。絞り込みは軸の中ではOR、軸どうしはAND。
+  const FILTER_GROUPS=[{id:'genre',label:'ジャンル'},{id:'series',label:'シリーズ'}];
+  const LIGHT_TAG_COLORS=['#F5E642','#B8F0B0','#D4B0F0'];
+  function tagGroup(id,tagsMaster){const m=tagsMaster.find(t=>t.id===id);return m&&m.group;}
+  function matchesTagFilter(ev,tagSet,tagsMaster){
+    if(tagSet.size===0)return true;
+    const evTags=ev.tags||[];
+    return FILTER_GROUPS.every(g=>{
+      const want=[...tagSet].filter(id=>tagGroup(id,tagsMaster)===g.id);
+      return want.length===0||want.some(id=>evTags.includes(id));
+    });
+  }
+  function TagChip({tag,on,onClick}){
+    const bg=on?(tag.color||C.ink):'#fff';
+    const fg=on?(LIGHT_TAG_COLORS.includes(tag.color)?'#111':'#fff'):'#111';
+    return(<button onClick={onClick} style={{flexShrink:0,border:B,borderRadius:999,padding:'6px 14px',background:bg,color:fg,boxShadow:on?SS:'none',fontFamily:'"RocknRoll One",system-ui',fontSize:13,transform:on?'translate(-1px,-1px)':'none',whiteSpace:'nowrap'}}># {tag.label}</button>);
+  }
+  function TagFilter({activeSet,toggleTag,tags}){
+    const allOn=activeSet.size===0;
+    const rows=FILTER_GROUPS.map(g=>({...g,tags:tags.filter(t=>t.group===g.id)})).filter(g=>g.tags.length>0);
+    const rowStyle={display:'flex',gap:8,overflowX:'auto',alignItems:'center',padding:'0 16px 4px',marginLeft:-16,marginRight:-16};
+    const labelStyle={flexShrink:0,fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#666',minWidth:54};
+    return(<div style={{display:'flex',flexDirection:'column',gap:6}}>
+      {rows.map((g,i)=>(<div key={g.id} style={rowStyle}>
+        <div style={labelStyle}>{g.label}</div>
+        {i===0&&<button onClick={()=>toggleTag('all')} style={{flexShrink:0,border:B,borderRadius:999,padding:'6px 14px',background:allOn?'#111':'#fff',color:allOn?'#fff':'#111',boxShadow:allOn?SS:'none',fontFamily:'"RocknRoll One",system-ui',fontSize:13,transform:allOn?'translate(-1px,-1px)':'none',whiteSpace:'nowrap'}}># ALL</button>}
+        {g.tags.map(t=>(<TagChip key={t.id} tag={t} on={activeSet.has(t.id)} onClick={()=>toggleTag(t.id)}/>))}
+      </div>))}
+    </div>);
+  }
+  function MonthHeader({year,month,onPrev,onNext,onToday}){
+    return(<div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 16px',gap:8}}>
+      <div style={{display:'flex',alignItems:'center',gap:8}}>
+        <PopBtn onClick={onPrev} bg={C.yellow} size={38}>&#8249;</PopBtn>
+        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:28,lineHeight:1,display:'flex',alignItems:'baseline',gap:6}}>
+          <span style={{color:C.red}}>{year}</span><span style={{fontSize:16,color:'#111'}}>&#24180;</span>
+          <span style={{color:C.turquoiseDark,fontSize:38}}>{month+1}</span><span style={{fontSize:16,color:'#111'}}>&#26376;</span>
+        </div>
+      </div>
+      <div style={{display:'flex',gap:8}}>
+        <button onClick={onToday} style={{border:BT,background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:13,padding:'6px 12px',borderRadius:999,boxShadow:SS}}>&#20170;&#26085;</button>
+        <PopBtn onClick={onNext} bg={C.yellow} size={38}>&#8250;</PopBtn>
+      </div>
+    </div>);
+  }
+  function WeekdayRow(){
+    return(<div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,padding:'0 8px',marginTop:6}}>
+      {WDAYS.map((w,i)=>{const isSat=i===5,isSun=i===6;return(
+        <div key={w} style={{textAlign:'center',fontFamily:'"DotGothic16",monospace',fontSize:13,padding:'4px 0',color:isSun?C.red:isSat?C.turquoiseDark:'#111',background:isSun?'rgba(230,57,70,0.1)':isSat?'rgba(46,197,206,0.12)':'transparent',border:'2px solid #111',borderRadius:8,fontWeight:700}}>{w}</div>
+      );})}
+    </div>);
+  }
+
+  function DayCell({cell,events,isToday,isPast,favorites,onPick,dayBg,tags,isClosed}){
+    const outside=cell.outside;
+    const evs=(isClosed||outside)?[]:(events||[]);
+    const has=evs.length>0;
+    const single=evs.length===1;
+    const favOf=ev=>!!(favorites&&favorites[ev.id||ev.date]);
+    const baseBg=outside?'rgba(255,255,255,0.4)':'#fff';
+    return(
+      <div style={{position:'relative',aspectRatio:'1/1.12',border:'2px solid #111',borderRadius:8,minWidth:0,overflow:'hidden',background:baseBg,opacity:(outside||isPast)?0.55:1,filter:isPast?'saturate(0.4)':'none',boxShadow:(has&&!isPast)?SS:'none',display:'flex',flexDirection:'column',transform:isToday?'scale(1.02)':'none',outline:isToday?`2.5px solid ${C.ink}`:'none',outlineOffset:isToday?'2px':0}}>
+        <div style={{position:'absolute',top:2,left:3,zIndex:6,fontFamily:'"Reggae One",system-ui',fontSize:15,lineHeight:1,color:has?'#fff':(outside?'#aaa':'#777'),textShadow:has?'1px 1px 0 #111':'none',pointerEvents:'none'}}>{cell.date.getDate()}</div>
+        {single&&(()=>{
+          const ev=evs[0];const g=primaryTag(ev.tags,tags);const col=dayBg||g.color;const isCS=ev.comingSoon||false;
+          return(<div onClick={()=>onPick(ev)} style={{flex:1,background:col,cursor:'pointer',position:'relative',display:'flex',alignItems:'center',padding:'0 4px'}}>
+            <div style={{width:'100%',fontFamily:'"Reggae One",system-ui',fontSize:11,lineHeight:1.1,color:'#fff',textShadow:'1px 1px 0 rgba(0,0,0,0.5)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',textAlign:'left'}}>{isCS?'\uff1f\uff1f\uff1f':ev.title}</div>
+            {favOf(ev)&&<div style={{position:'absolute',bottom:2,right:2}}><Icon name="star" size={10} color="#111" fill={C.yellow}/></div>}
+          </div>);
+        })()}
+        {!single&&has&&evs.slice(0,2).map((ev,i)=>{
+          const g=primaryTag(ev.tags,tags);const isCS=ev.comingSoon||false;
+          return(<div key={ev.id||i} onClick={()=>onPick(ev)} style={{flex:1,minHeight:0,background:g.color,cursor:'pointer',display:'flex',alignItems:'center',padding:'0 3px',position:'relative',borderTop:i===1?'2px solid #111':'none'}}>
+            <div style={{width:'100%',fontFamily:'"Reggae One",system-ui',fontSize:9,lineHeight:1,color:'#fff',textShadow:'1px 1px 0 rgba(0,0,0,0.5)',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',marginLeft:i===0?16:0}}>{isCS?'\uff1f\uff1f\uff1f':ev.title}</div>
+            {favOf(ev)&&<div style={{position:'absolute',bottom:1,right:1}}><Icon name="star" size={7} color="#111" fill={C.yellow}/></div>}
+          </div>);
+        })}
+        {!has&&<div style={{flex:1}}/>}
+        {isToday&&<div style={{position:'absolute',top:1,right:2,zIndex:20,pointerEvents:'none',fontFamily:'"Reggae One",system-ui',fontSize:13,lineHeight:1,color:'#fff',WebkitTextStroke:'2.5px #FF3DA5',paintOrder:'stroke fill',transform:'rotate(-6deg)'}}>NOW</div>}
+        {isClosed&&!outside&&<>
+          <div style={{position:'absolute',inset:0,background:'rgba(200,200,200,0.80)',borderRadius:6,zIndex:1}}/>
+          <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',zIndex:2,fontFamily:'"Reggae One",system-ui',fontSize:22,color:'#E63946',fontWeight:900}}>&#20241;</div>
+        </>}
+      </div>
+    );
+  }
+
+  function MonthGrid({cells,eventsByDate,onPick,favorites,dayBgMap,tags,closedDays}){
+    return(<div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,padding:'6px 8px 14px'}}>
+      {cells.map((c,i)=>{
+        const key=fmtDate(c.date);const evs=eventsByDate[key]||[];
+        const isToday=sameDay(c.date,TODAY);
+        const isPast=c.date<new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
+        const isClosed=closedDays&&closedDays.includes(key);
+        return(<DayCell key={i} cell={c} events={evs} isToday={isToday} isPast={isPast} favorites={favorites} dayBg={dayBgMap?dayBgMap[key]:undefined} onPick={onPick} tags={tags} isClosed={isClosed}/>);
+      })}
+    </div>);
+  }
+
+  function WeekView({start,eventsByDate,onPick,favorites,tags}){
+    const days=Array.from({length:7},(_,i)=>{const d=new Date(start);d.setDate(d.getDate()+i);return d;});
+    const startToday=new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
+    const rows=[];
+    days.forEach((d)=>{
+      const key=fmtDate(d);const evs=(eventsByDate[key]||[]).slice(0,2);
+      const isPast=d<startToday;
+      if(evs.length===0){
+        rows.push(<div key={key} style={{display:'flex',gap:12,alignItems:'stretch',border:BT,borderRadius:14,background:'#FFF6E0',overflow:'hidden',opacity:isPast?0.55:1,filter:isPast?'saturate(0.4)':'none'}}>
+          <div style={{width:52,flexShrink:0,background:'#f0f0f0',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2,padding:'10px 4px'}}>
+            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#999'}}>{WDAYS[weekIdx(d)]}</div>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:26,lineHeight:1,color:'#bbb'}}>{d.getDate()}</div>
+          </div>
+          <div style={{flex:1,padding:'10px 12px 10px 0',display:'flex',alignItems:'center'}}>
+            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#999'}}>&#12362;&#20241;&#12415;</div>
+          </div>
+        </div>);
+      }else{
+        evs.forEach((ev,ei)=>{
+          const isCS=ev.comingSoon||false;const g=primaryTag(ev.tags,tags);
+          rows.push(<div key={key+'-'+(ev.id||ei)} onClick={()=>onPick(ev)} style={{display:'flex',gap:12,alignItems:'stretch',border:BT,borderRadius:14,background:'#fff',boxShadow:S,overflow:'hidden',cursor:'pointer',opacity:isPast?0.55:1,filter:isPast?'saturate(0.4)':'none'}}>
+            <div style={{width:52,flexShrink:0,background:g.color,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2,padding:'10px 4px'}}>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#fff'}}>{WDAYS[weekIdx(d)]}</div>
+              <div style={{fontFamily:'"Reggae One",system-ui',fontSize:26,lineHeight:1,color:'#fff',textShadow:'2px 2px 0 #111'}}>{d.getDate()}</div>
+            </div>
+            <div style={{flex:1,padding:'10px 12px 10px 0',display:'flex',flexDirection:'column',justifyContent:'center',minWidth:0}}>
+              <div style={{display:'flex',gap:5,marginBottom:4,flexWrap:'wrap',alignItems:'center'}}>
+                <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}># {g.label}</span>
+                {isCS&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:C.orange,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}>？？？</span>}
+                {favorites[ev.id||ev.date]&&<Icon name="star" size={12} color="#111" fill={C.yellow}/>}
+              </div>
+              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:16,lineHeight:1.2,opacity:isCS?0.6:1}}>{isCS?'COMING SOON':ev.title}</div>
+              {!isCS&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',marginTop:4}}>DJ {(ev.djs||[]).length} / VJ {(ev.vjs||[]).length} &#12539; OPEN {evOpen(ev)}</div>}
+            </div>
+          </div>);
+        });
+      }
+    });
+    return(<div style={{display:'flex',flexDirection:'column',gap:8,padding:'0 14px 14px'}}>{rows}</div>);
+  }
+
+  function UpcomingList({events,onPick,favorites,tags}){
+    const today=new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
+    const upcoming=events.filter(e=>parseDate(e.date)>=today).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4);
+    return(<div style={{padding:'14px 16px 24px'}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,background:C.ink,color:'#fff',border:BT,borderRadius:8,padding:'3px 12px',transform:'rotate(-2deg)',boxShadow:SS}}>UP NEXT</div>
+        <div style={{flex:1,height:4,background:pat.stripesB('#111',C.yellow),border:B,borderRadius:4}}/>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        {upcoming.length===0&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',textAlign:'center',padding:20}}>&#20104;&#23450;&#12373;&#12428;&#12390;&#12356;&#12427;&#12452;&#12505;&#12531;&#12488;&#12399;&#12354;&#12426;&#12414;&#12379;&#12435;</div>}
+        {upcoming.map(e=>{
+          const d=parseDate(e.date),g=primaryTag(e.tags,tags),isToday=sameDay(d,TODAY),isCS=e.comingSoon||false;
+          return(<PressCard key={e.id||e.date} onTap={()=>onPick(e)} style={{display:'flex',gap:12,alignItems:'center',background:'#fff',border:isCS?`4px solid ${C.orange}`:BT,borderRadius:14,padding:'10px 12px',boxShadow:isCS?SS:S,cursor:'pointer',opacity:isCS?0.7:1}}>
+            <div style={{width:54,height:54,flexShrink:0,background:g.color,color:'#fff',border:B,borderRadius:10,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',boxShadow:SS,position:'relative'}}>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,fontWeight:700}}>{d.getMonth()+1}/{WDAYS[weekIdx(d)]}</div>
+              <div style={{fontFamily:'"Reggae One",system-ui',fontSize:26,lineHeight:1,textShadow:'2px 2px 0 #111'}}>{d.getDate()}</div>
+              {isCS&&<div style={{position:'absolute',top:-6,right:-6,background:C.orange,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:8,borderRadius:4,padding:'2px 4px',border:'1.5px solid #111',lineHeight:1}}>？？？</div>}
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:'flex',gap:6,alignItems:'center',marginBottom:2}}>
+                <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}># {g.label}</span>
+                {isToday&&<span style={{fontFamily:'"Reggae One",system-ui',fontSize:9,background:C.ink,color:'#fff',padding:'1px 6px',borderRadius:4}}>TODAY</span>}
+                {favorites[e.id||e.date]&&<Icon name="star" size={13} color="#111" fill={C.yellow}/>}
+              </div>
+              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{isCS?'COMING SOON...':e.title}</div>
+              {!isCS&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',marginTop:2}}>DJ {(e.djs||[]).length}&#32068;&#12539;VJ {(e.vjs||[]).length}&#32068;&#12539;{evOpen(e)}&#8594;{evClose(e)}</div>}
+              {isCS&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:C.orange,marginTop:2}}>&#35814;&#32048;&#12399;&#36817;&#26085;&#20844;&#38283;&#20104;&#23450;</div>}
+            </div>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:isCS?C.orange:'#111'}}>&#8250;</div>
+          </PressCard>);
+        })}
+      </div>
+    </div>);
+  }
+
+  function ListView({events,onPick,favorites,tags}){
+    const today=new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
+    const byMonth={};
+    events.forEach(e=>{const d=parseDate(e.date);const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;(byMonth[k]=(byMonth[k]||[]));byMonth[k].push(e);});
+    Object.keys(byMonth).forEach(k=>byMonth[k].sort((a,b)=>a.date.localeCompare(b.date)));
+    return(<div style={{padding:'6px 16px 20px',display:'flex',flexDirection:'column',gap:14}}>
+      {Object.keys(byMonth).sort().map(mk=>{
+        const[y,m]=mk.split('-').map(Number);
+        return(<div key={mk}>
+          <div style={{display:'inline-flex',alignItems:'baseline',gap:4,fontFamily:'"Reggae One",system-ui',background:C.yellow,border:BT,borderRadius:8,padding:'4px 12px',boxShadow:SS,marginBottom:10,transform:'rotate(-1.5deg)'}}>
+            <span style={{fontSize:14}}>{y}</span><span style={{fontSize:24,color:C.red}}>{m}</span><span style={{fontSize:14}}>&#26376;</span>
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            {byMonth[mk].map(e=>{
+              const d=parseDate(e.date),g=primaryTag(e.tags,tags),isPast=d<today,isToday=sameDay(d,TODAY),isCS=e.comingSoon||false;
+              return(<PressCard key={e.id||e.date} onTap={()=>onPick(e)} style={{display:'flex',gap:12,alignItems:'center',background:'#fff',border:isCS?`4px solid ${C.orange}`:BT,borderRadius:12,padding:'10px 12px',boxShadow:isPast?'none':(isCS?SS:S),cursor:'pointer',opacity:isPast?0.55:(isCS?0.7:1),filter:isPast?'saturate(0.4)':'none'}}>
+                <div style={{width:44,height:44,flexShrink:0,background:g.color,color:'#fff',border:B,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',position:'relative'}}>
+                  <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9}}>{WDAYS[weekIdx(d)]}</div>
+                  <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,lineHeight:1,textShadow:'1.5px 1.5px 0 #111'}}>{d.getDate()}</div>
+                  {isCS&&<div style={{position:'absolute',top:-5,right:-5,background:C.orange,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:7,borderRadius:3,padding:'1px 4px',border:'1.5px solid #111',lineHeight:1}}>？？？</div>}
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:'flex',gap:6,alignItems:'center',marginBottom:2,flexWrap:'wrap'}}>
+                    <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}># {g.label}</span>
+                    {isPast&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:'#999',color:'#fff',borderRadius:4,padding:'0 5px'}}>&#32066;&#20102;</span>}
+                    {isToday&&<span style={{fontFamily:'"Reggae One",system-ui',fontSize:9,background:C.ink,color:'#fff',padding:'1px 6px',borderRadius:4}}>TODAY</span>}
+                    {favorites[e.id||e.date]&&<Icon name="star" size={13} color="#111" fill={C.yellow}/>}
+                  </div>
+                  <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,color:isCS?C.orange:'#111'}}>{isCS?'COMING SOON...':e.title}</div>
+                </div>
+                <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:isCS?C.orange:'#111'}}>&#8250;</div>
+              </PressCard>);
+            })}
+          </div>
+        </div>);
+      })}
+    </div>);
+  }
+
+  function PersonRow({id,people}){
+    const p=people[id]||{name:id,x:'@'+id},handle=(p.x||'@'+id).replace('@','');
+    const[imgOk,setImgOk]=React.useState(true);
+    return(<a href={`https://x.com/${handle}`} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:10,background:'#fff',border:B,borderRadius:10,padding:'8px 10px',textDecoration:'none',color:'#111',boxShadow:SS}}>
+      <div style={{position:'relative',width:36,height:36,flexShrink:0,border:'2.5px solid #111',borderRadius:'50%',background:C.yellow,overflow:'hidden',boxShadow:SS}}>
+        {imgOk?(<img src={`https://unavatar.io/x/${handle}`} alt={p.name} onError={()=>setImgOk(false)} style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/>):(<div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',background:'#fff'}}><svg width="20" height="20" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#111" strokeWidth="3.2" strokeLinecap="round"/></svg></div>)}
+      </div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:14,lineHeight:1.1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{p.name}</div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{p.x}</div>
+      </div>
+      <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16}}>&#8599;</div>
+    </a>);
+  }
+  function SecTitle({children,color=C.red}){return(<div style={{display:'inline-flex',alignItems:'center',gap:8,marginBottom:10}}><div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,background:color,color:'#fff',border:BT,borderRadius:8,padding:'3px 12px',boxShadow:SS,transform:'rotate(-2deg)'}}>{children}</div></div>);}
+  function FlyerArea({event,tags}){
+    const g=primaryTag(event.tags,tags);
+    const flyerSrc=safeUrl(event.flyer);
+    if(flyerSrc)return(<div style={{aspectRatio:'3/4',border:BT,borderRadius:14,overflow:'hidden',boxShadow:SB}}><img src={flyerSrc} alt="flyer" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/></div>);
+    return(<div style={{position:'relative',aspectRatio:'3/4',border:BT,borderRadius:14,overflow:'hidden',boxShadow:SB,background:`${pat.halftone('rgba(17,17,17,0.3)')},${pat.stripes(g.color,C.yellow)}`,backgroundSize:'6px 6px,auto'}}>
+      <div style={{position:'absolute',inset:0,background:'rgba(255,251,236,0.35)'}}/>
+      <div style={{position:'absolute',top:16,left:16,right:16,display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:13,background:C.ink,color:'#fff',border:B,borderRadius:6,padding:'2px 8px',transform:'rotate(-3deg)'}}># {g.label}</div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#fff',border:B,borderRadius:4,padding:'2px 6px'}}>FLYER</div>
+      </div>
+      <div style={{position:'absolute',left:0,right:0,bottom:16,padding:'0 16px',display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
+        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:28,lineHeight:1,color:'#fff',textShadow:'3px 3px 0 #111',textAlign:'center',transform:'rotate(-2deg)',maxWidth:'100%'}}>{event.title}</div>
+      </div>
+      <div style={{position:'absolute',top:'45%',left:-20,width:60,height:60,borderRadius:'50%',background:C.yellow,border:B}}/>
+      <div style={{position:'absolute',top:'30%',right:-24,width:80,height:80,borderRadius:'50%',background:C.turquoise,border:B,opacity:0.9}}/>
+    </div>);
+  }
+
+  // 追加画像ギャラリー（タップで拡大）
+  function EventGallery({images}){
+    const[zoom,setZoom]=React.useState(null);
+    const shots=(images||[]).map(i=>({url:safeUrl(i.url),caption:i.caption||''})).filter(i=>i.url);
+    if(shots.length===0)return null;
+    return(<div style={{marginBottom:18}}>
+      <SecTitle color={C.purple}>&#12462;&#12515;&#12521;&#12522;&#12540;</SecTitle>
+      <div style={{display:'grid',gridTemplateColumns:shots.length===1?'1fr':'1fr 1fr',gap:8}}>
+        {shots.map((im,i)=>(
+          <button key={i} onClick={()=>setZoom(im)} style={{padding:0,border:BT,borderRadius:12,overflow:'hidden',boxShadow:S,background:'#fff',display:'block',width:'100%'}}>
+            <img src={im.url} alt={im.caption||`image ${i+1}`} loading="lazy" style={{width:'100%',aspectRatio:shots.length===1?'4/3':'1/1',objectFit:'cover',display:'block'}}/>
+            {im.caption&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',padding:'6px 8px',textAlign:'left',borderTop:'2px solid #111',background:'#fff'}}>{im.caption}</div>}
+          </button>
+        ))}
+      </div>
+      {zoom&&(<div onClick={()=>setZoom(null)} style={{position:'fixed',inset:0,zIndex:60,background:'rgba(17,17,17,0.88)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:12,padding:20,cursor:'zoom-out'}}>
+        <img src={zoom.url} alt={zoom.caption||'image'} style={{maxWidth:'100%',maxHeight:'78vh',objectFit:'contain',border:BT,borderRadius:12,background:'#fff'}}/>
+        {zoom.caption&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#fff',textAlign:'center'}}>{zoom.caption}</div>}
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#bbb'}}>&#12479;&#12483;&#12503;&#12391;&#38281;&#12376;&#12427;</div>
+      </div>)}
+    </div>);
+  }
+  // 任意の外部リンク（予約フォーム・チケット・特設ページなど）
+  function EventLinks({links}){
+    const items=(links||[]).map(l=>({label:l.label||l.url,url:safeUrl(l.url)})).filter(l=>l.url);
+    if(items.length===0)return null;
+    return(<div style={{marginBottom:18}}>
+      <SecTitle color={C.turquoiseDark}>&#12522;&#12531;&#12463;</SecTitle>
+      <div style={{display:'flex',flexDirection:'column',gap:8}}>
+        {items.map((l,i)=>(
+          <a key={i} href={l.url} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:10,background:'#fff',border:BT,borderRadius:12,padding:'12px 14px',textDecoration:'none',color:C.ink,boxShadow:SS}}>
+            <Icon name="globe" size={18} color={C.turquoiseDark}/>
+            <span style={{flex:1,minWidth:0,fontFamily:'"RocknRoll One",system-ui',fontSize:14,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{l.label}</span>
+            <span style={{fontFamily:'"Reggae One",system-ui',fontSize:16}}>&#8599;</span>
+          </a>
+        ))}
+      </div>
+    </div>);
+  }
+
+  function LoadingScreen({event,tags}){
+    const g=primaryTag(event.tags,tags);
+    const dots=['music','headphone','mic'];
+    return(<div style={{position:'fixed',inset:0,zIndex:30,maxWidth:480,margin:'0 auto',background:C.paper,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:24}}>
+      <div style={{position:'absolute',inset:0,pointerEvents:'none',backgroundImage:pat.halftone('rgba(46,197,206,0.18)'),backgroundSize:'8px 8px'}}/>
+      <div style={{position:'absolute',top:-20,left:-20,width:130,height:130,borderRadius:'50%',background:C.yellow,border:BT,opacity:0.7}}/>
+      <div style={{position:'absolute',bottom:-30,right:-20,width:100,height:100,borderRadius:'50%',background:C.turquoise,border:BT,opacity:0.6}}/>
+      <div style={{position:'relative',zIndex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:20}}>
+        <div style={{background:g.color,border:BT,borderRadius:16,padding:'10px 20px',boxShadow:SB,transform:'rotate(-2deg)',fontFamily:'"Reggae One",system-ui',fontSize:13,color:'#fff',maxWidth:260,textAlign:'center'}}>{event.title}</div>
+        <div style={{display:'flex',gap:14,alignItems:'center'}}>
+          {dots.map((d,i)=>(<div key={i} className="vb-loading-dot" style={{lineHeight:1,animationDelay:`${i*0.12}s`}}><Icon name={d} size={32} color={C.ink}/></div>))}
+        </div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',letterSpacing:2}}>LOADING...</div>
+      </div>
+    </div>);
+  }
+
+  function ComingSoonScreen({event,onBack,tags}){
+    const g=primaryTag(event.tags,tags);
+    const d=parseDate(event.date);
+    return(<div className="vb-detail-enter" style={{position:'fixed',inset:0,zIndex:30,background:C.paper,overflow:'auto',maxWidth:480,margin:'0 auto'}}>
+      <div style={{position:'absolute',inset:0,pointerEvents:'none',backgroundImage:pat.halftone('rgba(255,138,30,0.15)'),backgroundSize:'8px 8px'}}/>
+      <div style={{position:'sticky',top:0,zIndex:5,padding:'14px 16px 10px',background:`linear-gradient(to bottom,${C.paper} 75%,transparent)`}}>
+        <button onClick={onBack} style={{display:'flex',alignItems:'center',gap:6,background:'#fff',border:BT,borderRadius:999,padding:'8px 14px 8px 12px',boxShadow:S,fontFamily:'"Reggae One",system-ui',fontSize:14}}><span style={{fontSize:18}}>&#8592;</span>&#25147;&#12427;</button>
+      </div>
+      <div style={{position:'relative',padding:'20px 16px',display:'flex',flexDirection:'column',alignItems:'center',gap:24,textAlign:'center'}}>
+        <div style={{background:g.color,color:'#fff',border:BT,borderRadius:14,padding:'10px 20px',boxShadow:SB,transform:'rotate(-2deg)',fontFamily:'"Reggae One",system-ui',fontSize:13}}>
+          {d.getFullYear()}&#24180; {d.getMonth()+1}&#26376; {d.getDate()}&#26085;&#65288;{WDAYS[weekIdx(d)]}&#65289;
+        </div>
+        <StarBurst size={120} color={C.orange} spikes={16}><div style={{fontFamily:'"Reggae One",system-ui',fontSize:13,lineHeight:1.3}}>COMING<br/>SOON</div></StarBurst>
+        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:26,color:C.ink}}>{event.title}</div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',lineHeight:1.8}}>
+          &#35814;&#32048;&#12399;&#36817;&#26085;&#20844;&#38283;&#20104;&#23450;&#12391;&#12377;<br/>
+          &#20844;&#24335;X&#12398; #&#12508;&#12459;&#12502;&#12461;&#12452;&#12505;&#12531;&#12488; &#12434;&#12362;&#30906;&#12363;&#12417;&#12367;&#12384;&#12373;&#12356;
+        </div>
+        {event.description&&<div style={{width:'100%',background:'#fff',border:BT,borderRadius:14,padding:'14px 16px',boxShadow:S,fontFamily:'"M PLUS Rounded 1c",system-ui',fontSize:13,lineHeight:1.9,color:'#222',whiteSpace:'pre-wrap',wordBreak:'break-word',textAlign:'left'}}>{event.description}</div>}
+        <div style={{width:'100%',textAlign:'left'}}><EventLinks links={evLinks(event)}/></div>
+        <a href={safeUrl(event.xurl)||'https://x.com/vocabuki'} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,background:C.ink,color:'#fff',border:BT,borderRadius:12,padding:'14px 20px',textDecoration:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,width:'100%'}}>
+          <XIcon size={22}/>X&#12391;&#12501;&#12457;&#12525;&#12540;&#12377;&#12427;
+        </a>
+      </div>
+    </div>);
+  }
+
+  function DetailScreen({event,onBack,favorites,toggleFav,people,tags}){
+    if(!event)return null;
+    const d=parseDate(event.date);
+    const eventTags=resolveTags(event.tags,tags);
+    const isFav=!!favorites[event.id||event.date],isPast=d<new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate());
+    return(<div className="vb-detail-enter" style={{position:'fixed',inset:0,zIndex:30,background:C.paper,overflow:'auto',maxWidth:480,margin:'0 auto'}}>
+      <div style={{position:'absolute',inset:0,pointerEvents:'none',opacity:0.5,backgroundImage:pat.halftone('rgba(230,57,70,0.18)'),backgroundSize:'6px 6px'}}/>
+      <div style={{position:'sticky',top:0,zIndex:5,padding:'14px 16px 10px',background:`linear-gradient(to bottom,${C.paper} 75%,transparent)`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <button onClick={onBack} style={{display:'flex',alignItems:'center',gap:6,background:'#fff',border:BT,borderRadius:999,padding:'8px 14px 8px 12px',boxShadow:S,fontFamily:'"Reggae One",system-ui',fontSize:14}}><span style={{fontSize:18}}>&#8592;</span>&#25147;&#12427;</button>
+        <button onClick={()=>toggleFav(event.id||event.date)} style={{width:44,height:44,background:isFav?C.yellow:'#fff',border:BT,borderRadius:'50%',boxShadow:S,padding:0,display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name="star" size={22} color="#111" fill={isFav?C.yellow:'none'}/></button>
+      </div>
+      <div style={{position:'relative',padding:'4px 16px 32px'}}>
+        <div style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:14}}>
+          <div style={{background:C.red,color:'#fff',border:BT,borderRadius:14,padding:'10px 14px',boxShadow:SB,transform:'rotate(-3deg)',flexShrink:0}}>
+            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,opacity:0.95}}>{d.getFullYear()}&#24180;{d.getMonth()+1}&#26376;</div>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:56,lineHeight:0.95,textShadow:'3px 3px 0 #111'}}>{d.getDate()}</div>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:14,textAlign:'right'}}>({WDAYS[weekIdx(d)]})</div>
+          </div>
+          <div style={{flex:1,paddingTop:6}}>
+            <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+              {eventTags.map(t=>(<span key={t.id} style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:t.color||'#fff',color:t.color?(['#F5E642','#B8F0B0','#D4B0F0'].includes(t.color)?'#111':'#fff'):C.turquoiseDark,border:'2px solid #111',borderRadius:4,padding:'2px 8px',fontWeight:700}}># {t.label}</span>))}
+              {isPast&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,background:'#666',color:'#fff',border:'2px solid #111',borderRadius:4,padding:'2px 8px'}}>&#32066;&#20102;</span>}
+            </div>
+          </div>
+        </div>
+        <div style={{background:'#fff',border:BT,borderRadius:14,padding:'14px 16px',boxShadow:SB,marginBottom:16,position:'relative',overflow:'hidden'}}>
+          <div style={{position:'absolute',top:-6,right:-6,transform:'rotate(12deg)'}}><StarBurst size={52} color={C.yellow} spikes={14}><div style={{fontSize:10,color:'#111',textShadow:'none'}}>LIVE</div></StarBurst></div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666',marginBottom:4}}>EVENT TITLE</div>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:28,lineHeight:1.1,color:C.ink,paddingRight:50}}>{event.title}</div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,marginTop:8,color:'#333'}}>OPEN {evOpen(event)} / CLOSE {evClose(event)} &#65295; {evVenue(event)}</div>
+          {event.price&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,marginTop:4,color:'#333'}}>&#26009;&#37329; {event.price}</div>}
+        </div>
+        <div style={{marginBottom:18}}><FlyerArea event={event} tags={tags}/></div>
+        {event.description&&<div style={{marginBottom:18}}><SecTitle color={C.orange}>&#12452;&#12505;&#12531;&#12488;&#35443;&#32048;</SecTitle><div style={{background:'#fff',border:BT,borderRadius:14,padding:'14px 16px',boxShadow:S,fontFamily:'"M PLUS Rounded 1c",system-ui',fontSize:13,lineHeight:1.9,color:'#222',whiteSpace:'pre-wrap',wordBreak:'break-word'}}>{event.description}</div></div>}
+        <EventGallery images={evImages(event)}/>
+        {(event.djs||[]).length>0&&<div style={{marginBottom:18}}><SecTitle color={C.red}>&#20986;&#28436;DJ</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{event.djs.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>}
+        {(event.vjs||[]).length>0&&<div style={{marginBottom:18}}><SecTitle color={C.turquoiseDark}>&#20986;&#28436;VJ</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{event.vjs.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>}
+        <div style={{marginBottom:22}}><SecTitle color={C.ink}>&#12508;&#12459;&#12502;&#12461;&#12473;&#12479;&#12483;&#12501;</SecTitle><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{STAFF.map(id=><PersonRow key={id} id={id} people={people}/>)}</div></div>
+        <EventLinks links={evLinks(event)}/>
+        <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:8}}>
+          <a href={safeUrl(event.xurl)||'https://x.com/vocabuki'} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,background:C.ink,color:'#fff',border:BT,borderRadius:12,padding:'14px 16px',textDecoration:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}><XIcon size={22}/>X&#12391;&#12452;&#12505;&#12531;&#12488;&#12434;&#35211;&#12427;</a>
+          <button onClick={()=>toggleFav(event.id||event.date)} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:isFav?C.yellow:'#fff',color:'#111',border:BT,borderRadius:12,padding:'12px 16px',fontFamily:'"RocknRoll One",system-ui',fontSize:14,boxShadow:SS}}><Icon name="star" size={18} color="#111" fill={isFav?C.yellow:'none'}/>{isFav?'\u304a\u6c17\u306b\u5165\u308a\u304b\u3089\u5916\u3059':'\u304a\u6c17\u306b\u5165\u308a\u306b\u8ffd\u52a0'}</button>
+        </div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,textAlign:'center',color:'#666',marginTop:20,lineHeight:1.5}}>&#24773;&#22577;&#12399;X&#12398; #&#12508;&#12459;&#12502;&#12461;&#12452;&#12505;&#12531;&#12488; &#12398;&#25237;&#31295;&#12434;&#12418;&#12392;&#12395;&#25522;&#36617;&#12375;&#12390;&#12356;&#12414;&#12377;&#12290;<br/>&#26368;&#26032;&#24773;&#22577;&#12399;&#21508;DJ&#12539;VJ&#12539;&#12508;&#12459;&#12502;&#12461;&#20844;&#24335;X&#12434;&#12372;&#30906;&#35469;&#12367;&#12384;&#12373;&#12356;&#12290;</div>
+      </div>
+    </div>);
+  }
+
+  function AboutCard({children,style={}}){return(<div style={{background:'#fff',border:BT,borderRadius:14,padding:'14px 16px',boxShadow:S,...style}}>{children}</div>);}
+  function SectionTag({children,color=C.ink,rotate='-2deg'}){return(<div style={{display:'inline-block',fontFamily:'"Reggae One",system-ui',fontSize:18,background:color,color:'#fff',border:BT,borderRadius:8,padding:'4px 14px',boxShadow:SS,transform:`rotate(${rotate})`,marginBottom:12}}>{children}</div>);}
+  function AboutPersonRow({name,xid,desc}){
+    const handle=(xid||'').replace('@','');
+    const[imgOk,setImgOk]=React.useState(true);
+    return(<a href={`https://x.com/${handle}`} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:10,background:'#fff',border:B,borderRadius:10,padding:'8px 10px',textDecoration:'none',color:'#111',boxShadow:SS}}>
+      <div style={{position:'relative',width:36,height:36,flexShrink:0,border:'2.5px solid #111',borderRadius:'50%',background:C.yellow,overflow:'hidden',boxShadow:SS}}>
+        {imgOk?(<img src={`https://unavatar.io/x/${handle}`} alt={name} onError={()=>setImgOk(false)} style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/>):(<div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',background:'#eee',fontFamily:'"Reggae One"',fontSize:14,color:'#999'}}>{name[0]}</div>)}
+      </div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:14,lineHeight:1.1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{name}</div>
+        {desc&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666'}}>{desc}</div>}
+      </div>
+      <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16}}>&#8599;</div>
+    </a>);
+  }
+  function AccessSection(){
+    const rows=[
+      ['pin','住所','新宿区歌舞伎町 2-45-2 gest32ビル 5F 新宿motion(ボカブキ)'],
+      ['train','JR新大久保駅','徒歩15分'],
+      ['train','西武新宿駅（西武新宿線）','徒歩2分'],
+      ['clock','営業時間','OPEN 24:00 ── CLOSE 5:00'],
+      ['noentry','年齢制限','18歳以上（高校生不可）'],
+    ];
+    return(<div className="fade-in" style={{display:'flex',flexDirection:'column',gap:14}}>
+      <AboutCard>
+        <div style={{fontFamily:'"Reggae One",system-ui',fontSize:16,color:C.red,marginBottom:14}}>ボカロ専門ナイトクラブ</div>
+        {rows.map((r,i)=>(<div key={i} style={{display:'flex',gap:12,alignItems:'flex-start',padding:'10px 0',borderBottom:i<rows.length-1?'1.5px solid #f0e8d0':'none'}}>
+          <span style={{flexShrink:0,marginTop:1}}><Icon name={r[0]} size={20} color={C.ink}/></span>
+          <div><div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',marginBottom:2}}>{r[1]}</div><div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13,lineHeight:1.4}}>{r[2]}</div></div>
+        </div>))}
+      </AboutCard>
+      <a href="https://maps.app.goo.gl/GySGbXFW7MVZX4aS9?g_st=ic" target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,background:C.turquoise,color:'#fff',border:BT,borderRadius:14,padding:'16px',textDecoration:'none',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}><Icon name="pin" size={20} color="#fff"/> Google Maps で開く</a>
+    </div>);
+  }
+  function QASection(){
+    const[open,setOpen]=React.useState(null);
+    const QA=[
+      {q:'決済方法は？',a:'現金・各種クレジットカード・電子マネーなど、全ての決済方法に対応しています。'},
+      {q:'未成年は入れますか？',a:'18歳以上の方のみご入場いただけます。高校生の方は年齢に関わらずご入場いただけません。身分証の提示をお願いする場合があります。'},
+      {q:'服装はどうすれば？',a:'特にドレスコードはありませんが、過度な露出のある服装はご遠慮ください。どうぞお気軽にお越しください。'},
+      {q:'喫煙所はありますか？',a:'電子タバコは店内でお楽しみいただけます。紙タバコは指定の喫煙スペースにてお願いします。'},
+      {q:'入場料はいくら？',a:'基本 2,500円（1D込）。イベントによって異なる場合があります。各イベント情報をご確認ください。'},
+      {q:'女性は割引になる？',a:'イベントによって女性割引がある場合があります。各イベントの詳細をご確認ください。'},
+      {q:'使っている曲はどんなもの？',a:'ボカロ曲をメインにお届けしています。イベントの内容によってアニソンやゲーム音楽が流れることもあります。'},
+    ];
+    return(<div className="fade-in" style={{display:'flex',flexDirection:'column',gap:10}}>
+      {QA.map((item,i)=>(<div key={i} onClick={()=>setOpen(open===i?null:i)} style={{background:'#fff',border:BT,borderRadius:12,overflow:'hidden',boxShadow:open===i?S:SS,cursor:'pointer',transition:'all 0.15s'}}>
+        <div style={{display:'flex',alignItems:'center',gap:12,padding:'13px 16px'}}>
+          <div style={{width:22,height:22,flexShrink:0,background:open===i?C.red:C.yellow,border:B,borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'"Reggae One"',fontSize:12,color:open===i?'#fff':'#111',boxShadow:SS}}>Q</div>
+          <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13,flex:1,lineHeight:1.4}}>{item.q}</div>
+          <div style={{fontFamily:'"Reggae One"',fontSize:18,color:'#999',transform:open===i?'rotate(90deg)':'none',transition:'transform 0.2s'}}>&#8250;</div>
+        </div>
+        {open===i&&(<div style={{borderTop:BT,padding:'12px 16px 14px',display:'flex',gap:12,alignItems:'flex-start',background:'#FFFBEC'}}>
+          <div style={{width:22,height:22,flexShrink:0,background:C.turquoise,border:B,borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'"Reggae One"',fontSize:12,color:'#fff',boxShadow:SS}}>A</div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,lineHeight:1.8,color:'#333',flex:1}}>{item.a}</div>
+        </div>)}
+      </div>))}
+    </div>);
+  }
+  function DrinkSection(){
+    return(<div className="fade-in"><AboutCard style={{textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:18,padding:'32px 16px'}}>
+      <Icon name="beer" size={56} color={C.turquoise} sw={2}/>
+      <div style={{fontFamily:'"Reggae One",system-ui',fontSize:24,color:C.turquoise,letterSpacing:2}}>DRINK MENU</div>
+      <div style={{background:C.yellow,border:BT,borderRadius:10,padding:'12px 24px',fontFamily:'"Reggae One",system-ui',fontSize:18,boxShadow:SS,color:C.ink}}>COMING SOON...</div>
+      <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#888',lineHeight:1.9,display:'flex',flexDirection:'column',alignItems:'center',gap:5}}>
+        <span>画像にてメニューを公開予定です</span>
+        <span style={{display:'inline-flex',alignItems:'center',gap:5}}>今しばらくお待ちください <Icon name="music" size={13} color="#888"/></span>
+      </div>
+    </AboutCard></div>);
+  }
+  function SNSSection(){
+    const official=[
+      {label:'公式 X (Twitter)',bg:C.ink,url:'https://x.com/vocabuki'},
+      {label:'公式 Instagram',bg:'linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)',url:'https://instagram.com/vocabuki'},
+      {label:'公式 TikTok',bg:'#111',url:'https://tiktok.com/@vocabuki'},
+    ];
+    const staff=[
+      {name:'dragon3',handle:'drag_on_3',desc:'スタッフ'},
+      {name:'ИASU',handle:'rockstar_saihan',desc:'スタッフ'},
+      {name:'あゆむ',handle:'aym_pngn',desc:'スタッフ'},
+    ];
+    const eventAcc=[
+      {name:'Shadow Night',handle:'shadow_buki',desc:'イベントアカウント'},
+      {name:'Vocabuki GIRLs Party',handle:'VGP_buki_VOM',desc:'イベントアカウント'},
+      {name:'#酒ブキ',handle:'sake_buki',desc:'イベントアカウント'},
+      {name:'月曜日から飲みマンデイ',handle:'nomimannD',desc:'イベントアカウント'},
+      {name:'歌ってみたで、回してみた！',handle:'utamata_buki',desc:'イベントアカウント'},
+    ];
+    return(<div className="fade-in" style={{display:'flex',flexDirection:'column',gap:20}}>
+      <div><SectionTag color={C.ink} rotate="-1.5deg">公式SNS</SectionTag>
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>{official.map((s,i)=>(<a key={i} href={s.url} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,background:s.bg,color:'#fff',border:BT,borderRadius:12,padding:'15px',textDecoration:'none',fontFamily:'"Reggae One",system-ui',fontSize:15,boxShadow:SS}}><Icon name="globe" size={20} color="#fff"/> {s.label}</a>))}</div>
+      </div>
+      <div><SectionTag color={C.red} rotate="-2deg">スタッフ</SectionTag>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>{staff.map((p,i)=><AboutPersonRow key={i} name={p.name} xid={p.handle} desc={p.desc}/>)}</div>
+      </div>
+      <div><SectionTag color={C.turquoiseDark} rotate="-1deg">イベントアカウント</SectionTag>
+        <div style={{display:'flex',flexDirection:'column',gap:8}}>{eventAcc.map((p,i)=><AboutPersonRow key={i} name={p.name} xid={p.handle} desc={p.desc}/>)}</div>
+      </div>
+    </div>);
+  }
+  const QUIZ_QUESTIONS=[
+    {q:'お酒はどれくらい飲む？',opts:['飲まない','ほどほどに','そこそこ飲む','ガンガン飲む！'],axis:'a'},
+    {q:'イベント中の酔い方は？',opts:['シラフで楽しむ','ほろ酔い','しっかり酔う','浴びるほど！'],axis:'a'},
+    {q:'ボカロ曲はどれくらい欲しい？',opts:['ジャンル問わず','半々くらい','多めがいい','ボカロ100%！'],axis:'v'},
+    {q:'グッとくるのは？',opts:['なんでもアリ','アニソンも欲しい','ボカロP曲','初音ミク・王道ボカロ'],axis:'v'},
+    {q:'夜のテンションは？',opts:['静かに浸る','まったり楽しむ','わいわい盛り上がる','ハチャメチャに騒ぐ！'],axis:'h'},
+    {q:'コスプレ・無礼講・テーマ企画は？',opts:['苦手かも','様子見','楽しめる','大歓迎！'],axis:'h'},
+  ];
+  const QUIZ_EVENTS=[
+    {label:'Shadow Night',color:C.ink,icon:'moon',v:30,a:30,h:30,desc:'暗い曲、病み曲を中心にしたイベント',match:['Shadow Night','シャドナ']},
+    {label:'Vocabuki GIRLs Party',color:'#E0568A',icon:'star',v:30,a:60,h:20,desc:'出演者が全員女性のイベント',match:['GIRL','ガルパ']},
+    {label:'#酒ブキ',color:C.red,icon:'beer',v:30,a:100,h:100,desc:'酒を飲み、毎回異なるテーマのコスプレをするイベント',match:['酒ブキ']},
+    {label:'月曜日から飲みマンデイ',color:C.orange,icon:'calendar',v:40,a:60,h:100,desc:'毎週月曜日に開催しているイベント',match:['飲みマンデイ']},
+    {label:'ИASUの練習会',color:C.turquoiseDark,icon:'headphone',v:40,a:10,h:10,desc:'毎週火曜日に開催しているDJ初心者・未経験向けイベント',match:['練習会','練チューズ']},
+    {label:'ボカ戻せ',color:'#39C5BB',icon:'music',v:100,a:60,h:60,desc:'ボカロ100%をモットーにしたイベント',match:['ボカ戻せ']},
+    {label:'テトナイト',color:'#D84B6B',icon:'mic',v:70,a:60,h:100,desc:'重音テト中心のDJイベント。ボカロPがたくさん出る',match:['テトナイト']},
+    {label:'ボカクライブ',color:C.turquoise,icon:'gem',v:100,a:50,h:50,desc:'ボカロライブ系イベントのファンイベント。初音ミク中心',match:['ボカクライブ','ボカクラ']},
+    {label:'ボカコンカフェ',color:C.purple,icon:'star',v:40,a:100,h:100,desc:'DJが性別関係なくメイドコスプレをするイベント',match:['ボカコンカフェ']},
+    {label:'ボカゲーム',color:'#3FB55E',icon:'game',v:50,a:70,h:20,desc:'ボカロとゲーム音楽中心のイベント',match:['ボカゲーム']},
+    {label:'ボカブキEX',color:'#7A4FE0',icon:'mixer',v:80,a:80,h:50,desc:'ボカロを中心としたクラブ界隈(ボカクラ)のDJをオファーしたイベント',match:['ボカブキEX']},
+  ];
+  function judgeEvent(answers){
+    let a=0,v=0,h=0;
+    QUIZ_QUESTIONS.forEach((q,i)=>{const val=(answers[i]||0)/3*100;if(q.axis==='a')a+=val;else if(q.axis==='v')v+=val;else h+=val;});
+    a/=2;v/=2;h/=2;
+    let best=QUIZ_EVENTS[0],bd=Infinity;
+    for(const e of QUIZ_EVENTS){const dv=e.v-v,da=e.a-a,dh=e.h-h;const d=dv*dv+da*da+dh*dh;if(d<bd){bd=d;best=e;}}
+    return best;
+  }
+  function QuizSection({onGoCalendar}){
+    const[step,setStep]=React.useState(0);
+    const[answers,setAnswers]=React.useState([]);
+    const[selected,setSelected]=React.useState(null);
+    const[animKey,setAnimKey]=React.useState(0);
+    const totalQ=QUIZ_QUESTIONS.length;
+    const isIntro=step===0;
+    const isResult=step>totalQ;
+    const qIdx=step-1;
+    const choose=(optIdx)=>{setSelected(optIdx);setTimeout(()=>{setAnswers(a=>[...a,optIdx]);setSelected(null);setAnimKey(k=>k+1);setStep(s=>s+1);},320);};
+    const restart=()=>{setStep(0);setAnswers([]);setSelected(null);setAnimKey(k=>k+1);};
+    const result=isResult?judgeEvent(answers):null;
+    const optColors=[C.red,C.orange,C.turquoise,C.purple];
+    const optBgLight=['rgba(230,57,70,0.10)','rgba(255,138,30,0.10)','rgba(46,197,206,0.10)','rgba(106,63,217,0.10)'];
+    const goCal=()=>{if(onGoCalendar)onGoCalendar(result.match);};
+    return(<div className="fade-in">
+      {isIntro&&(<div style={{display:'flex',flexDirection:'column',gap:16}}>
+        <AboutCard style={{textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:14,padding:'28px 16px'}}>
+          <div style={{animation:'vbBounce 1.2s ease-in-out infinite'}}><Icon name="target" size={46} color={C.turquoise}/></div>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:22,color:C.turquoise,lineHeight:1.2}}>イベント診断</div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#555',lineHeight:2}}>{totalQ}問に答えて<br/>あなたにおすすめの<br/>ボカブキイベントを診断！</div>
+          <button onClick={()=>{setStep(1);setAnimKey(k=>k+1);}} style={{marginTop:8,background:C.red,color:'#fff',border:BT,borderRadius:12,padding:'14px 32px',fontFamily:'"Reggae One",system-ui',fontSize:18,boxShadow:S}}>診断スタート！</button>
+        </AboutCard>
+      </div>)}
+      {!isIntro&&!isResult&&(<div key={`q-${animKey}`} className="fade-in" style={{display:'flex',flexDirection:'column',gap:14}}>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#888',whiteSpace:'nowrap'}}>Q{step} / {totalQ}</div>
+          <div style={{flex:1,height:8,background:'#e8e0cc',border:B,borderRadius:6,overflow:'hidden'}}><div style={{height:'100%',background:C.red,width:`${(step/totalQ)*100}%`,transition:'width 0.3s',borderRadius:4}}/></div>
+        </div>
+        <AboutCard style={{textAlign:'center',padding:'20px 16px'}}>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:C.red,marginBottom:8,letterSpacing:1}}>QUESTION {step}</div>
+          <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:18,lineHeight:1.5,color:C.ink}}>{QUIZ_QUESTIONS[qIdx].q}</div>
+        </AboutCard>
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+          {QUIZ_QUESTIONS[qIdx].opts.map((opt,i)=>(<button key={i} className="quiz-opt" onClick={()=>choose(i)} style={{display:'flex',alignItems:'center',gap:14,background:selected===i?optColors[i]:'#fff',color:selected===i?'#fff':'#111',border:BT,borderRadius:12,padding:'14px 16px',textAlign:'left',width:'100%',boxShadow:selected===i?'2px 2px 0 #111':S,transform:selected===i?'translate(2px,2px)':'none',fontFamily:'"RocknRoll One",system-ui',fontSize:14,transition:'all 0.12s'}}>
+            <div style={{width:28,height:28,flexShrink:0,background:selected===i?'rgba(255,255,255,0.25)':optBgLight[i],border:B,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'"Reggae One"',fontSize:14,color:selected===i?'#fff':optColors[i],fontWeight:700}}>{String.fromCharCode(65+i)}</div>
+            {opt}
+          </button>))}
+        </div>
+      </div>)}
+      {isResult&&result&&(<div key={`result-${animKey}`} className="pop-in" style={{display:'flex',flexDirection:'column',gap:16}}>
+        <div style={{background:result.color,border:BT,borderRadius:16,padding:'24px 20px',boxShadow:SB,textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:12,position:'relative',overflow:'hidden'}}>
+          <div style={{position:'absolute',inset:0,opacity:0.15,backgroundImage:pat.halftone('rgba(255,255,255,0.4)'),backgroundSize:'6px 6px'}}/>
+          <div style={{position:'absolute',top:-20,right:-20,width:80,height:80,borderRadius:'50%',background:'rgba(255,255,255,0.1)',border:'3px solid rgba(255,255,255,0.2)'}}/>
+          <div style={{position:'relative'}}><Icon name={result.icon} size={50} color="#fff"/></div>
+          <div style={{position:'relative',fontFamily:'"DotGothic16",monospace',fontSize:11,color:'rgba(255,255,255,0.8)',letterSpacing:2}}>あなたにおすすめのイベントは</div>
+          <div style={{position:'relative',fontFamily:'"Reggae One",system-ui',fontSize:30,color:'#fff',textShadow:'3px 3px 0 rgba(0,0,0,0.35)',lineHeight:1.1}}>{result.label}</div>
+          <div style={{position:'relative',fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#fff',lineHeight:1.9,textAlign:'center',maxWidth:260}}>{result.desc}</div>
+          <div style={{position:'relative',width:'100%',maxWidth:280,display:'flex',flexDirection:'column',gap:8,marginTop:6}}>
+            {[['ボカロ度',result.v],['お酒度',result.a],['ハチャメチャ度',result.h]].map((m,i)=>(
+              <div key={i} style={{display:'flex',flexDirection:'column',gap:3}}>
+                <div style={{display:'flex',justifyContent:'space-between',fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#fff'}}><span>{m[0]}</span><span>{m[1]}%</span></div>
+                <div style={{height:9,background:'rgba(0,0,0,0.22)',border:'2px solid rgba(255,255,255,0.6)',borderRadius:6,overflow:'hidden'}}><div style={{height:'100%',width:`${m[1]}%`,background:'#fff',borderRadius:4}}/></div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <AboutCard style={{textAlign:'center',display:'flex',flexDirection:'column',gap:12,alignItems:'center',padding:'20px 16px'}}>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',lineHeight:1.8}}>カレンダーで次回の<br/><span style={{color:result.color,fontWeight:700}}>{result.label}</span> をチェックしよう！</div>
+          <button onClick={goCal} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:C.turquoise,color:'#fff',border:BT,borderRadius:12,padding:'13px 24px',fontFamily:'"Reggae One",system-ui',fontSize:15,boxShadow:SS,width:'100%'}}><Icon name="calendar" size={18} color="#fff"/> イベントカレンダーへ</button>
+          <button onClick={restart} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'#fff',color:'#111',border:BT,borderRadius:12,padding:'12px 24px',fontFamily:'"RocknRoll One",system-ui',fontSize:14,boxShadow:SS,width:'100%'}}><Icon name="refresh" size={17} color="#111"/> もう一度診断する</button>
+        </AboutCard>
+      </div>)}
+    </div>);
+  }
+  const AB_ITEMS={
+    access:{id:'access',icon:'pin',label:'アクセス',color:C.turquoise},
+    qa:{id:'qa',icon:'question',label:'Q&A',color:C.orange},
+    drink:{id:'drink',icon:'beer',label:'ドリンクメニュー',color:C.red},
+    sns:{id:'sns',icon:'globe',label:'公式SNS・スタッフ',color:C.purple},
+    quiz:{id:'quiz',icon:'target',label:'イベント診断',color:C.ink},
+  };
+  const ABOUT_TOP=[AB_ITEMS.sns,AB_ITEMS.drink,AB_ITEMS.access,AB_ITEMS.qa];
+  const ABOUT_BOTTOM=[AB_ITEMS.quiz];
+  function AboutAccordion({menus,onGoCalendar}){
+    const[open,setOpen]=React.useState(null);
+    return(<div style={{padding:'2px 16px 8px',display:'flex',flexDirection:'column',gap:10}}>
+      {menus.map(m=>{const isOpen=open===m.id;return(
+        <div key={m.id} style={{background:'#fff',border:BT,borderRadius:14,overflow:'hidden',boxShadow:isOpen?S:SS}}>
+          <button onClick={()=>setOpen(isOpen?null:m.id)} style={{display:'flex',alignItems:'center',gap:14,width:'100%',background:'transparent',border:'none',padding:'12px 14px',textAlign:'left',cursor:'pointer'}}>
+            <div style={{width:42,height:42,flexShrink:0,background:m.color,border:BT,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:SS}}><Icon name={m.icon} size={22} color="#fff"/></div>
+            <div style={{flex:1,fontFamily:'"RocknRoll One",system-ui',fontSize:15,color:C.ink}}>{m.label}</div>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#bbb',transform:isOpen?'rotate(90deg)':'none',transition:'transform .2s'}}>&#8250;</div>
+          </button>
+          {isOpen&&<div style={{borderTop:BT,padding:14,background:'#FFFBEC'}}>
+            {m.id==='access'&&<AccessSection/>}
+            {m.id==='qa'&&<QASection/>}
+            {m.id==='drink'&&<DrinkSection/>}
+            {m.id==='sns'&&<SNSSection/>}
+            {m.id==='quiz'&&<QuizSection onGoCalendar={onGoCalendar}/>}
+          </div>}
+        </div>);})}
+    </div>);
+  }
+  function App(){
+    const[events,setEvents]=React.useState([]);
+    const[cursor,setCu_]=React.useState(()=>{const s=ls.get('vb_cursor',null);return s?new Date(s[0],s[1],1):new Date(TODAY.getFullYear(),TODAY.getMonth(),1);});
+    const[tags,setTags]=React.useState(TAGS_DEFAULT);
+    const[dayBgMap,setDayBgMap]=React.useState({});
+    const[closedDays,setClosedDays]=React.useState([]);
+    const[loading,setLoading]=React.useState(true);
+    const[fetchErr,setFetchErr]=React.useState(false);
+    const[people,setPeople]=React.useState(PEOPLE_DEFAULT);
+
+    React.useEffect(()=>{
+      fetch('./events.json?t='+Date.now())
+        .then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
+        .then(data=>{
+          const evs=data.events||[];
+          setEvents(evs);
+          setTags(data.tags||TAGS_DEFAULT);
+          setDayBgMap(data.dayBgMap||{});
+          setPeople({...PEOPLE_DEFAULT,...(data.people||{})});
+          setClosedDays(data.closedDays||[]);
+          if(!ls.get('vb_cursor',null)&&evs.length>0){
+            const ck=fmtDate(new Date()).slice(0,7);
+            const hasThisMonth=evs.some(e=>e.date.slice(0,7)===ck);
+            if(!hasThisMonth){
+              const todayStr=fmtDate(new Date());
+              const future=evs.filter(e=>e.date>=todayStr).sort((a,b)=>a.date.localeCompare(b.date));
+              const target=future.length>0?future[0]:[...evs].sort((a,b)=>b.date.localeCompare(a.date))[0];
+              if(target){const td=parseDate(target.date);setCu_(new Date(td.getFullYear(),td.getMonth(),1));}
+            }
+          }
+          setLoading(false);
+        })
+        .catch(()=>{setEvents(EVENTS_DEFAULT);setFetchErr(true);setLoading(false);});
+    },[]);
+
+    const[favorites,setFv_]=React.useState(()=>ls.get('vb_favs',{}));
+    const[view,setVw_]=React.useState(()=>ls.get('vb_view','month'));
+    const[pendingEvent,setPendingEvent]=React.useState(null);
+    const[readyEvent,setReadyEvent]=React.useState(null);
+    const[tagSet,setTagSet]=React.useState(new Set());
+    const[csToast,setCsToast]=React.useState(false);
+    const timerRef=React.useRef(null);
+    const csTimerRef=React.useRef(null);
+
+    const openEvent=(ev)=>{
+      window.scrollTo(0,0);
+      setPendingEvent(ev);setReadyEvent(null);
+      if(timerRef.current)clearTimeout(timerRef.current);
+      timerRef.current=setTimeout(()=>setReadyEvent(ev),400);
+    };
+    const closeEvent=()=>{setReadyEvent(null);setPendingEvent(null);if(timerRef.current)clearTimeout(timerRef.current);};
+    const setFv=v=>{const n=typeof v==='function'?v(favorites):v;setFv_(n);ls.set('vb_favs',n);};
+    const setView=v=>{setVw_(v);ls.set('vb_view',v);};
+    const setCursor=v=>{const n=typeof v==='function'?v(cursor):v;setCu_(n);ls.set('vb_cursor',[n.getFullYear(),n.getMonth()]);};
+    const toggleFav=k=>setFv(f=>{const n={...f};n[k]?delete n[k]:(n[k]=true);return n;});
+    const scrollToTop=()=>{window.scrollTo({top:0,behavior:'smooth'});};
+    const toggleTag=id=>{
+      if(id==='all'){setTagSet(new Set());return;}
+      setTagSet(prev=>{const n=new Set(prev);n.has(id)?n.delete(id):n.add(id);return n;});
+    };
+    const onTodayTap=()=>setCursor(new Date(TODAY.getFullYear(),TODAY.getMonth(),1));
+    const goToEventByName=(matchKeys)=>{
+      setView('month');
+      const todayStr=fmtDate(new Date());
+      const keys=matchKeys||[];
+      const future=events.filter(e=>e.date>=todayStr&&keys.some(k=>e.title.toLowerCase().includes(k.toLowerCase()))).sort((a,b)=>a.date.localeCompare(b.date));
+      if(future.length>0){const td=parseDate(future[0].date);setCursor(new Date(td.getFullYear(),td.getMonth(),1));}
+      else{setCursor(new Date(TODAY.getFullYear(),TODAY.getMonth(),1));setCsToast(true);if(csTimerRef.current)clearTimeout(csTimerRef.current);csTimerRef.current=setTimeout(()=>setCsToast(false),1800);}
+      setTimeout(()=>{const el=document.getElementById('vb-cal-anchor');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},60);
+    };
+
+    const filteredEvents=React.useMemo(()=>events.filter(e=>matchesTagFilter(e,tagSet,tags)),[events,tagSet,tags]);
+    const eventsByDate=React.useMemo(()=>{const m={};filteredEvents.forEach(e=>{(m[e.date]=m[e.date]||[]).push(e);});return m;},[filteredEvents]);
+    const cells=React.useMemo(()=>buildMonthCells(cursor.getFullYear(),cursor.getMonth()),[cursor]);
+    const weekStart=React.useMemo(()=>{const base=sameDay(cursor,new Date(TODAY.getFullYear(),TODAY.getMonth(),1))?TODAY:new Date(cursor.getFullYear(),cursor.getMonth(),1);const wi=weekIdx(base);return new Date(base.getFullYear(),base.getMonth(),base.getDate()-wi);},[cursor]);
+
+    if(loading)return(
+      <div style={{position:'fixed',inset:0,background:C.paper,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:20}}>
+        <div style={{position:'absolute',inset:0,backgroundImage:pat.halftone('rgba(46,197,206,0.18)'),backgroundSize:'8px 8px'}}/>
+        <div style={{position:'relative',display:'flex',gap:14}}>
+          {['music','headphone','mic'].map((d,i)=>(<div key={i} className="vb-loading-dot" style={{animationDelay:`${i*0.12}s`}}><Icon name={d} size={32} color={C.ink}/></div>))}
+        </div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',letterSpacing:2,position:'relative'}}>LOADING...</div>
+      </div>
+    );
+
+    return(<div style={{position:'relative',width:'100%',minHeight:'100dvh',fontFamily:'"M PLUS Rounded 1c",system-ui'}}>
+      <div style={{position:'absolute',top:-20,left:-20,width:110,height:110,borderRadius:'50%',background:C.yellow,border:B,opacity:0.85,pointerEvents:'none',zIndex:0}}/>
+      <div style={{position:'absolute',top:80,right:-30,width:80,height:80,borderRadius:'50%',background:C.turquoise,border:B,opacity:0.75,pointerEvents:'none',zIndex:0}}/>
+      <div style={{position:'relative',zIndex:1,width:'100%',paddingBottom:80}}>
+        <div style={{display:'flex',alignItems:'center',padding:'12px 16px 8px'}}><VbLogo/></div>
+        <AboutAccordion menus={ABOUT_TOP}/>
+        {fetchErr&&<div style={{margin:'0 16px 8px',fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',textAlign:'center'}}>&#8251; &#12458;&#12501;&#12521;&#12452;&#12531;&#12398;&#12383;&#12417;&#20206;&#12487;&#12540;&#12479;&#12434;&#34920;&#31034;&#12375;&#12390;&#12356;&#12414;&#12377;</div>}
+        <div style={{margin:'0 16px 14px',position:'relative',background:C.red,color:'#fff',border:BT,borderRadius:10,padding:'8px 14px',boxShadow:S,display:'flex',alignItems:'center',overflow:'hidden'}}>
+          <div style={{position:'absolute',inset:0,opacity:0.25,backgroundImage:pat.stripes('rgba(255,255,255,0.5)','transparent')}}/>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,position:'relative',letterSpacing:1}}>&#12452;&#12505;&#12531;&#12488;&#12459;&#12524;&#12531;&#12480;&#12540;</div>
+        </div>
+        {view==='month'&&<MonthHeader year={cursor.getFullYear()} month={cursor.getMonth()} onPrev={()=>setCursor(c=>new Date(c.getFullYear(),c.getMonth()-1,1))} onNext={()=>setCursor(c=>new Date(c.getFullYear(),c.getMonth()+1,1))} onToday={onTodayTap}/>}
+        {view==='week'&&(<div style={{padding:'0 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>{weekStart.getMonth()+1}&#26376; <span style={{fontSize:12,color:'#555'}}>{weekStart.getDate()}&#26085;&#12316;</span></div>
+          <button onClick={onTodayTap} style={{border:BT,background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:13,padding:'6px 12px',borderRadius:999,boxShadow:SS}}>&#20170;&#26085;</button>
+        </div>)}
+        {view==='list'&&<div style={{padding:'0 16px 8px'}}><div style={{fontFamily:'"Reggae One",system-ui',fontSize:20}}>&#12452;&#12505;&#12531;&#12488;&#19968;&#35239;</div></div>}
+        <div id="vb-cal-anchor"/>
+        <div style={{padding:'10px 16px 10px',display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
+          <ViewSwitcher view={view} setView={setView}/>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666'}}>{filteredEvents.length} events</div>
+        </div>
+        <div style={{padding:'0 16px 10px'}}><TagFilter activeSet={tagSet} toggleTag={toggleTag} tags={tags}/></div>
+        {view==='month'&&<WeekdayRow/>}
+        {view==='month'&&(<><MonthGrid cells={cells} eventsByDate={eventsByDate} onPick={openEvent} favorites={favorites} dayBgMap={dayBgMap} tags={tags} closedDays={closedDays}/><UpcomingList events={filteredEvents} onPick={openEvent} favorites={favorites} tags={tags}/></>)}
+        {view==='week'&&<div style={{paddingTop:10}}><WeekView start={weekStart} eventsByDate={eventsByDate} onPick={openEvent} favorites={favorites} tags={tags}/></div>}
+        {view==='list'&&<ListView events={filteredEvents} onPick={openEvent} favorites={favorites} tags={tags}/>}
+        <AboutAccordion menus={ABOUT_BOTTOM} onGoCalendar={goToEventByName}/>
+        <div style={{textAlign:'center',padding:'14px 16px 30px',fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#666'}}>&#12508;&#12459;&#12525;&#23554;&#38272;&#12490;&#12452;&#12488;&#12463;&#12521;&#12502; &#12508;&#12459;&#12502;&#12461;<br/>&#27468;&#33310;&#20238;&#30010; 2-45-2 Gest32&#12499;&#12523; 5F / &#27598;&#26085;&#21942;&#26989; 24:00-5:00</div>
+      </div>
+      {!pendingEvent&&<div className="vb-fab"><button onClick={scrollToTop} style={{background:C.yellow,color:'#111',border:BT,borderRadius:'50%',width:52,height:52,boxShadow:SB,fontFamily:'"Reggae One",system-ui',fontSize:24,display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>&#8593;</button></div>}
+      {csToast&&<div className="vb-cs-toast"><div style={{background:C.orange,color:'#fff',border:BT,borderRadius:16,padding:'18px 30px',boxShadow:SB,fontFamily:'"Reggae One",system-ui',fontSize:22,whiteSpace:'nowrap'}}>Coming Soon...</div></div>}
+      {pendingEvent&&!readyEvent&&<LoadingScreen event={pendingEvent} tags={tags}/>}
+      {readyEvent&&readyEvent.comingSoon&&<ComingSoonScreen event={readyEvent} onBack={closeEvent} tags={tags}/>}
+      {readyEvent&&!readyEvent.comingSoon&&<DetailScreen event={readyEvent} onBack={closeEvent} favorites={favorites} toggleFav={toggleFav} people={people} tags={tags}/>}
+    </div>);
+  }
+
+  ReactDOM.createRoot(document.getElementById('app')).render(<App/>);
+  
