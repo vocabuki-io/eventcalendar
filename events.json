@@ -942,6 +942,339 @@
       "flyer": "images/20260926-392c50.jpg",
       "xurl": "https://x.com/vocabuki/status/2093611392876371984?s=46",
       "comingSoon": false
+    },
+    {
+      "id": "ev_20261003_event_tgn8",
+      "date": "2026-10-03",
+      "title": "ボカクライブ",
+      "tags": [
+        "other"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261009_event_x4pv",
+      "date": "2026-10-09",
+      "title": "ぶいよい",
+      "tags": [
+        "vtuber"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261010_event_j569",
+      "date": "2026-10-10",
+      "title": "テトナイト",
+      "tags": [
+        "vocaloid"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261011_event_0g0e",
+      "date": "2026-10-11",
+      "title": "？？？",
+      "tags": [
+        "other"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261016_event_x35o",
+      "date": "2026-10-16",
+      "title": "あゆむ生誕",
+      "tags": [
+        "other"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261017_shadownight_la6i",
+      "date": "2026-10-17",
+      "title": "Shadow Night",
+      "tags": [
+        "other",
+        "s-shadownight",
+        "external"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261023_event_ftn2",
+      "date": "2026-10-23",
+      "title": "うたまた",
+      "tags": [
+        "utaite",
+        "s-utamata"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261024_event_r6qr",
+      "date": "2026-10-24",
+      "title": "らぶ♡くりえいと！",
+      "tags": [
+        "other"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261030_event_up7n",
+      "date": "2026-10-30",
+      "title": "ボカ戻せ",
+      "tags": [
+        "vocaloid",
+        "s-bokamodose"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261031_event_9m9f",
+      "date": "2026-10-31",
+      "title": "酒ブキ【ハロウィン】",
+      "tags": [
+        "vocaloid",
+        "s-sakebuki"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261106_event_iwgk",
+      "date": "2026-11-06",
+      "title": "？？？",
+      "tags": [
+        "other"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261107_event_0u0m",
+      "date": "2026-11-07",
+      "title": "うたまた",
+      "tags": [
+        "utaite",
+        "s-utamata"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261113_event_y14t",
+      "date": "2026-11-13",
+      "title": "？？？",
+      "tags": [
+        "other"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261114_event_4qrm",
+      "date": "2026-11-14",
+      "title": "？？？",
+      "tags": [
+        "other"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261120_event_mzx8",
+      "date": "2026-11-20",
+      "title": "酒ブキ【地雷】",
+      "tags": [
+        "vocaloid",
+        "s-sakebuki"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261121_shadownight_8ek3",
+      "date": "2026-11-21",
+      "title": "Shadow Night",
+      "tags": [
+        "other",
+        "s-shadownight",
+        "external"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261122_event_hlmo",
+      "date": "2026-11-22",
+      "title": "ドパブキ",
+      "tags": [
+        "other"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261123_event_1tj5",
+      "date": "2026-11-23",
+      "title": "？？？",
+      "tags": [
+        "other"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261127_event_19au",
+      "date": "2026-11-27",
+      "title": "？？？",
+      "tags": [
+        "other"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261128_event_9847",
+      "date": "2026-11-28",
+      "title": "ボカ戻せ",
+      "tags": [
+        "vocaloid",
+        "s-bokamodose"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261204_v_fsou",
+      "date": "2026-12-04",
+      "title": "V満タン",
+      "tags": [
+        "vtuber"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261205_event_jwcv",
+      "date": "2026-12-05",
+      "title": "？？？",
+      "tags": [
+        "other"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261211_event_o0i3",
+      "date": "2026-12-11",
+      "title": "ボカゲーム",
+      "tags": [
+        "game",
+        "s-bokagame"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261212_999_ik0d",
+      "date": "2026-12-12",
+      "title": "飲酒限界999",
+      "tags": [
+        "other"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261218_shadownight_5fb7",
+      "date": "2026-12-18",
+      "title": "Shadow Night",
+      "tags": [
+        "other",
+        "s-shadownight",
+        "external"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261219_event_c1xb",
+      "date": "2026-12-19",
+      "title": "ボカギャラ",
+      "tags": [
+        "other"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261225_event_jag0",
+      "date": "2026-12-25",
+      "title": "酒ブキ【クリスマス】",
+      "tags": [
+        "vocaloid",
+        "s-sakebuki"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261226_event_wb77",
+      "date": "2026-12-26",
+      "title": "？？？",
+      "tags": [
+        "other"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
+    },
+    {
+      "id": "ev_20261231_event_ku79",
+      "date": "2026-12-31",
+      "title": "？？？",
+      "tags": [
+        "other"
+      ],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": true
     }
   ],
   "tags": [
