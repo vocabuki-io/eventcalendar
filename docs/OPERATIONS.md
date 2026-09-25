@@ -181,7 +181,7 @@ MCP の `GITHUB_BRANCH` を `draft` などにしておくと、公開サイト�
 ## 5. ローカルでの動作確認
 
 ```bash
-# 公開ページをローカルで開く（React/Babel は CDN から取得するのでネット接続が必要）
+# 公開ページをローカルで開く（React は CDN から取得するのでネット接続が必要。src/*.jsx を編集したら先に npm run build）
 python3 -m http.server 8000
 # → http://localhost:8000/index.html
 

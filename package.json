@@ -1,0 +1,12 @@
+{
+  "name": "vocabuki-eventcalendar",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node build.mjs --check && node mcp/test/run-tests.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.10"
+  }
+}

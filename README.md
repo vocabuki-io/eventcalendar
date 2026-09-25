@@ -9,14 +9,15 @@ GitHub Pages で公開している静的サイトです。
 
 | パス | 役割 |
 | --- | --- |
-| `index.html` | 公開カレンダー。月／週／リスト表示、イベント詳細、About、イベント診断 |
-| `admin.html` | 管理画面。ブラウザから `events.json` を編集して GitHub にコミットする |
+| `index.html` / `src/index.jsx` | 公開カレンダー。月／週／リスト表示、イベント詳細、About、イベント診断 |
+| `admin.html` / `src/admin.jsx` | 管理画面。ブラウザから `events.json` を編集して GitHub にコミットする |
+| `js/` | `npm run build` の出力。手で編集しない |
 | `events.json` | **唯一のデータ源**。イベント・タグ・出演者・休業日をまとめて持つ |
 | `images/` | フライヤー・ギャラリー画像。`events.json` にはここへのパスだけを入れる |
 | `mcp/` | Claude から MCP 経由でカレンダーを編集するサーバー |
 | `docs/OPERATIONS.md` | 運営ガイド |
 
-ビルド不要です。React と Babel を CDN から読み込み、ブラウザ上で JSX を変換して動きます。
+画面のソースは `src/*.jsx` にあり、`npm run build` で `js/*.js` に変換したものをコミットして配信しています（ブラウザで JSX を変換しないので軽い）。React は CDN から本番用ビルドを読み込みます。
 
 ## イベントを登録する
 
@@ -43,6 +44,11 @@ OPEN 23:30 CLOSE 5:00、料金は 2000円（1D込）。
 ## 開発
 
 ```bash
+# 画面（src/*.jsx）を編集したら
+npm install        # 初回だけ
+npm run build      # js/*.js と HTML のキャッシュ用 ?v= を更新 → 一緒にコミットする
+npm test           # ビルド結果が最新か + MCP サーバーのテスト（PR でも自動実行）
+
 # ローカルで開く
 python3 -m http.server 8000     # → http://localhost:8000/index.html
 

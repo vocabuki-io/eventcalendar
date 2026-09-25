@@ -1,0 +1,634 @@
+// admin.html のアプリ本体（JSX）。編集したら `npm run build` で js/admin.js を作り直すこと。
+const GH_OWNER='vocabuki-io';
+const GH_REPO='eventcalendar';
+const GH_PATH='events.json';
+const ADMIN_PW_HASH='3b33abb9ed02762e621268cfb4d416b3a8b84e8aacf9f8e25a07cdd5c1f231c7';
+async function sha256Hex(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+const T=window.T;
+// The PAT lives in sessionStorage by default. Phones discard tabs aggressively and
+// re-typing a PAT on a phone keyboard is not realistic, so the login screen can opt
+// into localStorage instead ("remember on this device").
+const tokenStore={
+  get(){try{return localStorage.getItem('vb_token')||sessionStorage.getItem('vb_token')||'';}catch(e){return '';}},
+  isRemembered(){try{return !!localStorage.getItem('vb_token');}catch(e){return false;}},
+  set(tk,remember){
+    try{
+      sessionStorage.setItem('vb_token',tk);
+      if(remember)localStorage.setItem('vb_token',tk);else localStorage.removeItem('vb_token');
+    }catch(e){}
+  },
+  clear(){try{sessionStorage.removeItem('vb_token');localStorage.removeItem('vb_token');}catch(e){}},
+};
+const C={turquoise:'#2EC5CE',turquoiseDark:'#1EA3AC',yellow:'#FFD23F',red:'#E63946',orange:'#FF8A1E',paper:'#FFFBEC',ink:'#111111',purple:'#6A3FD9'};
+const B='3px solid #111',BT='4px solid #111',S='4px 4px 0 #111',SB='6px 6px 0 #111',SS='2px 2px 0 #111';
+const pat={halftone:c=>`radial-gradient(circle at 3px 3px,${c} 1.8px,transparent 2px)`};
+const TAGS_DEFAULT=[
+  {id:'vocaloid',label:'\u30dc\u30ab\u30ed',color:'#39C5BB',group:'genre'},
+  {id:'anime',label:'\u30a2\u30cb\u30bd\u30f3',color:'#E63946',group:'genre'},
+  {id:'vtuber',label:'Vtuber',color:'#D4B0F0',group:'genre'},
+  {id:'game',label:'\u30b2\u30fc\u30e0',color:'#FF8A1E',group:'genre'},
+  {id:'utaite',label:'\u6b4c\u3044\u624b',color:'#6A3FD9',group:'genre'},
+  {id:'other',label:'\u305d\u306e\u4ed6',color:'#F5E642',group:'genre'},
+];
+const TAG_GROUPS=[{id:'genre',label:T.gGenre},{id:'series',label:T.gSeries},{id:'org',label:T.gOrg}];
+const PEOPLE_DEFAULT={
+  drag_on_3:{name:'dragon3',x:'@drag_on_3'},
+  rockstar_saihan:{name:T.pIASU,x:'@rockstar_saihan'},
+  nono4e:{name:T.pNonose,x:'@nono4e'},
+  aym_pngn:{name:T.pAyumu,x:'@aym_pngn'},
+};
+const DAY_COLORS=[
+  {id:'auto',label:T.colorAuto,value:null},
+  {id:'red',label:T.colorRed,value:'#E63946'},
+  {id:'teal',label:T.colorTeal,value:'#2EC5CE'},
+  {id:'yel',label:T.colorYel,value:'#FFD23F'},
+  {id:'org',label:T.colorOrg,value:'#FF8A1E'},
+  {id:'pur',label:T.colorPur,value:'#6A3FD9'},
+  {id:'pnk',label:T.colorPnk,value:'#FF3DA5'},
+  {id:'nvy',label:T.colorNvy,value:'#223B8F'},
+  {id:'grn',label:T.colorGrn,value:'#3FB55E'},
+];
+function fmtDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dy=String(d.getDate()).padStart(2,'0');return`${y}-${m}-${dy}`;}
+function parseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+function weekIdx(d){return(d.getDay()+6)%7;}
+function uid(){return'e'+Date.now()+Math.random().toString(36).slice(2,6);}
+function getWeekStart(d){const r=new Date(d);const day=r.getDay();const diff=day===0?6:day-1;r.setDate(r.getDate()-diff);r.setHours(0,0,0,0);return r;}
+function weekLabel(ws){return(ws.getMonth()+1)+'\u6708 \u7b2c'+Math.ceil(ws.getDate()/7)+'\u9031';}
+function weekRange(ws){const we=new Date(ws);we.setDate(we.getDate()+6);return(ws.getMonth()+1)+'/'+ws.getDate()+' \uff5e '+(we.getMonth()+1)+'/'+we.getDate();}
+function primaryTag(tagIds,tagsMaster){for(const id of(tagIds||[])){const m=tagsMaster.find(t=>t.id===id);if(m&&m.color)return m;}return{id:'?',label:(tagIds&&tagIds[0])||'?',color:'#666'};}
+const TODAY=new Date();
+
+function Label({children}){return(<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#555',marginBottom:3}}>{children}</div>);}
+function SHead({children}){return(<div style={{fontFamily:'"Reggae One",system-ui',fontSize:18,background:C.ink,color:'#fff',border:BT,borderRadius:8,padding:'4px 12px',transform:'rotate(-1deg)',boxShadow:SS,display:'inline-block',marginBottom:12}}>{children}</div>);}
+
+// Accept a PAT pasted with or without its github_pat_ prefix.
+function normalizeToken(token){
+  const t=(token||'').trim();
+  if(/^(github_pat_|ghp_|gho_|ghs_)/.test(t))return t;
+  return 'github_pat_'+t;
+}
+async function ghFetch(token,path,method,body){
+  method=method||'GET';
+  const hdrs={Authorization:'token '+normalizeToken(token),'Content-Type':'application/json',Accept:'application/vnd.github.v3+json'};
+  const opts={method,headers:hdrs};
+  if(body)opts.body=JSON.stringify(body);
+  const url='https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+path;
+  const res=await fetch(url,opts);
+  if(!res.ok){const e=await res.json();throw new Error(e.message||res.status);}
+  return res.json();
+}
+async function loadGH(token){
+  const file=await ghFetch(token,GH_PATH);
+  const bin=atob(file.content.replace(/\s/g,''));
+  const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
+  const text=new TextDecoder('utf-8').decode(bytes);
+  return{data:JSON.parse(text),sha:file.sha};
+}
+async function saveGH(token,data,sha){
+  const content=btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2))));
+  const msg='Update events.json '+new Date().toISOString();
+  await ghFetch(token,GH_PATH,'PUT',{message:msg,content,sha});
+}
+
+function PerfBlock({role,labelText,addText,bgColor,draft,setDraft,people,nameV,setNameV,xidV,setXidV}){
+  const cur=draft[role]||[];
+  const getSugg=()=>{const q=(nameV+xidV).toLowerCase().trim();if(!q)return[];return Object.keys(people).filter(k=>!cur.includes(k)&&(k.toLowerCase().includes(q)||people[k].name.toLowerCase().includes(q)||people[k].x.toLowerCase().includes(q))).slice(0,4);};
+  const addPerf=()=>{const name=nameV.trim(),xid=xidV.trim().replace(/^@/,'');if(!xid&&!name)return;const key=xid||(name.toLowerCase().replace(/\s+/g,'_'));if(!people[key])people[key]={name:name||key,x:xid?('@'+xid):''};setDraft(d=>({...d,[role]:d[role].includes(key)?d[role]:[...d[role],key]}));setNameV('');setXidV('');};
+  const pickSugg=k=>{setDraft(d=>({...d,[role]:d[role].includes(k)?d[role]:[...d[role],k]}));setNameV('');setXidV('');};
+  const rmPerf=i=>setDraft(d=>({...d,[role]:d[role].filter((_,j)=>j!==i)}));
+  const sugg=getSugg();
+  return(
+    <div>
+      <Label>{labelText}</Label>
+      <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:4}}>
+        {cur.map((id,i)=>{const p=people[id]||{name:id,x:'@'+id};return(
+          <div key={id} style={{display:'flex',alignItems:'center',gap:8,background:'#f8f8f8',border:B,borderRadius:8,padding:'8px 12px'}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{p.name}</div>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{p.x||('@'+id)}</div>
+            </div>
+            <button onClick={()=>rmPerf(i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'9px 12px',minHeight:38,boxShadow:SS}}>{T.del}</button>
+          </div>);})}
+        <div style={{background:'#f0f0f0',border:BT,borderRadius:10,padding:10,display:'flex',flexDirection:'column',gap:8}}>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555'}}>{T.perfNew}</div>
+          <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+            <input value={nameV} onChange={e=>setNameV(e.target.value)} placeholder={T.namePh} style={{flex:'1 1 130px',border:BT,borderRadius:8,padding:'10px',fontSize:13,outline:'none',minWidth:0}}/>
+            <div style={{flex:'1 1 130px',display:'flex',alignItems:'center',border:BT,borderRadius:8,background:'#fff',overflow:'hidden',minWidth:0}}>
+              <span style={{padding:'0 4px 0 8px',fontFamily:'"DotGothic16",monospace',fontSize:13,color:'#888',flexShrink:0}}>@</span>
+              <input value={xidV} onChange={e=>setXidV(e.target.value.replace(/^@/,''))} onKeyDown={e=>e.key==='Enter'&&addPerf()} placeholder={T.xidPh} style={{flex:1,border:'none',padding:'10px 6px 10px 0',fontSize:13,outline:'none',background:'transparent',minWidth:0}}/>
+            </div>
+          </div>
+          <button onClick={addPerf} style={{border:BT,borderRadius:8,padding:'11px',background:bgColor,color:role==='vjs'?'#fff':'#111',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>{addText}</button>
+        </div>
+        {sugg.length>0&&(<div style={{background:'#fff',border:B,borderRadius:8,overflow:'hidden'}}>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',padding:'6px 10px',borderBottom:'1px solid #eee'}}>{T.fromReg}</div>
+          {sugg.map(k=>(<button key={k} onClick={()=>pickSugg(k)} style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'9px 10px',border:'none',borderBottom:'1px solid #eee',background:'transparent',textAlign:'left',cursor:'pointer'}}><span style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{people[k].name}</span><span style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{people[k].x}</span></button>))}
+        </div>)}
+      </div>
+    </div>
+  );
+}
+
+// \u30bf\u30b0\u7de8\u96c6\u30d6\u30ed\u30c3\u30af\uff08\u8272\u4ed8\u304d\u30de\u30b9\u30bf\u9078\u629e + \u81ea\u7531\u30bf\u30b0\u8ffd\u52a0\uff09
+function TagsBlock({draft,setDraft,tags}){
+  const[input,setInput]=React.useState('');
+  const cur=draft.tags||[];
+  const addTag=(id)=>{const v=(id||input).trim();if(!v)return;if(!cur.includes(v))setDraft(d=>({...d,tags:[...(d.tags||[]),v]}));setInput('');};
+  const rmTag=t=>setDraft(d=>({...d,tags:(d.tags||[]).filter(x=>x!==t)}));
+  const tagInfo=id=>tags.find(t=>t.id===id);
+  return(
+    <div>
+      <Label>{T.tagsL}</Label>
+      {/* \u73fe\u5728\u306e\u30bf\u30b0 */}
+      <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:8}}>
+        {cur.length===0&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#aaa'}}>\u30bf\u30b0\u672a\u8a2d\u5b9a</div>}
+        {cur.map(t=>{const info=tagInfo(t);const col=info&&info.color;const lbl=info?info.label:t;return(
+          <div key={t} style={{display:'inline-flex',alignItems:'center',gap:4,background:col||C.turquoise,color:col?(['#F5E642','#B8F0B0','#D4B0F0'].includes(col)?'#111':'#fff'):'#fff',border:B,borderRadius:20,padding:'5px 8px 5px 12px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>
+            # {lbl}<button onClick={()=>rmTag(t)} aria-label="remove" style={{background:'none',border:'none',color:'inherit',fontSize:16,minWidth:32,minHeight:32,padding:'0 0 0 6px',lineHeight:1,cursor:'pointer'}}>x</button>
+          </div>);})}
+      </div>
+      {/* \u8ef8\u3054\u3068\u306b\u30bf\u30b0\u3092\u30af\u30a4\u30c3\u30af\u8ffd\u52a0 */}
+      {TAG_GROUPS.map(g=>{const gt=tags.filter(t=>t.group===g.id);if(!gt.length)return null;return(
+        <div key={g.id} style={{marginBottom:8}}>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',marginBottom:4}}>{g.label}</div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+            {gt.map(t=>{const on=cur.includes(t.id);const bg=t.color||C.turquoise;return(
+              <button key={t.id} onClick={()=>on?rmTag(t.id):addTag(t.id)} style={{display:'inline-flex',alignItems:'center',gap:4,border:on?'3px solid #111':'2px solid #111',borderRadius:8,padding:'6px 12px',background:on?bg:'#fff',color:on?(['#F5E642','#B8F0B0','#D4B0F0'].includes(bg)?'#111':'#fff'):'#111',fontFamily:'"DotGothic16",monospace',fontSize:12,cursor:'pointer',boxShadow:on?SS:'none',whiteSpace:'nowrap'}}># {t.label}</button>);})}
+          </div>
+        </div>);})}
+      {/* \u81ea\u7531\u30bf\u30b0\u5165\u529b */}
+      <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+        <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addTag()} placeholder={T.tagAddPh} style={{flex:'1 1 140px',minWidth:0,border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none'}}/>
+        <button onClick={()=>addTag()} style={{border:BT,borderRadius:8,padding:'8px 14px',background:C.turquoise,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS,flexShrink:0}}>\uff0b</button>
+      </div>
+    </div>
+  );
+}
+
+function isHttpUrl(u){return /^https?:\/\//i.test((u||'').trim());}
+// Images may also be a repo-relative path such as "images/flyer.jpg" (what the MCP
+// upload_image tool returns); index.html resolves those against the site root.
+function isImageRef(u){const t=(u||'').trim();return isHttpUrl(t)||(/^[\w.][\w./-]*$/.test(t)&&!t.startsWith('//'));}
+
+// ---------------------------------------------------------------- image upload
+// Images are stored as files under images/ and referenced by path, never inlined
+// as base64 into events.json: that file is re-fetched in full by every visitor on
+// every load (cache-busted), so an embedded flyer is paid for by everyone, while a
+// file under images/ is fetched once, cached, and only by people who open the event.
+const IMG_MAX_BYTES=10*1024*1024;   // reject anything larger outright
+const IMG_MAX_DIM=1600;             // long edge after downscaling
+const IMG_PASSTHROUGH_BYTES=300*1024; // small enough already: upload the original bytes
+const IMG_JPEG_QUALITY=0.85;
+// Types we can store as-is. Anything else the browser reports as an image (iPhone
+// HEIC/HEIF, Android HEIF, ...) still goes through the canvas path and comes out JPEG.
+const IMG_EXT={'image/jpeg':'jpg','image/png':'png','image/gif':'gif','image/webp':'webp'};
+
+function bytesToBase64(bytes){
+  let bin='';
+  const CHUNK=0x8000;
+  for(let i=0;i<bytes.length;i+=CHUNK)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));
+  return btoa(bin);
+}
+
+function loadImageEl(file){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file);
+    const img=new Image();
+    img.onload=()=>{URL.revokeObjectURL(url);resolve(img);};
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('decode failed'));};
+    img.src=url;
+  });
+}
+
+// Shrink to IMG_MAX_DIM and re-encode as JPEG. Files that are already small and
+// within bounds are passed through untouched (keeps PNG transparency and crisp text).
+async function prepareImage(file){
+  const knownExt=IMG_EXT[file.type];
+  if(knownExt&&file.size<=IMG_PASSTHROUGH_BYTES){
+    const buf=new Uint8Array(await file.arrayBuffer());
+    try{
+      const img=await loadImageEl(file);
+      if(Math.max(img.width,img.height)<=IMG_MAX_DIM)return{bytes:buf,ext:knownExt};
+    }catch(e){return{bytes:buf,ext:knownExt};}
+  }
+  if(file.type==='image/gif'){ // animated GIFs would lose their frames on canvas
+    return{bytes:new Uint8Array(await file.arrayBuffer()),ext:'gif'};
+  }
+  let img;
+  try{img=await loadImageEl(file);}
+  catch(e){throw new Error(T.imgUnsupported);}
+  const scale=Math.min(1,IMG_MAX_DIM/Math.max(img.width,img.height));
+  const w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));
+  const canvas=document.createElement('canvas');
+  canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h); // JPEG has no alpha; flatten onto white
+  ctx.drawImage(img,0,0,w,h);
+  const blob=await new Promise(r=>canvas.toBlob(r,'image/jpeg',IMG_JPEG_QUALITY));
+  if(!blob)throw new Error('encode failed');
+  return{bytes:new Uint8Array(await blob.arrayBuffer()),ext:'jpg'};
+}
+
+// hint is the event date, so uploads group by the event they belong to.
+function imageFileName(ext,hint){
+  const h=String(hint||'').trim();
+  const stamp=(/^\d{4}-\d{2}-\d{2}$/.test(h)?h:fmtDate(new Date())).replace(/-/g,'');
+  const rand=Math.random().toString(36).slice(2,8);
+  return stamp+'-'+rand+'.'+ext;
+}
+
+// Returns the repo-relative path to store in the event (e.g. "images/20260905-abc123.jpg").
+async function uploadImage(token,file,hint){
+  if(!/^image\//i.test(file.type||''))throw new Error(T.imgNotImage);
+  if(file.size>IMG_MAX_BYTES)throw new Error(T.imgTooBig);
+  const{bytes,ext}=await prepareImage(file);
+  const path='images/'+imageFileName(ext,hint);
+  await ghFetch(token,path,'PUT',{message:'Add image '+path,content:bytesToBase64(bytes)});
+  // GitHub Pages needs a minute to publish the new file, so the admin preview uses
+  // a local blob URL until then; events.json still stores the repo path.
+  const preview=URL.createObjectURL(new Blob([bytes],{type:ext==='png'?'image/png':(ext==='gif'?'image/gif':'image/jpeg')}));
+  return{path,preview};
+}
+
+// Shared file-picker button used by the flyer field and the gallery block.
+function ImageUploadButton({token,hint,onDone,label}){
+  const[busy,setBusy]=React.useState(false);const[err,setErr]=React.useState('');
+  const pick=async(e)=>{
+    const f=e.target.files[0];
+    e.target.value='';
+    if(!f)return;
+    setErr('');setBusy(true);
+    try{const r=await uploadImage(token,f,hint);onDone(r.path,r.preview);}
+    catch(ex){const known=[T.imgNotImage,T.imgTooBig,T.imgUnsupported].indexOf(ex.message)!==-1;setErr(known?ex.message:(T.imgUploadFail+ex.message));}
+    finally{setBusy(false);}
+  };
+  return(
+    <div>
+      <label style={{display:'inline-flex',alignItems:'center',gap:8,border:BT,borderRadius:10,padding:'12px 16px',background:busy?'#eee':'#fff',color:busy?'#888':'#111',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS,cursor:busy?'default':'pointer'}}>
+        {busy?T.imgUploading:(label||T.imgUploadBt)}
+        <input type="file" accept="image/*" disabled={busy} onChange={pick} style={{display:'none'}}/>
+      </label>
+      {err&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:C.red,marginTop:4}}>{err}</div>}
+    </div>
+  );
+}
+
+// Every key EventCard can edit. On save these are dropped from the stored event before the
+// draft is merged back in, so a field cleared in the UI is really gone from events.json.
+const EDITABLE_KEYS=['date','title','tags','djs','vjs','flyer','comingSoon','openTime','closeTime','venue','price','description','xurl','images','links'];
+// Optional text fields left blank are omitted entirely; the public page falls back to its defaults.
+const OPTIONAL_TEXT_FIELDS=['openTime','closeTime','venue','price','description','xurl'];
+function normalizeDraft(draft){
+  const out={...draft};
+  OPTIONAL_TEXT_FIELDS.forEach(k=>{
+    const v=typeof out[k]==='string'?out[k].trim():out[k];
+    if(v===''||v===undefined||v===null)delete out[k];else out[k]=v;
+  });
+  const imgs=(out.images||[]).filter(i=>i&&i.url);
+  if(imgs.length)out.images=imgs;else delete out.images;
+  const lnks=(out.links||[]).filter(l=>l&&l.url);
+  if(lnks.length)out.links=lnks;else delete out.links;
+  return out;
+}
+
+// Gallery images: url + optional caption.
+function ImagesBlock({draft,setDraft,token,hint,shownSrc,addPreview}){
+  const[url,setUrl]=React.useState('');const[cap,setCap]=React.useState('');const[err,setErr]=React.useState('');
+  const cur=draft.images||[];
+  const add=()=>{const u=url.trim();if(!u)return;if(!isImageRef(u)){setErr(T.imgUrlInvalid);return;}setErr('');setDraft(d=>({...d,images:[...(d.images||[]),{url:u,caption:cap.trim()}]}));setUrl('');setCap('');};
+  const rm=i=>setDraft(d=>({...d,images:(d.images||[]).filter((_,j)=>j!==i)}));
+  const iSt={width:'100%',border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none',minWidth:0};
+  return(
+    <div>
+      <Label>{T.imagesL}</Label>
+      <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:4}}>
+        {cur.length===0&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#aaa'}}>{T.imgEmpty}</div>}
+        {cur.map((im,i)=>(
+          <div key={i} style={{display:'flex',alignItems:'center',gap:8,background:'#f8f8f8',border:B,borderRadius:8,padding:8}}>
+            <img src={shownSrc?shownSrc(im.url):im.url} alt="" style={{width:46,height:46,objectFit:'cover',border:B,borderRadius:6,flexShrink:0,background:'#fff'}}/>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:12,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{im.caption||'(no caption)'}</div>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9,color:'#888',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{im.url}</div>
+            </div>
+            <button onClick={()=>rm(i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'9px 12px',minHeight:38,boxShadow:SS}}>{T.del}</button>
+          </div>
+        ))}
+        <div style={{background:'#f0f0f0',border:BT,borderRadius:10,padding:10,display:'flex',flexDirection:'column',gap:8}}>
+          <ImageUploadButton token={token} hint={hint} onDone={(path,preview)=>{if(addPreview)addPreview(path,preview);setDraft(d=>({...d,images:[...(d.images||[]),{url:path}]}));}}/>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888'}}>{T.imgOrUrl}</div>
+          <input value={url} onChange={e=>{setUrl(e.target.value);setErr('');}} placeholder={T.imgUrlPh} style={iSt}/>
+          <input value={cap} onChange={e=>setCap(e.target.value)} onKeyDown={e=>e.key==='Enter'&&add()} placeholder={T.imgCapPh} style={iSt}/>
+          {err&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:C.red}}>{err}</div>}
+          <button onClick={add} style={{border:BT,borderRadius:8,padding:'11px',background:C.purple,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>{T.imgAdd}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Free-form links: label + url (booking form, ticket page, ...).
+function LinksBlock({draft,setDraft}){
+  const[label,setLabel]=React.useState('');const[url,setUrl]=React.useState('');const[err,setErr]=React.useState('');
+  const cur=draft.links||[];
+  const add=()=>{const u=url.trim();if(!u)return;if(!isHttpUrl(u)){setErr(T.urlInvalid);return;}setErr('');setDraft(d=>({...d,links:[...(d.links||[]),{label:label.trim()||u,url:u}]}));setLabel('');setUrl('');};
+  const rm=i=>setDraft(d=>({...d,links:(d.links||[]).filter((_,j)=>j!==i)}));
+  const iSt={width:'100%',border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none',minWidth:0};
+  return(
+    <div>
+      <Label>{T.linksL}</Label>
+      <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:4}}>
+        {cur.length===0&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#aaa'}}>{T.linkEmpty}</div>}
+        {cur.map((l,i)=>(
+          <div key={i} style={{display:'flex',alignItems:'center',gap:8,background:'#f8f8f8',border:B,borderRadius:8,padding:'8px 12px'}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{l.label}</div>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9,color:'#888',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{l.url}</div>
+            </div>
+            <button onClick={()=>rm(i)} style={{flexShrink:0,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'9px 12px',minHeight:38,boxShadow:SS}}>{T.del}</button>
+          </div>
+        ))}
+        <div style={{background:'#f0f0f0',border:BT,borderRadius:10,padding:10,display:'flex',flexDirection:'column',gap:8}}>
+          <input value={label} onChange={e=>setLabel(e.target.value)} placeholder={T.linkLabelPh} style={iSt}/>
+          <input value={url} onChange={e=>{setUrl(e.target.value);setErr('');}} onKeyDown={e=>e.key==='Enter'&&add()} placeholder={T.linkUrlPh} style={iSt}/>
+          {err&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:C.red}}>{err}</div>}
+          <button onClick={add} style={{border:BT,borderRadius:8,padding:'11px',background:C.turquoise,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>{T.linkAdd}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EventCard({ev,tags,people,dayBgMap,token,onSave,onDelete,onDuplicate}){
+  const[open,setOpen]=React.useState(false);
+  const[draft,setDraft]=React.useState(null);
+  const[savedMark,setSavedMark]=React.useState(false);
+  const[djName,setDjName]=React.useState('');const[djXid,setDjXid]=React.useState('');
+  const[vjName,setVjName]=React.useState('');const[vjXid,setVjXid]=React.useState('');
+  // repo path -> local blob URL, for images uploaded before GitHub Pages published them
+  const[previews,setPreviews]=React.useState({});
+  const addPreview=(path,url)=>setPreviews(p=>({...p,[path]:url}));
+  const shownSrc=u=>previews[u]||u;
+  const startEdit=()=>{setDraft({date:ev.date,title:ev.title,tags:[...(ev.tags||[])],djs:[...(ev.djs||[])],vjs:[...(ev.vjs||[])],flyer:ev.flyer||null,dayBg:(dayBgMap[ev.date]!==undefined?dayBgMap[ev.date]:null),comingSoon:ev.comingSoon||false,openTime:ev.openTime||'',closeTime:ev.closeTime||'',venue:ev.venue||'',price:ev.price||'',description:ev.description||'',xurl:ev.xurl||'',images:(ev.images||[]).map(i=>({...i})),links:(ev.links||[]).map(l=>({...l}))});setDjName('');setDjXid('');setVjName('');setVjXid('');setOpen(true);};
+  const cancel=()=>{setOpen(false);setDraft(null);};
+  const saveCard=()=>{onSave(ev.id||ev.date,normalizeDraft(draft),ev.date);setSavedMark(true);setTimeout(()=>setSavedMark(false),2000);setOpen(false);setDraft(null);};
+  const d=parseDate(ev.date);const g=primaryTag(ev.tags,tags);
+  const curBg=(dayBgMap[ev.date]!==undefined?dayBgMap[ev.date]:null);const isCS=ev.comingSoon||false;
+  const iSt={width:'100%',border:BT,borderRadius:8,padding:'10px 12px',fontSize:14,background:'#fff',outline:'none'};
+  return(
+    <div style={{background:'#fff',border:BT,borderRadius:14,overflow:'hidden',boxShadow:S,opacity:isCS?0.75:1}}>
+      <div onClick={open?undefined:startEdit} style={{display:'flex',gap:10,alignItems:'center',padding:14,cursor:open?'default':'pointer',userSelect:'none',WebkitUserSelect:'none'}}>
+        <div style={{width:52,height:52,flexShrink:0,background:curBg||g.color,color:'#fff',border:B,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9}}>{T.wdays[weekIdx(d)]}</div>
+          <div style={{fontFamily:'"Reggae One",system-ui',fontSize:22,lineHeight:1,textShadow:'1.5px 1.5px 0 #111'}}>{d.getDate()}</div>
+        </div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{display:'flex',gap:5,marginBottom:3,flexWrap:'wrap'}}>
+            <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:['#F5E642','#B8F0B0','#D4B0F0'].includes(g.color)?'#111':'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 6px'}}># {g.label}</span>
+            {isCS&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:C.orange,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 6px'}}>CS</span>}
+            <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,color:'#666'}}>{ev.date}</span>
+          </div>
+          <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{ev.title}</div>
+        </div>
+        {savedMark?<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'green',flexShrink:0}}>{T.savedMark}</div>
+          :<div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#111',flexShrink:0,transform:open?'rotate(90deg)':'none',transition:'transform .2s'}}>&#8250;</div>}
+      </div>
+      {open&&draft&&(
+        <div style={{borderTop:BT,padding:16,display:'flex',flexDirection:'column',gap:16}}>
+          <div><Label>{T.dateL}</Label><input type="date" value={draft.date} onChange={e=>setDraft(d=>({...d,date:e.target.value}))} style={iSt}/></div>
+          <div><Label>{T.titleL}</Label><input type="text" value={draft.title} onChange={e=>setDraft(d=>({...d,title:e.target.value}))} placeholder={T.titlePh} style={iSt}/></div>
+          <div>
+            <Label>{T.statusL}</Label>
+            <button onClick={()=>setDraft(d=>({...d,comingSoon:!d.comingSoon}))} style={{width:'100%',border:BT,borderRadius:8,padding:'12px',background:draft.comingSoon?C.orange:'#e8e8e8',color:draft.comingSoon?'#fff':'#555',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>{draft.comingSoon?T.csOn:T.csOff}</button>
+            {draft.comingSoon&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',marginTop:4}}>{T.csNote}</div>}
+          </div>
+          <TagsBlock draft={draft} setDraft={setDraft} tags={tags}/>
+          <div><Label>{T.colorL}</Label><div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>{DAY_COLORS.map(p=>{const on=(draft.dayBg===p.value)||(p.value===null&&draft.dayBg===null);return(<button key={p.id} title={p.label} onClick={()=>setDraft(d=>({...d,dayBg:p.value}))} style={{width:38,height:38,border:on?'3px solid #111':'2px solid #111',borderRadius:8,padding:0,background:p.value||'repeating-linear-gradient(45deg,#eee 0 4px,#fff 4px 8px)',boxShadow:on?`0 0 0 2px ${C.yellow},2px 2px 0 #111`:SS,position:'relative',transform:on?'translate(-1px,-1px)':'none'}}>{p.value===null&&<span style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontFamily:'"DotGothic16",monospace',color:'#111'}}>A</span>}</button>);})}</div></div>
+          <PerfBlock role="djs" labelText={T.djL} addText={T.djAdd} bgColor={C.yellow} draft={draft} setDraft={setDraft} people={people} nameV={djName} setNameV={setDjName} xidV={djXid} setXidV={setDjXid}/>
+          <PerfBlock role="vjs" labelText={T.vjL} addText={T.vjAdd} bgColor={C.turquoise} draft={draft} setDraft={setDraft} people={people} nameV={vjName} setNameV={setVjName} xidV={vjXid} setXidV={setVjXid}/>
+          <div>
+            <Label>{T.flyerL}</Label>
+            <div style={{marginTop:6,display:'flex',flexDirection:'column',gap:8}}>
+              {draft.flyer&&(<div style={{position:'relative',border:BT,borderRadius:10,overflow:'hidden',maxWidth:180}}><img src={shownSrc(draft.flyer)} alt="flyer" style={{width:'100%',display:'block'}}/><button onClick={()=>setDraft(d=>({...d,flyer:null}))} style={{position:'absolute',top:6,right:6,background:C.red,border:B,borderRadius:6,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:12,padding:'3px 8px',boxShadow:SS}}>{T.del}</button></div>)}
+              {draft.flyer&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:9,color:'#888',wordBreak:'break-all'}}>{draft.flyer}</div>}
+              <ImageUploadButton token={token} hint={draft.date} label={draft.flyer?T.flyerChg:T.flyerAdd} onDone={(path,preview)=>{addPreview(path,preview);setDraft(d=>({...d,flyer:path}));}}/>
+              <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9,color:'#888',lineHeight:1.6}}>{T.flyerNote}</div>
+            </div>
+          </div>
+          <div style={{borderTop:'3px dashed #ccc',paddingTop:14,display:'flex',flexDirection:'column',gap:14}}>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:14,background:C.orange,color:'#fff',border:B,borderRadius:8,padding:'3px 12px',boxShadow:SS,display:'inline-block',alignSelf:'flex-start'}}>{T.detailSec}</div>
+            <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+              <div style={{flex:'1 1 120px',minWidth:0}}><Label>{T.openL}</Label><input type="text" value={draft.openTime} onChange={e=>setDraft(d=>({...d,openTime:e.target.value}))} placeholder={T.timePh} style={iSt}/></div>
+              <div style={{flex:'1 1 120px',minWidth:0}}><Label>{T.closeL}</Label><input type="text" value={draft.closeTime} onChange={e=>setDraft(d=>({...d,closeTime:e.target.value}))} placeholder={T.timePh} style={iSt}/></div>
+            </div>
+            <div><Label>{T.venueL}</Label><input type="text" value={draft.venue} onChange={e=>setDraft(d=>({...d,venue:e.target.value}))} placeholder={T.venuePh} style={iSt}/></div>
+            <div><Label>{T.priceL}</Label><input type="text" value={draft.price} onChange={e=>setDraft(d=>({...d,price:e.target.value}))} placeholder={T.pricePh} style={iSt}/></div>
+            <div><Label>{T.descL}</Label><textarea value={draft.description} onChange={e=>setDraft(d=>({...d,description:e.target.value}))} placeholder={T.descPh} style={{...iSt,minHeight:110,resize:'vertical',lineHeight:1.7}}/></div>
+            <div><Label>{T.xurlL}</Label><input type="text" value={draft.xurl} onChange={e=>setDraft(d=>({...d,xurl:e.target.value}))} placeholder="https://x.com/vocabuki/status/..." style={iSt}/></div>
+            <ImagesBlock draft={draft} setDraft={setDraft} token={token} hint={draft.date} shownSrc={shownSrc} addPreview={addPreview}/>
+            <LinksBlock draft={draft} setDraft={setDraft}/>
+          </div>
+          <div style={{display:'flex',gap:8,paddingTop:4}}>
+            <button onClick={saveCard} style={{flex:2,border:BT,borderRadius:10,padding:'14px 0',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S}}>{T.saveBt}</button>
+            <button onClick={cancel} style={{flex:1,border:BT,borderRadius:10,padding:'14px 0',background:'#fff',fontFamily:'"RocknRoll One",system-ui',fontSize:13,boxShadow:SS}}>{T.cancelBt}</button>
+          </div>
+          <button onClick={()=>{onDuplicate(ev);setOpen(false);setDraft(null);}} style={{width:'100%',border:BT,borderRadius:10,padding:'11px 0',background:C.turquoise,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:13,boxShadow:SS}}>{T.dupBtn}</button>
+          <button onClick={()=>{if(confirm(ev.title+T.confirmDel))onDelete(ev.id||ev.date);}} style={{width:'100%',border:BT,borderRadius:10,padding:'11px 0',background:'#fff',color:'#999',fontFamily:'"DotGothic16",monospace',fontSize:12,boxShadow:SS}}>{T.eventDel}</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ClosedDaysBlock({closedDays,setClosedDays}){
+  const[input,setInput]=React.useState('');
+  const add=()=>{if(!input)return;if(!closedDays.includes(input))setClosedDays(prev=>[...prev,input].sort());setInput('');};
+  return(
+    <div style={{background:'#fff',border:BT,borderRadius:10,padding:12,boxShadow:SS}}>
+      <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',marginBottom:8}}>{T.closedNote}</div>
+      <div style={{display:'flex',gap:8,marginBottom:8}}>
+        <input type="date" value={input} onChange={e=>setInput(e.target.value)} style={{flex:1,border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none',minWidth:0}}/>
+        <button onClick={add} style={{border:BT,borderRadius:8,padding:'8px 14px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS,flexShrink:0}}>&#43; {T.closedAdd}</button>
+      </div>
+      {closedDays.length===0
+        ?<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#aaa',textAlign:'center',padding:'8px 0'}}>{T.closedEmpty}</div>
+        :<div style={{display:'flex',flexWrap:'wrap',gap:6}}>{closedDays.map(d=>(<div key={d} style={{display:'inline-flex',alignItems:'center',gap:4,background:'#eee',border:B,borderRadius:20,padding:'4px 8px 4px 10px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>{d}<button onClick={()=>setClosedDays(prev=>prev.filter(x=>x!==d))} aria-label="remove" style={{background:'none',border:'none',fontSize:16,minWidth:32,minHeight:32,padding:'0 0 0 6px',lineHeight:1,cursor:'pointer',color:'#666'}}>x</button></div>))}</div>}
+    </div>
+  );
+}
+
+function BulkInputBlock({tags,onAdd}){
+  const[text,setText]=React.useState('');const[msg,setMsg]=React.useState('');
+  const sample='[\n  {"date":"2026-07-01","tags":["vocaloid"],"title":"..."},\n  {"date":"2026-07-02","tags":["utaite","s-utamata"],"title":"..."}\n]';
+  const doAdd=()=>{try{const arr=JSON.parse(text);if(!Array.isArray(arr))throw new Error('Array expected');const ne=arr.map(item=>{if(!item.date||!item.title)throw new Error('date and title required');return{id:uid(),date:item.date,title:item.title,tags:Array.isArray(item.tags)?item.tags:[],djs:[],vjs:[],flyer:null,comingSoon:true};});onAdd(ne);setText('');setMsg(ne.length+T.bulkOk);setTimeout(()=>setMsg(''),2500);}catch(e){setMsg(T.bulkErr+e.message);setTimeout(()=>setMsg(''),4000);}};
+  return(
+    <div style={{background:'#fff',border:BT,borderRadius:10,padding:12,boxShadow:SS}}>
+      <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#555',marginBottom:4}}>{T.bulkNote}</div>
+      <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',marginBottom:8}}>{T.bulkFmt}</div>
+      <textarea value={text} onChange={e=>setText(e.target.value)} placeholder={sample} style={{width:'100%',minHeight:120,border:BT,borderRadius:8,padding:10,fontSize:11,fontFamily:'monospace',outline:'none',resize:'vertical',background:'#fafafa'}}/>
+      <button onClick={doAdd} disabled={!text.trim()} style={{width:'100%',marginTop:8,border:BT,borderRadius:8,padding:'12px',background:text.trim()?C.turquoise:'#ccc',color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>{T.bulkAdd}</button>
+      {msg&&<div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:msg.startsWith('JSON')?C.red:'green',marginTop:6,textAlign:'center'}}>{msg}</div>}
+    </div>
+  );
+}
+
+function LoginScreen({onLogin}){
+  const[id,setId]=React.useState(()=>tokenStore.get());
+  const[pw,setPw]=React.useState('');const[err,setErr]=React.useState('');const[busy,setBusy]=React.useState(false);
+  const[remember,setRemember]=React.useState(true);
+  const handleSubmit=async(e)=>{e.preventDefault();if((await sha256Hex(pw))!==ADMIN_PW_HASH){setErr(T.pwErr);setTimeout(()=>setErr(''),2000);return;}if(!id.trim()){setErr(T.tokenEmpty);return;}setBusy(true);setErr('');try{await ghFetch(id.trim(),GH_PATH);tokenStore.set(id.trim(),remember);onLogin(id.trim());}catch(ex){setErr(T.tokenErr+ex.message);setBusy(false);}};
+  const iSt={width:'100%',border:BT,borderRadius:10,padding:'12px 14px',fontSize:15,outline:'none',background:'#fff',marginBottom:4};
+  return(
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:20,background:C.paper}}>
+      <div style={{position:'absolute',inset:0,backgroundImage:pat.halftone('rgba(46,197,206,0.15)'),backgroundSize:'8px 8px',pointerEvents:'none'}}/>
+      <div style={{position:'relative',width:'100%',maxWidth:360,background:'#fff',border:BT,borderRadius:20,padding:24,boxShadow:SB}}>
+        <div style={{textAlign:'center',marginBottom:20}}>
+          <div style={{display:'inline-flex',gap:8,alignItems:'center'}}>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:24,background:C.red,color:'#fff',border:B,borderRadius:10,padding:'6px 12px',boxShadow:SS,transform:'rotate(-3deg)'}}>VOCA</div>
+            <div style={{fontFamily:'"Reggae One",system-ui',fontSize:24,background:C.turquoise,color:'#fff',border:B,borderRadius:10,padding:'6px 12px',boxShadow:SS,transform:'rotate(3deg)'}}>BUKI</div>
+          </div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#666',marginTop:8}}>{T.adminScreen}</div>
+        </div>
+        <form onSubmit={handleSubmit} autoComplete="on">
+          <Label>{T.idL}</Label>
+          <input type="text" name="username" value={id} onChange={e=>setId(e.target.value)} placeholder={T.tokenPh} autoComplete="username" style={{...iSt,marginBottom:12}}/>
+          <Label>{T.pwL}</Label>
+          <input type="password" name="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder={T.pwPh} autoComplete="current-password" style={iSt}/>
+          <label style={{display:'flex',alignItems:'center',gap:10,marginTop:12,cursor:'pointer'}}>
+            <input type="checkbox" checked={remember} onChange={e=>setRemember(e.target.checked)} style={{width:22,height:22,flexShrink:0,accentColor:C.turquoise}}/>
+            <span style={{fontFamily:'"RocknRoll One",system-ui',fontSize:13}}>{T.rememberL}</span>
+          </label>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',marginTop:4,lineHeight:1.6}}>{T.rememberNote}</div>
+          {err&&<div style={{color:C.red,fontFamily:'"DotGothic16",monospace',fontSize:11,marginBottom:4,marginTop:4}}>{err}</div>}
+          <button type="submit" disabled={busy} style={{width:'100%',border:BT,borderRadius:10,padding:'13px',background:busy?'#999':C.turquoise,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,marginTop:8}}>{busy?T.tokenCheck:T.tokenLogin}</button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function AdminApp(){
+  const[token,setToken]=React.useState(()=>tokenStore.get());
+  const[loggedIn,setLoggedIn]=React.useState(()=>!!tokenStore.get());
+  const[events,setEvents]=React.useState([]);
+  const[tags,setTags]=React.useState(TAGS_DEFAULT);
+  const[dayBgMap,setDayBgMap]=React.useState({});
+  const[closedDays,setClosedDays]=React.useState([]);
+  const[people,setPeople]=React.useState(PEOPLE_DEFAULT);
+  const[extraData,setExtraData]=React.useState({});
+  const[sha,setSha]=React.useState(null);
+  const[status,setStatus]=React.useState('idle');
+  const[errMsg,setErrMsg]=React.useState('');
+  const[newLabel,setNewLabel]=React.useState('');
+  const[newColor,setNewColor]=React.useState('#E63946');
+  const[newGroup,setNewGroup]=React.useState('series');
+  const[ws,setWs]=React.useState(()=>getWeekStart(TODAY));
+  const jumpRef=React.useRef(null);
+  const handleLogin=tk=>{setToken(tk);setLoggedIn(true);};
+  React.useEffect(()=>{
+    if(!loggedIn||!token)return;
+    setStatus('loading');
+    loadGH(token).then(({data,sha})=>{
+      const{events:ev,tags:tg,dayBgMap:dbm,closedDays:cd,people:p,...rest}=data;
+      setEvents(ev||[]);setTags(tg||TAGS_DEFAULT);setDayBgMap(dbm||{});setClosedDays(cd||[]);setPeople({...PEOPLE_DEFAULT,...(p||{})});setExtraData(rest);setSha(sha);setStatus('idle');
+    }).catch(e=>{
+      if(e.message.includes('401')||e.message.includes('Bad cred')){tokenStore.clear();setLoggedIn(false);}
+      setStatus('error');setErrMsg(e.message);
+    });
+  },[loggedIn,token]);
+  const doSave=async()=>{
+    const seen=new Set();const dupes=[];
+    for(const ev of events){const key=ev.date+'|'+ev.title;if(seen.has(key))dupes.push(ev.title+' ('+ev.date+')');seen.add(key);}
+    if(dupes.length>0){setStatus('error');setErrMsg(T.dupeErr+dupes.join(', '));return;}
+    setStatus('saving');
+    try{const sortedEvents=[...events].sort((a,b)=>a.date.localeCompare(b.date));await saveGH(token,{...extraData,events:sortedEvents,tags,dayBgMap,closedDays,people},sha);const{sha:ns}=await loadGH(token);setSha(ns);setStatus('saved');setTimeout(()=>setStatus('idle'),2500);}catch(e){setStatus('error');setErrMsg(e.message);}
+  };
+  const handleSave=(evId,draft,prevDate)=>{const{dayBg,...evFields}=draft;setEvents(prev=>prev.map(e=>{if((e.id||e.date)!==evId)return e;const base={...e};EDITABLE_KEYS.forEach(k=>delete base[k]);return{...base,...evFields};}));setDayBgMap(m=>{const n={...m};if(prevDate&&prevDate!==draft.date)delete n[prevDate];if(dayBg===null||dayBg===undefined)delete n[draft.date];else n[draft.date]=dayBg;return n;});};
+  const handleDelete=evId=>setEvents(prev=>prev.filter(e=>(e.id||e.date)!==evId));
+  const handleDuplicate=ev=>setEvents(prev=>[...prev,{...ev,id:uid()}]);
+  const handleBulkAdd=ne=>setEvents(prev=>[...prev,...ne]);
+  const addEvent=()=>setEvents(prev=>[...prev,{id:uid(),date:fmtDate(ws),title:T.eventNew,tags:[tags.some(t=>t.id==='other')?'other':(tags[0]&&tags[0].id||'other')],djs:[],vjs:[],flyer:null,comingSoon:false}]);
+  const addTag=()=>{const lbl=newLabel.trim();if(!lbl)return;const id=lbl.toLowerCase().replace(/\s+/g,'');if(tags.some(t=>t.id===id)){alert(lbl+' \u306f\u65e2\u306b\u3042\u308a\u307e\u3059');return;}setTags(prev=>[...prev,{id,label:lbl,color:newGroup==='genre'?newColor:null,group:newGroup}]);setNewLabel('');};
+  const rmTag=id=>{if(events.some(e=>(e.tags||[]).includes(id))){alert(T.tagInUse);return;}setTags(prev=>prev.filter(t=>t.id!==id));};
+  const prevWeek=()=>setWs(p=>{const d=new Date(p);d.setDate(d.getDate()-7);return d;});
+  const nextWeek=()=>setWs(p=>{const d=new Date(p);d.setDate(d.getDate()+7);return d;});
+  const jumpToDate=v=>{if(v)setWs(getWeekStart(parseDate(v)));};
+  const weDate=new Date(ws);weDate.setDate(weDate.getDate()+6);
+  const wsStr=fmtDate(ws),weStr=fmtDate(weDate);
+  const sorted=React.useMemo(()=>[...events].sort((a,b)=>a.date.localeCompare(b.date)),[events]);
+  const weekEvts=sorted.filter(e=>e.date>=wsStr&&e.date<=weStr);
+  const isThisWeek=fmtDate(getWeekStart(TODAY))===wsStr;
+  const logout=()=>{tokenStore.clear();setToken('');setLoggedIn(false);};
+  const barBg=status==='loading'||status==='saving'?'#555':status==='saved'?'#3FB55E':status==='error'?C.red:null;
+  const barTx=status==='loading'?T.ghLoading:status==='saving'?T.ghSaving:status==='saved'?T.ghSaved:status==='error'?(T.ghError+errMsg):null;
+  const navBtn={width:42,height:42,border:BT,borderRadius:8,background:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:20,boxShadow:SS,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0};
+  if(!loggedIn)return <LoginScreen onLogin={handleLogin}/>;
+  return(
+    <div style={{maxWidth:520,margin:'0 auto',minHeight:'100vh',background:C.paper}}>
+      <div style={{position:'fixed',top:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:520,zIndex:50,background:C.ink,boxShadow:'0 2px 8px rgba(0,0,0,0.3)'}}>
+        <div style={{padding:'12px 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <span className="vb-nowrap" style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:'#fff'}}>VOCA</span>
+            <span className="vb-nowrap" style={{fontFamily:'"Reggae One",system-ui',fontSize:20,color:C.turquoise}}>BUKI</span>
+          </div>
+          <div style={{display:'flex',gap:8,flexShrink:0}}>
+            <button className="vb-nowrap" onClick={doSave} disabled={status==='loading'||status==='saving'} style={{background:status==='saved'?'#3FB55E':C.red,color:'#fff',border:BT,borderRadius:10,padding:'9px 14px',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS,opacity:status==='loading'||status==='saving'?0.6:1}}>{status==='saving'?T.saving:status==='saved'?T.saved:T.save}</button>
+            <button className="vb-nowrap" onClick={logout} style={{background:'#333',color:'#aaa',border:'2px solid #555',borderRadius:8,padding:'9px 10px',fontFamily:'"DotGothic16",monospace',fontSize:11}}>{T.logout}</button>
+          </div>
+        </div>
+        {barBg&&<div style={{background:barBg,color:'#fff',fontFamily:'"DotGothic16",monospace',fontSize:11,padding:'7px 16px',textAlign:'center'}}>{barTx}</div>}
+      </div>
+      <div style={{height:barBg?88:60}}/>
+      <div style={{padding:'16px 16px 100px',display:'flex',flexDirection:'column',gap:24}}>
+        <div><SHead>{T.closedMgmt}</SHead><ClosedDaysBlock closedDays={closedDays} setClosedDays={setClosedDays}/></div>
+        <div>
+          <SHead>{T.tagMgmt}</SHead>
+          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,color:'#888',marginBottom:2}}>{T.tagColorNote}</div>
+            {tags.map(t=>(<div key={t.id} style={{display:'flex',alignItems:'center',gap:10,background:'#fff',border:BT,borderRadius:10,padding:'12px 14px',boxShadow:SS}}>
+              <div style={{width:30,height:30,borderRadius:6,background:t.color||'#ddd',border:B,flexShrink:0}}/>
+              <div style={{flex:1,fontFamily:'"RocknRoll One",system-ui',fontSize:14}}># {t.label}<span style={{color:'#888',fontFamily:'"DotGothic16",monospace',fontSize:10,marginLeft:6}}>{((TAG_GROUPS.find(g=>g.id===t.group)||{}).label||'-')+' / '+t.id}</span></div>
+              <button onClick={()=>rmTag(t.id)} style={{background:'#fff',border:B,borderRadius:6,fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#666',padding:'9px 12px',minHeight:38,boxShadow:SS}}>{T.del}</button>
+            </div>))}
+            <div style={{background:'#fff',border:BT,borderRadius:10,padding:12,boxShadow:SS}}>
+              <Label>{T.tagNew}</Label>
+              <div style={{display:'flex',gap:8,marginTop:4,flexWrap:'wrap'}}>
+                <input value={newLabel} onChange={e=>setNewLabel(e.target.value)} placeholder={T.tagNamePh} style={{flex:'1 1 140px',minWidth:0,border:BT,borderRadius:8,padding:'10px 12px',fontSize:13,outline:'none'}}/>
+                <select value={newGroup} onChange={e=>setNewGroup(e.target.value)} style={{border:BT,borderRadius:8,padding:'10px 8px',fontSize:13,background:'#fff'}}>{TAG_GROUPS.map(g=>(<option key={g.id} value={g.id}>{g.label}</option>))}</select>
+                {newGroup==='genre'&&<input type="color" value={newColor} onChange={e=>setNewColor(e.target.value)} style={{width:48,height:48,border:BT,borderRadius:8,padding:2,cursor:'pointer'}}/>}
+                <button onClick={addTag} style={{border:BT,borderRadius:8,padding:'8px 14px',background:C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:14,boxShadow:SS}}>{T.tagAdd}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <SHead>{T.eventMgmt}</SHead>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:4}}>
+            <button onClick={prevWeek} style={navBtn}>&#65308;</button>
+            <div style={{position:'relative'}}>
+              <div style={{border:BT,borderRadius:10,padding:'8px 18px',background:isThisWeek?C.yellow:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:SS,textAlign:'center',cursor:'pointer',whiteSpace:'nowrap'}}>{weekLabel(ws)}</div>
+              <input ref={jumpRef} type="date" value={wsStr} onChange={e=>{jumpToDate(e.target.value);}} style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',opacity:0,cursor:'pointer'}}/>
+            </div>
+            <button onClick={nextWeek} style={navBtn}>&#65310;</button>
+          </div>
+          <div style={{fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#888',textAlign:'center',marginBottom:12}}>{weekRange(ws)}</div>
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            {status==='loading'
+              ?<div style={{textAlign:'center',padding:40,fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#888'}}>{T.loading}</div>
+              :weekEvts.length===0
+                ?<div style={{textAlign:'center',padding:30,fontFamily:'"DotGothic16",monospace',fontSize:12,color:'#aaa'}}>{T.weekEmpty}</div>
+                :weekEvts.map(e=>(<EventCard key={e.id||e.date} ev={e} tags={tags} people={people} dayBgMap={dayBgMap} token={token} onSave={handleSave} onDelete={handleDelete} onDuplicate={handleDuplicate}/>))
+            }
+            <button onClick={addEvent} style={{border:BT,borderRadius:14,padding:'16px',background:C.yellow,fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:S,display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginTop:4}}>{T.eventAdd}</button>
+          </div>
+        </div>
+        <div><SHead>{T.bulkMgmt}</SHead><BulkInputBlock tags={tags} onAdd={handleBulkAdd}/></div>
+        <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,textAlign:'center',color:'#888',lineHeight:1.8}}>{T.footerNote}</div>
+      </div>
+      <div style={{position:'fixed',bottom:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:520,padding:'12px 16px',background:`linear-gradient(to top,${C.paper} 70%,transparent)`,zIndex:40}}>
+        <button onClick={doSave} disabled={status==='loading'||status==='saving'} style={{width:'100%',border:BT,borderRadius:12,padding:'15px',background:status==='saved'?'#3FB55E':C.red,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:16,boxShadow:SB,opacity:status==='loading'||status==='saving'?0.6:1}}>{status==='saving'?T.ghSaving:status==='saved'?T.ghSaved:T.ghSave}</button>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<AdminApp/>);
