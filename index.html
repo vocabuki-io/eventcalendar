@@ -55,11 +55,12 @@
   };
   const TODAY=new Date();
   const TAGS_DEFAULT=[
-    {id:'vocabuki',label:'\u30dc\u30ab\u30d6\u30ad',color:'#F5E642'},
-    {id:'anime',label:'\u30a2\u30cb\u30e1',color:'#E63946'},
-    {id:'vocaloid',label:'\u30dc\u30ab\u30ed',color:'#39C5BB'},
-    {id:'external',label:'\u5916\u90e8\u4e3b\u50ac',color:'#B8F0B0'},
-    {id:'vtuber',label:'Vtuber',color:'#D4B0F0'},
+    {id:'vocaloid',label:'\u30dc\u30ab\u30ed',color:'#39C5BB',group:'genre'},
+    {id:'anime',label:'\u30a2\u30cb\u30bd\u30f3',color:'#E63946',group:'genre'},
+    {id:'vtuber',label:'Vtuber',color:'#D4B0F0',group:'genre'},
+    {id:'game',label:'\u30b2\u30fc\u30e0',color:'#FF8A1E',group:'genre'},
+    {id:'utaite',label:'\u6b4c\u3044\u624b',color:'#6A3FD9',group:'genre'},
+    {id:'other',label:'\u305d\u306e\u4ed6',color:'#F5E642',group:'genre'},
   ];
   const PEOPLE_DEFAULT={
     drag_on_3:{name:'dragon3',x:'@drag_on_3'},rockstar_saihan:{name:'\u0418ASU',x:'@rockstar_saihan'},
@@ -175,14 +176,34 @@
     </div>);
   }
   // \u8272\u3092\u6301\u3064\u30bf\u30b0\u306e\u307f\u30d5\u30a3\u30eb\u30bf\u30fc\u306b\u8868\u793a
+  // タグの軸。絞り込みは軸の中ではOR、軸どうしはAND。
+  const FILTER_GROUPS=[{id:'genre',label:'ジャンル'},{id:'series',label:'シリーズ'}];
+  const LIGHT_TAG_COLORS=['#F5E642','#B8F0B0','#D4B0F0'];
+  function tagGroup(id,tagsMaster){const m=tagsMaster.find(t=>t.id===id);return m&&m.group;}
+  function matchesTagFilter(ev,tagSet,tagsMaster){
+    if(tagSet.size===0)return true;
+    const evTags=ev.tags||[];
+    return FILTER_GROUPS.every(g=>{
+      const want=[...tagSet].filter(id=>tagGroup(id,tagsMaster)===g.id);
+      return want.length===0||want.some(id=>evTags.includes(id));
+    });
+  }
+  function TagChip({tag,on,onClick}){
+    const bg=on?(tag.color||C.ink):'#fff';
+    const fg=on?(LIGHT_TAG_COLORS.includes(tag.color)?'#111':'#fff'):'#111';
+    return(<button onClick={onClick} style={{flexShrink:0,border:B,borderRadius:999,padding:'6px 14px',background:bg,color:fg,boxShadow:on?SS:'none',fontFamily:'"RocknRoll One",system-ui',fontSize:13,transform:on?'translate(-1px,-1px)':'none',whiteSpace:'nowrap'}}># {tag.label}</button>);
+  }
   function TagFilter({activeSet,toggleTag,tags}){
     const allOn=activeSet.size===0;
-    const colored=tags.filter(t=>t.color);
-    return(<div style={{display:'flex',gap:8,overflowX:'auto',padding:'0 16px 4px',marginLeft:-16,marginRight:-16}}>
-      <button onClick={()=>toggleTag('all')} style={{flexShrink:0,border:B,borderRadius:999,padding:'6px 14px',background:allOn?'#111':'#fff',color:allOn?'#fff':'#111',boxShadow:allOn?SS:'none',fontFamily:'"RocknRoll One",system-ui',fontSize:13,transform:allOn?'translate(-1px,-1px)':'none',whiteSpace:'nowrap'}}># ALL</button>
-      {colored.map(t=>{const on=activeSet.has(t.id);return(
-        <button key={t.id} onClick={()=>toggleTag(t.id)} style={{flexShrink:0,border:B,borderRadius:999,padding:'6px 14px',background:on?t.color:'#fff',color:on?(['#F5E642','#B8F0B0','#D4B0F0'].includes(t.color)?'#111':'#fff'):'#111',boxShadow:on?SS:'none',fontFamily:'"RocknRoll One",system-ui',fontSize:13,transform:on?'translate(-1px,-1px)':'none',whiteSpace:'nowrap'}}># {t.label}</button>
-      );})}
+    const rows=FILTER_GROUPS.map(g=>({...g,tags:tags.filter(t=>t.group===g.id)})).filter(g=>g.tags.length>0);
+    const rowStyle={display:'flex',gap:8,overflowX:'auto',alignItems:'center',padding:'0 16px 4px',marginLeft:-16,marginRight:-16};
+    const labelStyle={flexShrink:0,fontFamily:'"DotGothic16",monospace',fontSize:11,color:'#666',minWidth:54};
+    return(<div style={{display:'flex',flexDirection:'column',gap:6}}>
+      {rows.map((g,i)=>(<div key={g.id} style={rowStyle}>
+        <div style={labelStyle}>{g.label}</div>
+        {i===0&&<button onClick={()=>toggleTag('all')} style={{flexShrink:0,border:B,borderRadius:999,padding:'6px 14px',background:allOn?'#111':'#fff',color:allOn?'#fff':'#111',boxShadow:allOn?SS:'none',fontFamily:'"RocknRoll One",system-ui',fontSize:13,transform:allOn?'translate(-1px,-1px)':'none',whiteSpace:'nowrap'}}># ALL</button>}
+        {g.tags.map(t=>(<TagChip key={t.id} tag={t} on={activeSet.has(t.id)} onClick={()=>toggleTag(t.id)}/>))}
+      </div>))}
     </div>);
   }
   function MonthHeader({year,month,onPrev,onNext,onToday}){
@@ -831,7 +852,7 @@
       setTimeout(()=>{const el=document.getElementById('vb-cal-anchor');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},60);
     };
 
-    const filteredEvents=React.useMemo(()=>tagSet.size===0?events:events.filter(e=>(e.tags||[]).some(t=>tagSet.has(t))),[events,tagSet]);
+    const filteredEvents=React.useMemo(()=>events.filter(e=>matchesTagFilter(e,tagSet,tags)),[events,tagSet,tags]);
     const eventsByDate=React.useMemo(()=>{const m={};filteredEvents.forEach(e=>{(m[e.date]=m[e.date]||[]).push(e);});return m;},[filteredEvents]);
     const cells=React.useMemo(()=>buildMonthCells(cursor.getFullYear(),cursor.getMonth()),[cursor]);
     const weekStart=React.useMemo(()=>{const base=sameDay(cursor,new Date(TODAY.getFullYear(),TODAY.getMonth(),1))?TODAY:new Date(cursor.getFullYear(),cursor.getMonth(),1);const wi=weekIdx(base);return new Date(base.getFullYear(),base.getMonth(),base.getDate()-wi);},[cursor]);

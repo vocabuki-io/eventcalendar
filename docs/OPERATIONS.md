@@ -28,7 +28,7 @@ VOCABUKI EVENT CALENDAR の構成・運用手順と、点検で見つかった�
 | キー | 内容 |
 | --- | --- |
 | `events` | イベント配列（スキーマは [mcp/README.md](../mcp/README.md#イベントのフィールド)） |
-| `tags` | タグマスタ `{id, label, color}` |
+| `tags` | タグマスタ `{id, label, color, group}`。group は `genre` / `series` / `org`（→ [タグの軸](../mcp/README.md#タグの軸)） |
 | `people` | 出演者マスタ `{X の ID: {name, x}}` |
 | `dayBgMap` | 日付ごとのカレンダー色の上書き |
 | `closedDays` | 休業日（カレンダーに「休」と表示） |

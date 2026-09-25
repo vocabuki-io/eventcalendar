@@ -5,9 +5,7 @@
       "date": "2026-01-09",
       "title": "00（ダブルオー）",
       "tags": [
-        "vocabuki",
-        "ボカブキイベント",
-        "タブオー"
+        "other"
       ],
       "djs": [
         "kairuidesu",
@@ -33,9 +31,8 @@
       "date": "2026-01-31",
       "title": "ボカコンカフェ vol.5",
       "tags": [
-        "vocabuki",
-        "ボカブキイベント",
-        "ボカコンカフェ"
+        "other",
+        "s-bokaconcafe"
       ],
       "djs": [
         "EtdK9",
@@ -56,9 +53,7 @@
       "date": "2026-02-14",
       "title": "俺チョコ",
       "tags": [
-        "vocabuki",
-        "ボカブキイベント",
-        "俺チョコ"
+        "other"
       ],
       "djs": [
         "ea_miku",
@@ -81,9 +76,7 @@
       "date": "2026-02-21",
       "title": "ぶいぶき",
       "tags": [
-        "vtuber",
-        "ボカブキイベント",
-        "ぶいぶき"
+        "other"
       ],
       "djs": [
         "DJWILDPARTY",
@@ -109,8 +102,7 @@
       "title": "ボカ戻せ（緊急開催）",
       "tags": [
         "vocaloid",
-        "ボカブキイベント",
-        "ボカ戻せ"
+        "s-bokamodose"
       ],
       "djs": [
         "HGfarisha",
@@ -134,9 +126,9 @@
       "date": "2026-03-01",
       "title": "Shadow Night（3月）",
       "tags": [
-        "external",
-        "ボカブキイベント",
-        "シャドナ"
+        "other",
+        "s-shadownight",
+        "external"
       ],
       "djs": [
         "milk_86_",
@@ -158,9 +150,8 @@
       "date": "2026-03-13",
       "title": "VOCABUKI GIRLs PARTY",
       "tags": [
-        "vocabuki",
-        "ボカブキイベント",
-        "ボカブキ"
+        "other",
+        "s-vgp"
       ],
       "djs": [
         "eri219flower",
@@ -182,8 +173,8 @@
       "date": "2026-03-19",
       "title": "ドルブキ！",
       "tags": [
-        "anime",
-        "ボカブキイベント"
+        "other",
+        "s-dorubuki"
       ],
       "djs": [
         "sr_0p__q0",
@@ -205,9 +196,8 @@
       "date": "2026-03-21",
       "title": "ボカゲーム",
       "tags": [
-        "vocabuki",
-        "ボカブキイベント",
-        "ボカゲーム"
+        "game",
+        "s-bokagame"
       ],
       "djs": [
         "djsmith_4889",
@@ -232,9 +222,9 @@
       "date": "2026-04-01",
       "title": "Shadow Night（4月）",
       "tags": [
-        "external",
-        "ボカブキイベント",
-        "シャドナ"
+        "other",
+        "s-shadownight",
+        "external"
       ],
       "djs": [
         "kanteac_xxx",
@@ -258,8 +248,7 @@
       "title": "ボカ戻せ",
       "tags": [
         "vocaloid",
-        "ボカブキイベント",
-        "ボカ戻せ"
+        "s-bokamodose"
       ],
       "djs": [
         "EuphuRi",
@@ -281,9 +270,8 @@
       "date": "2026-04-11",
       "title": "歌ってみたで、回してみた！",
       "tags": [
-        "anime",
-        "ボカブキイベント",
-        "うたまた"
+        "utaite",
+        "s-utamata"
       ],
       "djs": [
         "tadano_ryu",
@@ -310,9 +298,8 @@
       "date": "2026-04-17",
       "title": "VOCABUKI GIRLs PARTY",
       "tags": [
-        "vocabuki",
-        "ボカブキイベント",
-        "ボカブキ"
+        "other",
+        "s-vgp"
       ],
       "djs": [
         "Oo__UxwxU__oO",
@@ -332,9 +319,8 @@
       "date": "2026-04-20",
       "title": "月曜日から飲みマンデイ",
       "tags": [
-        "vocabuki",
-        "ボカブキイベント",
-        "飲みマンデイ"
+        "vocaloid",
+        "s-nomimonday"
       ],
       "djs": [
         "HGfarisha",
@@ -357,9 +343,8 @@
       "date": "2026-05-01",
       "title": "決起酒会",
       "tags": [
-        "vocabuki",
-        "ボカブキイベント",
-        "決起酒会"
+        "vocaloid",
+        "s-kekkisakekai"
       ],
       "djs": [
         "_yuyadayo_",
@@ -387,8 +372,7 @@
       "date": "2026-05-02",
       "title": "テトナイト mini!",
       "tags": [
-        "vocabuki",
-        "ボカブキイベント"
+        "vocaloid"
       ],
       "djs": [
         "tobira2000",
@@ -416,8 +400,7 @@
       "title": "ふかブキ！",
       "tags": [
         "vocaloid",
-        "ボカブキイベント",
-        "ふかブキ"
+        "s-fukabuki"
       ],
       "djs": [
         "___A____O___",
@@ -442,9 +425,8 @@
       "date": "2026-05-04",
       "title": "月曜から飲みマンデイ",
       "tags": [
-        "vocabuki",
-        "ボカブキイベント",
-        "飲みマンデイ"
+        "vocaloid",
+        "s-nomimonday"
       ],
       "djs": [
         "ktkr154",
@@ -473,9 +455,7 @@
       "date": "2026-05-05",
       "title": "ИASU DJ練習会 #練チューズデイ",
       "tags": [
-        "vocabuki",
-        "ボカブキイベント",
-        "練チューズデイ"
+        "other"
       ],
       "djs": [
         "rockstar_saihan"
@@ -490,8 +470,7 @@
       "date": "2026-05-06",
       "title": "ののせのまよなかご飯やさん",
       "tags": [
-        "vocabuki",
-        "ボカブキイベント"
+        "other"
       ],
       "djs": [
         "nono4e"
@@ -506,8 +485,7 @@
       "date": "2026-05-07",
       "title": "あゆむ担当日",
       "tags": [
-        "vocabuki",
-        "ボカブキイベント"
+        "other"
       ],
       "djs": [
         "aym_pngn"
@@ -522,9 +500,8 @@
       "date": "2026-05-08",
       "title": "Vocabuki GIRLs Party",
       "tags": [
-        "vocabuki",
-        "ボカブキイベント",
-        "ボカブキガルパ"
+        "other",
+        "s-vgp"
       ],
       "djs": [
         "eri219flower",
@@ -545,9 +522,8 @@
       "date": "2026-05-09",
       "title": "歌ってみたで、回してみた！",
       "tags": [
-        "anime",
-        "ボカブキイベント",
-        "うたまた"
+        "utaite",
+        "s-utamata"
       ],
       "djs": [
         "3756siya",
@@ -571,9 +547,8 @@
       "date": "2026-05-11",
       "title": "月曜から飲みマンデイ",
       "tags": [
-        "vocabuki",
-        "ボカブキイベント",
-        "飲みマンデイ"
+        "vocaloid",
+        "s-nomimonday"
       ],
       "djs": [
         "hrn_amane",
@@ -596,8 +571,7 @@
       "date": "2026-05-16",
       "title": "ИASU 生誕？",
       "tags": [
-        "vocabuki",
-        "ボカブキイベント"
+        "other"
       ],
       "djs": [
         "rockstar_saihan"
@@ -612,9 +586,8 @@
       "date": "2026-05-17",
       "title": "ボカゲーム",
       "tags": [
-        "vocabuki",
-        "ボカブキイベント",
-        "ボカゲーム"
+        "game",
+        "s-bokagame"
       ],
       "djs": [
         "ktkr154",
@@ -638,7 +611,10 @@
       "id": "ev_20260801_event_rymi",
       "date": "2026-08-01",
       "title": "ドルブキ",
-      "tags": [],
+      "tags": [
+        "other",
+        "s-dorubuki"
+      ],
       "djs": [],
       "vjs": [],
       "flyer": "images/20260801-56512d.jpg",
@@ -649,7 +625,10 @@
       "id": "ev_20260805_campusunion_kafg",
       "date": "2026-08-05",
       "title": "Campus Union",
-      "tags": [],
+      "tags": [
+        "other",
+        "s-campusunion"
+      ],
       "djs": [],
       "vjs": [],
       "comingSoon": false
@@ -658,7 +637,10 @@
       "id": "ev_20260807_dj1_2tx6",
       "date": "2026-08-07",
       "title": "緊急でDJ1",
-      "tags": [],
+      "tags": [
+        "vocaloid",
+        "s-kinkyudj"
+      ],
       "djs": [],
       "vjs": [],
       "flyer": "images/20260807-ea3049.jpg",
@@ -669,7 +651,10 @@
       "id": "ev_20260808_dj2_0vpu",
       "date": "2026-08-08",
       "title": "緊急でDJ2",
-      "tags": [],
+      "tags": [
+        "vocaloid",
+        "s-kinkyudj"
+      ],
       "djs": [],
       "vjs": [],
       "flyer": "images/20260808-4d0127.jpg",
@@ -680,7 +665,9 @@
       "id": "ev_20260810_event_2niv",
       "date": "2026-08-10",
       "title": "ドパブキ",
-      "tags": [],
+      "tags": [
+        "other"
+      ],
       "djs": [],
       "vjs": [],
       "comingSoon": false
@@ -689,7 +676,9 @@
       "id": "ev_20260812_pam_iart",
       "date": "2026-08-12",
       "title": "push any music!",
-      "tags": [],
+      "tags": [
+        "game"
+      ],
       "djs": [],
       "vjs": [],
       "comingSoon": false
@@ -698,7 +687,9 @@
       "id": "ev_20260814_event_x629",
       "date": "2026-08-14",
       "title": "ぶいよい",
-      "tags": [],
+      "tags": [
+        "vtuber"
+      ],
       "djs": [],
       "vjs": [],
       "flyer": "images/20260814-af1e8f.jpg",
@@ -709,7 +700,10 @@
       "id": "ev_20260815_event_zvhp",
       "date": "2026-08-15",
       "title": "うたまた",
-      "tags": [],
+      "tags": [
+        "utaite",
+        "s-utamata"
+      ],
       "djs": [],
       "vjs": [],
       "flyer": "images/20260815-036393.jpg",
@@ -720,7 +714,9 @@
       "id": "ev_20260817_dj_9j2j",
       "date": "2026-08-17",
       "title": "DJするなら飯を食え",
-      "tags": [],
+      "tags": [
+        "other"
+      ],
       "djs": [],
       "vjs": [],
       "comingSoon": false
@@ -729,7 +725,10 @@
       "id": "ev_20260819_campusunion_4pwi",
       "date": "2026-08-19",
       "title": "Campus Union",
-      "tags": [],
+      "tags": [
+        "other",
+        "s-campusunion"
+      ],
       "djs": [],
       "vjs": [],
       "comingSoon": false
@@ -738,7 +737,10 @@
       "id": "ev_20260821_event_v3x0",
       "date": "2026-08-21",
       "title": "酒ブキ【水着】",
-      "tags": [],
+      "tags": [
+        "vocaloid",
+        "s-sakebuki"
+      ],
       "djs": [],
       "vjs": [],
       "flyer": "images/20260821-38f11a.jpg",
@@ -749,7 +751,9 @@
       "id": "ev_20260822_ex_hsog",
       "date": "2026-08-22",
       "title": "ボカブキEX",
-      "tags": [],
+      "tags": [
+        "vocaloid"
+      ],
       "djs": [],
       "vjs": [],
       "flyer": "images/20260822-7cd0dc.jpg",
@@ -760,7 +764,10 @@
       "id": "ev_20260828_event_zdwr",
       "date": "2026-08-28",
       "title": "ボカ戻せ",
-      "tags": [],
+      "tags": [
+        "vocaloid",
+        "s-bokamodose"
+      ],
       "djs": [],
       "vjs": [],
       "flyer": "images/20260828-e23b17.jpg",
@@ -771,7 +778,11 @@
       "id": "ev_20260829_shadownight_tdza",
       "date": "2026-08-29",
       "title": "shadow night",
-      "tags": [],
+      "tags": [
+        "other",
+        "s-shadownight",
+        "external"
+      ],
       "djs": [],
       "vjs": [],
       "flyer": "images/20260829-747f9b.jpg",
@@ -782,7 +793,10 @@
       "id": "ev_20260904_231_cfd2",
       "date": "2026-09-04",
       "title": "決起酒会 -2周年まであと3週間、ここいらで誰が1番酒が強ぇか決めようや-",
-      "tags": [],
+      "tags": [
+        "vocaloid",
+        "s-kekkisakekai"
+      ],
       "djs": [],
       "vjs": [],
       "flyer": "images/20260904-13cc34.jpg",
@@ -793,7 +807,10 @@
       "id": "ev_20260905_vgp_j05w",
       "date": "2026-09-05",
       "title": "Vocabuki GIRLS PARTY【アニソン】",
-      "tags": [],
+      "tags": [
+        "other",
+        "s-vgp"
+      ],
       "djs": [],
       "vjs": [],
       "flyer": "images/20260905-073077.jpg",
@@ -804,7 +821,10 @@
       "id": "ev_20260911_event_zr4h",
       "date": "2026-09-11",
       "title": "酒ブキ【ギャル】",
-      "tags": [],
+      "tags": [
+        "vocaloid",
+        "s-sakebuki"
+      ],
       "djs": [],
       "vjs": [],
       "flyer": "images/20260911-064cda.jpg",
@@ -815,7 +835,9 @@
       "id": "ev_20260912_v_qyak",
       "date": "2026-09-12",
       "title": "V満タン",
-      "tags": [],
+      "tags": [
+        "vtuber"
+      ],
       "djs": [],
       "vjs": [],
       "flyer": "images/20260912-b132f3.jpg",
@@ -826,7 +848,9 @@
       "id": "ev_20260914_event_e2jb",
       "date": "2026-09-14",
       "title": "推教",
-      "tags": [],
+      "tags": [
+        "other"
+      ],
       "djs": [],
       "vjs": [],
       "comingSoon": false
@@ -835,7 +859,11 @@
       "id": "ev_20260918_shadownight_zyqf",
       "date": "2026-09-18",
       "title": "shadow night",
-      "tags": [],
+      "tags": [
+        "other",
+        "s-shadownight",
+        "external"
+      ],
       "djs": [],
       "vjs": [],
       "flyer": "images/20260918-7f0e23.jpg",
@@ -846,7 +874,9 @@
       "id": "ev_20260919_vs_vvkx",
       "date": "2026-09-19",
       "title": "平成vs令和バイブスボカ合戦",
-      "tags": [],
+      "tags": [
+        "vocaloid"
+      ],
       "djs": [],
       "vjs": [],
       "flyer": "images/20260919-8c9895.jpg",
@@ -857,7 +887,9 @@
       "id": "ev_20260920_groovuki_lric",
       "date": "2026-09-20",
       "title": "GROOVUKI",
-      "tags": [],
+      "tags": [
+        "other"
+      ],
       "djs": [],
       "vjs": [],
       "comingSoon": false
@@ -866,7 +898,10 @@
       "id": "ev_20260921_event_3s1f",
       "date": "2026-09-21",
       "title": "飲みマンデイ",
-      "tags": [],
+      "tags": [
+        "vocaloid",
+        "s-nomimonday"
+      ],
       "djs": [],
       "vjs": [],
       "comingSoon": false
@@ -875,7 +910,10 @@
       "id": "ev_20260922_event_isjx",
       "date": "2026-09-22",
       "title": "ふかブキ！",
-      "tags": [],
+      "tags": [
+        "vocaloid",
+        "s-fukabuki"
+      ],
       "djs": [],
       "vjs": [],
       "comingSoon": false
@@ -884,7 +922,10 @@
       "id": "ev_20260925_event_r1kq",
       "date": "2026-09-25",
       "title": "うたまた",
-      "tags": [],
+      "tags": [
+        "utaite",
+        "s-utamata"
+      ],
       "djs": [],
       "vjs": [],
       "comingSoon": false
@@ -893,7 +934,9 @@
       "id": "ev_20260926_2_w03h",
       "date": "2026-09-26",
       "title": "ボカブキ 2nd Anniversary",
-      "tags": [],
+      "tags": [
+        "vocaloid"
+      ],
       "djs": [],
       "vjs": [],
       "flyer": "images/20260926-392c50.jpg",
@@ -903,29 +946,124 @@
   ],
   "tags": [
     {
-      "id": "vocabuki",
-      "label": "ボカブキ",
-      "color": "#F5E642"
+      "id": "vocaloid",
+      "label": "ボカロ",
+      "color": "#39C5BB",
+      "group": "genre"
     },
     {
       "id": "anime",
-      "label": "アニメ",
-      "color": "#E63946"
-    },
-    {
-      "id": "vocaloid",
-      "label": "ボカロ",
-      "color": "#39C5BB"
-    },
-    {
-      "id": "external",
-      "label": "外部主催",
-      "color": "#B8F0B0"
+      "label": "アニソン",
+      "color": "#E63946",
+      "group": "genre"
     },
     {
       "id": "vtuber",
       "label": "Vtuber",
-      "color": "#D4B0F0"
+      "color": "#D4B0F0",
+      "group": "genre"
+    },
+    {
+      "id": "game",
+      "label": "ゲーム",
+      "color": "#FF8A1E",
+      "group": "genre"
+    },
+    {
+      "id": "utaite",
+      "label": "歌い手",
+      "color": "#6A3FD9",
+      "group": "genre"
+    },
+    {
+      "id": "other",
+      "label": "その他",
+      "color": "#F5E642",
+      "group": "genre"
+    },
+    {
+      "id": "s-shadownight",
+      "label": "Shadow Night",
+      "color": null,
+      "group": "series"
+    },
+    {
+      "id": "s-vgp",
+      "label": "Vocabuki GIRLS PARTY",
+      "color": null,
+      "group": "series"
+    },
+    {
+      "id": "s-bokamodose",
+      "label": "ボカ戻せ",
+      "color": null,
+      "group": "series"
+    },
+    {
+      "id": "s-utamata",
+      "label": "うたまた",
+      "color": null,
+      "group": "series"
+    },
+    {
+      "id": "s-nomimonday",
+      "label": "飲みマンデイ",
+      "color": null,
+      "group": "series"
+    },
+    {
+      "id": "s-bokagame",
+      "label": "ボカゲーム",
+      "color": null,
+      "group": "series"
+    },
+    {
+      "id": "s-dorubuki",
+      "label": "ドルブキ",
+      "color": null,
+      "group": "series"
+    },
+    {
+      "id": "s-kekkisakekai",
+      "label": "決起酒会",
+      "color": null,
+      "group": "series"
+    },
+    {
+      "id": "s-fukabuki",
+      "label": "ふかブキ！",
+      "color": null,
+      "group": "series"
+    },
+    {
+      "id": "s-kinkyudj",
+      "label": "緊急でDJ",
+      "color": null,
+      "group": "series"
+    },
+    {
+      "id": "s-campusunion",
+      "label": "Campus Union",
+      "color": null,
+      "group": "series"
+    },
+    {
+      "id": "s-sakebuki",
+      "label": "酒ブキ",
+      "color": null,
+      "group": "series"
+    },
+    {
+      "id": "s-bokaconcafe",
+      "label": "ボカコンカフェ",
+      "color": null,
+      "group": "series"
+    },
+    {
+      "id": "external",
+      "label": "外部主催",
+      "color": null,
+      "group": "org"
     }
   ],
   "dayBgMap": {},

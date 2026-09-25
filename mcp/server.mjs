@@ -82,7 +82,7 @@ const detailProps = {
   tags: {
     type: 'array',
     items: { type: 'string' },
-    description: 'タグ ID の配列。1つ目の色付きタグがカレンダーの色になる。list_meta で一覧を確認できる。',
+    description: 'タグ ID の配列。ジャンル（group: genre）を先頭に 1 つ、シリーズもの（group: series）ならそのシリーズタグ、外部主催なら external を続ける。ジャンルの色がカレンダーの色になる。単発イベントにシリーズタグは付けない。list_meta で一覧を確認できる。',
   },
   djs: {
     type: 'array',
