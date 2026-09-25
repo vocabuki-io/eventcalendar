@@ -592,6 +592,22 @@
       "comingSoon": false
     },
     {
+      "id": "ev_20260516_iasu_birthday",
+      "date": "2026-05-16",
+      "title": "ИASU 生誕？",
+      "tags": [
+        "vocabuki",
+        "ボカブキイベント"
+      ],
+      "djs": [
+        "rockstar_saihan"
+      ],
+      "vjs": [],
+      "flyer": null,
+      "xurl": "https://x.com/rockstar_saihan/status/2040733144362680696",
+      "comingSoon": false
+    },
+    {
       "id": "ev_20260517_bokagame",
       "date": "2026-05-17",
       "title": "ボカゲーム",
@@ -619,19 +635,278 @@
       "comingSoon": false
     },
     {
-      "id": "ev_20260516_iasu_birthday",
-      "date": "2026-05-16",
-      "title": "ИASU 生誕？",
-      "tags": [
-        "vocabuki",
-        "ボカブキイベント"
-      ],
-      "djs": [
-        "rockstar_saihan"
-      ],
+      "id": "ev_20260801_event_rymi",
+      "date": "2026-08-01",
+      "title": "ドルブキ",
+      "tags": [],
+      "djs": [],
       "vjs": [],
-      "flyer": null,
-      "xurl": "https://x.com/rockstar_saihan/status/2040733144362680696",
+      "flyer": "images/20260801-56512d.jpg",
+      "xurl": "https://x.com/vocabuki/status/2079927067530117623?s=46",
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260805_campusunion_kafg",
+      "date": "2026-08-05",
+      "title": "Campus Union",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260807_dj1_2tx6",
+      "date": "2026-08-07",
+      "title": "緊急でDJ1",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "flyer": "images/20260807-ea3049.jpg",
+      "xurl": "https://x.com/vocabuki/status/2085374802672721993?s=46",
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260808_dj2_0vpu",
+      "date": "2026-08-08",
+      "title": "緊急でDJ2",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "flyer": "images/20260808-ea3049.jpg",
+      "xurl": "https://x.com/vocabuki/status/2085639724446765131?s=46",
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260810_event_2niv",
+      "date": "2026-08-10",
+      "title": "ドパブキ",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260812_pam_iart",
+      "date": "2026-08-12",
+      "title": "Pam!",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260814_event_x629",
+      "date": "2026-08-14",
+      "title": "ぶいよい",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "flyer": "images/20260814-af1e8f.jpg",
+      "xurl": "https://x.com/vocabuki/status/2087122978291253380?s=46",
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260815_event_zvhp",
+      "date": "2026-08-15",
+      "title": "うたまた",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "flyer": "images/20260815-036393.jpg",
+      "xurl": "https://x.com/utamata_buki/status/2087523583421747286?s=46",
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260817_dj_9j2j",
+      "date": "2026-08-17",
+      "title": "DJするなら飯を食え",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260819_campusunion_4pwi",
+      "date": "2026-08-19",
+      "title": "Campus Union",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260821_event_v3x0",
+      "date": "2026-08-21",
+      "title": "酒ブキ【水着】",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "flyer": "images/20260821-38f11a.jpg",
+      "xurl": "https://x.com/sake_buki/status/2088611402437271894?s=46",
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260822_ex_hsog",
+      "date": "2026-08-22",
+      "title": "ボカブキEX",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "flyer": "images/20260822-7cd0dc.jpg",
+      "xurl": "https://x.com/sona2525rt/status/2085697026994708827?s=46",
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260828_event_zdwr",
+      "date": "2026-08-28",
+      "title": "ボカ戻せ",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "flyer": "images/20260828-e23b17.jpg",
+      "xurl": "https://x.com/vocabuki/status/2092603458344173950?s=46",
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260829_shadownight_tdza",
+      "date": "2026-08-29",
+      "title": "shadow night",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "flyer": "images/20260829-747f9b.jpg",
+      "xurl": "https://x.com/shadow_buki/status/2083120666128404915?s=46",
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260904_231_cfd2",
+      "date": "2026-09-04",
+      "title": "決起酒会 -2周年まであと3週間、ここいらで誰が1番酒が強ぇか決めようや-",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "flyer": "images/20260904-13cc34.jpg",
+      "xurl": "https://x.com/vocabuki/status/2091455631391949141?s=46",
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260905_vgp_j05w",
+      "date": "2026-09-05",
+      "title": "VGP(アニソン)",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "flyer": "images/20260905-073077.jpg",
+      "xurl": "https://x.com/vgp_buki_vom/status/2091814441390321741?s=46",
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260911_event_e6yy",
+      "date": "2026-09-11",
+      "title": "ドルテン",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260911_event_zr4h",
+      "date": "2026-09-11",
+      "title": "酒ブキ【ギャル】",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "flyer": "images/20260911-064cda.jpg",
+      "xurl": "https://x.com/sake_buki/status/2094750306483794004?s=46",
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260912_v_qyak",
+      "date": "2026-09-12",
+      "title": "V満タン",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "flyer": "images/20260912-b132f3.jpg",
+      "xurl": "https://x.com/vman_tan/status/2076984993243648291?s=46",
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260914_event_e2jb",
+      "date": "2026-09-14",
+      "title": "推教",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260918_shadownight_zyqf",
+      "date": "2026-09-18",
+      "title": "shadow night",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "flyer": "images/20260918-7f0e23.jpg",
+      "xurl": "https://x.com/shadow_buki/status/2095037448317538774?s=46",
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260919_vs_vvkx",
+      "date": "2026-09-19",
+      "title": "平成vs令和バイブスボカ合戦",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "flyer": "images/20260919-8c9895.jpg",
+      "xurl": "https://x.com/3k15__/status/2088959021839774162?s=46",
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260920_groovuki_lric",
+      "date": "2026-09-20",
+      "title": "GROOVUKI",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260921_event_3s1f",
+      "date": "2026-09-21",
+      "title": "飲みマンデイ",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260922_event_isjx",
+      "date": "2026-09-22",
+      "title": "ふかブキ！",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260925_event_r1kq",
+      "date": "2026-09-25",
+      "title": "うたまた",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "comingSoon": false
+    },
+    {
+      "id": "ev_20260926_2_w03h",
+      "date": "2026-09-26",
+      "title": "2周年",
+      "tags": [],
+      "djs": [],
+      "vjs": [],
+      "flyer": "images/20260926-392c50.jpg",
+      "xurl": "https://x.com/vocabuki/status/2093611392876371984?s=46",
       "comingSoon": false
     }
   ],
