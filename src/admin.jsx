@@ -384,7 +384,7 @@ function EventCard({ev,tags,people,dayBgMap,token,onSave,onDelete,onDuplicate}){
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:'flex',gap:5,marginBottom:3,flexWrap:'wrap'}}>
             <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:['#F5E642','#B8F0B0','#D4B0F0'].includes(g.color)?'#111':'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 6px'}}># {g.label}</span>
-            {isCS&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:C.orange,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 6px'}}>CS</span>}
+            {isCS&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:C.orange,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 6px'}}>？？？</span>}
             <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,color:'#666'}}>{ev.date}</span>
           </div>
           <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:15,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{ev.title}</div>

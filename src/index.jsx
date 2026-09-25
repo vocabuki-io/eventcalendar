@@ -196,7 +196,6 @@
           const ev=evs[0];const g=primaryTag(ev.tags,tags);const col=dayBg||g.color;const isCS=ev.comingSoon||false;
           return(<div onClick={()=>onPick(ev)} style={{flex:1,background:col,cursor:'pointer',position:'relative',display:'flex',alignItems:'center',padding:'0 4px'}}>
             <div style={{width:'100%',fontFamily:'"Reggae One",system-ui',fontSize:11,lineHeight:1.1,color:'#fff',textShadow:'1px 1px 0 rgba(0,0,0,0.5)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',textAlign:'left'}}>{isCS?'\uff1f\uff1f\uff1f':ev.title}</div>
-            {isCS&&<div style={{position:'absolute',top:2,right:2,background:C.orange,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:7,borderRadius:3,padding:'1px 3px',border:'1.5px solid #111',lineHeight:1}}>CS</div>}
             {favOf(ev)&&<div style={{position:'absolute',bottom:2,right:2}}><Icon name="star" size={10} color="#111" fill={C.yellow}/></div>}
           </div>);
         })()}
@@ -204,7 +203,6 @@
           const g=primaryTag(ev.tags,tags);const isCS=ev.comingSoon||false;
           return(<div key={ev.id||i} onClick={()=>onPick(ev)} style={{flex:1,minHeight:0,background:g.color,cursor:'pointer',display:'flex',alignItems:'center',padding:'0 3px',position:'relative',borderTop:i===1?'2px solid #111':'none'}}>
             <div style={{width:'100%',fontFamily:'"Reggae One",system-ui',fontSize:9,lineHeight:1,color:'#fff',textShadow:'1px 1px 0 rgba(0,0,0,0.5)',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',marginLeft:i===0?16:0}}>{isCS?'\uff1f\uff1f\uff1f':ev.title}</div>
-            {isCS&&<div style={{position:'absolute',top:1,right:1,background:C.orange,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:6,borderRadius:2,padding:'0 2px',border:'1px solid #111',lineHeight:1.3}}>CS</div>}
             {favOf(ev)&&<div style={{position:'absolute',bottom:1,right:1}}><Icon name="star" size={7} color="#111" fill={C.yellow}/></div>}
           </div>);
         })}
@@ -258,7 +256,7 @@
             <div style={{flex:1,padding:'10px 12px 10px 0',display:'flex',flexDirection:'column',justifyContent:'center',minWidth:0}}>
               <div style={{display:'flex',gap:5,marginBottom:4,flexWrap:'wrap',alignItems:'center'}}>
                 <span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:g.color,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}># {g.label}</span>
-                {isCS&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:C.orange,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}>CS</span>}
+                {isCS&&<span style={{fontFamily:'"DotGothic16",monospace',fontSize:9,background:C.orange,color:'#fff',border:'1.5px solid #111',borderRadius:4,padding:'0 5px'}}>？？？</span>}
                 {favorites[ev.id||ev.date]&&<Icon name="star" size={12} color="#111" fill={C.yellow}/>}
               </div>
               <div style={{fontFamily:'"RocknRoll One",system-ui',fontSize:16,lineHeight:1.2,opacity:isCS?0.6:1}}>{isCS?'COMING SOON':ev.title}</div>
@@ -287,7 +285,7 @@
             <div style={{width:54,height:54,flexShrink:0,background:g.color,color:'#fff',border:B,borderRadius:10,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',boxShadow:SS,position:'relative'}}>
               <div style={{fontFamily:'"DotGothic16",monospace',fontSize:10,fontWeight:700}}>{d.getMonth()+1}/{WDAYS[weekIdx(d)]}</div>
               <div style={{fontFamily:'"Reggae One",system-ui',fontSize:26,lineHeight:1,textShadow:'2px 2px 0 #111'}}>{d.getDate()}</div>
-              {isCS&&<div style={{position:'absolute',top:-6,right:-6,background:C.orange,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:8,borderRadius:4,padding:'2px 4px',border:'1.5px solid #111',lineHeight:1}}>CS</div>}
+              {isCS&&<div style={{position:'absolute',top:-6,right:-6,background:C.orange,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:8,borderRadius:4,padding:'2px 4px',border:'1.5px solid #111',lineHeight:1}}>？？？</div>}
             </div>
             <div style={{flex:1,minWidth:0}}>
               <div style={{display:'flex',gap:6,alignItems:'center',marginBottom:2}}>
@@ -325,7 +323,7 @@
                 <div style={{width:44,height:44,flexShrink:0,background:g.color,color:'#fff',border:B,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',position:'relative'}}>
                   <div style={{fontFamily:'"DotGothic16",monospace',fontSize:9}}>{WDAYS[weekIdx(d)]}</div>
                   <div style={{fontFamily:'"Reggae One",system-ui',fontSize:20,lineHeight:1,textShadow:'1.5px 1.5px 0 #111'}}>{d.getDate()}</div>
-                  {isCS&&<div style={{position:'absolute',top:-5,right:-5,background:C.orange,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:7,borderRadius:3,padding:'1px 4px',border:'1.5px solid #111',lineHeight:1}}>CS</div>}
+                  {isCS&&<div style={{position:'absolute',top:-5,right:-5,background:C.orange,color:'#fff',fontFamily:'"Reggae One",system-ui',fontSize:7,borderRadius:3,padding:'1px 4px',border:'1.5px solid #111',lineHeight:1}}>？？？</div>}
                 </div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{display:'flex',gap:6,alignItems:'center',marginBottom:2,flexWrap:'wrap'}}>
